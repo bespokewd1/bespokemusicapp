@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Compass, Library, ListMusic, Wrench } from "lucide-react";
+import { Compass, Library, ListMusic, Wrench, LayoutDashboard, LogOut } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import logoH from "@/assets/bespoke-logo-horizontal.png.asset.json";
 import type { ReactNode } from "react";
 import { useStore } from "@/lib/store";
@@ -22,7 +23,7 @@ export function Logo() {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { signedIn, signOut, setLoginOpen } = useStore();
+  const { signedIn, ready, setLoginOpen } = useStore();
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
@@ -41,14 +42,12 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Link>
             ))}
           </nav>
-          {signedIn ? (
-            <button onClick={signOut} className="flex items-center gap-2 text-sm" title="Sign out (demo)">
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-accent font-display font-semibold text-accent-foreground">
-                A
-              </span>
-            </button>
+          {!ready ? (
+            <span className="h-9 w-20" />
+          ) : signedIn ? (
+            <AccountMenu />
           ) : (
-            <Button size="sm" variant="outline" className="rounded-full" onClick={() => setLoginOpen(true)}>
+            <Button size="sm" variant="outline" className="h-10 rounded-full px-4" onClick={() => setLoginOpen(true)}>
               Sign in
             </Button>
           )}
@@ -75,5 +74,33 @@ export function AppShell({ children }: { children: ReactNode }) {
       </nav>
       <LoginDialog />
     </div>
+  );
+}
+
+function AccountMenu() {
+  const { user, isAdmin, signOut } = useStore();
+  const name = (user?.user_metadata?.["full_name"] as string) || user?.email || "Account";
+  const avatar = user?.user_metadata?.["avatar_url"] as string | undefined;
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button aria-label="Account menu" className="grid h-10 w-10 place-items-center overflow-hidden rounded-full bg-accent font-display font-semibold text-accent-foreground ring-offset-background focus-visible:ring-2 focus-visible:ring-ring">
+          {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : name.charAt(0).toUpperCase()}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel className="truncate font-normal">
+          <span className="block truncate font-semibold">{name}</span>
+          <span className="block truncate text-xs text-muted-foreground">{user?.email}</span>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {isAdmin && (
+          <DropdownMenuItem asChild>
+            <Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard</Link>
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> Sign out</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

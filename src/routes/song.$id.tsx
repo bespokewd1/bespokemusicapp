@@ -1,12 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Heart, Minus, Pencil, Play, Plus, X, ListPlus, Pause } from "lucide-react";
+import { ArrowLeft, Heart, Minus, Pencil, Play, Plus, ListPlus, Pause, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SongSheet } from "@/components/SongSheet";
 import { useStore } from "@/lib/store";
 import { transposeChord, uniqueChords } from "@/lib/songs";
+import { SPEED_PRESETS, useAutoScroll } from "@/hooks/use-auto-scroll";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/song/$id")({
@@ -23,18 +25,31 @@ export const Route = createFileRoute("/song/$id")({
 
 function SongPage() {
   const { id } = Route.useParams();
-  const { signedIn, getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, added } = useStore();
+  const { user, signedIn, songsLoaded, getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, deleteSong, scrollSpeed, setScrollSpeed } = useStore();
   const navigate = useNavigate();
   const song = getSong(id);
   const [size, setSize] = useState(18);
   const [tr, setTr] = useState(0);
-  const [play, setPlay] = useState(false);
+  const { playing, suspended, toggle, stop } = useAutoScroll(scrollSpeed);
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const [controlsVisible, setControlsVisible] = useState(true);
 
   useEffect(() => {
-    if (song) markPlayed(song.id);
+    if (song && signedIn) markPlayed(song.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [song?.id, signedIn]);
 
+  useEffect(() => stop, [id, stop]);
+
+  useEffect(() => {
+    const el = controlsRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setControlsVisible(!!e?.isIntersecting), { rootMargin: "-64px 0px 0px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [song?.id]);
+
+  if (!songsLoaded) return <div className="mx-auto h-96 max-w-3xl animate-pulse rounded-3xl bg-secondary" />;
   if (!song) {
     return (
       <div className="py-20 text-center">
@@ -44,11 +59,12 @@ function SongPage() {
     );
   }
   const isSaved = signedIn && saved.includes(song.id);
-  const isMine = added.some((a) => a.id === song.id);
+  const isMine = !!user && song.ownerId === user.id;
+  const presetName = (Object.entries(SPEED_PRESETS).find(([, v]) => Math.abs(v - scrollSpeed) < 0.05)?.[0]) ?? `${scrollSpeed.toFixed(1)}×`;
 
   return (
     <div className="mx-auto max-w-3xl">
-      <button onClick={() => history.back()} className="mb-4 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <button onClick={() => history.back()} className="mb-4 flex min-h-11 items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4" /> Back
       </button>
 
@@ -68,54 +84,80 @@ function SongPage() {
         </div>
       </header>
 
-      <Button size="lg" className="mb-4 h-14 w-full rounded-full text-base shadow-lift" onClick={() => setPlay(true)}>
-        <Play className="mr-2 h-5 w-5 fill-current" /> Play Mode
-      </Button>
+      {/* Playback controls */}
+      <div ref={controlsRef} className="mb-4 rounded-3xl border border-border bg-card p-4 shadow-soft">
+        <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4">
+          <Button size="lg" onClick={toggle} aria-pressed={playing} className="h-14 rounded-full px-6 text-base shadow-lift">
+            {playing ? <><Pause className="mr-2 h-5 w-5 fill-current" /> Pause</> : <><Play className="mr-2 h-5 w-5 fill-current" /> Play</>}
+          </Button>
+          <div className="min-w-0">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Scroll speed</span>
+              <span className={cn("font-medium", playing && "text-primary")} aria-live="polite">
+                {playing ? (suspended ? "Paused while you scroll…" : `Scrolling · ${presetName}`) : presetName}
+              </span>
+            </div>
+            <Slider className="mt-2" min={0.3} max={3} step={0.1} value={[scrollSpeed]} onValueChange={([v]) => setScrollSpeed(v ?? 1)} aria-label="Auto-scroll speed" />
+            <div className="mt-2 grid grid-cols-3 gap-1">
+              {(Object.keys(SPEED_PRESETS) as (keyof typeof SPEED_PRESETS)[]).map((k) => (
+                <button key={k} onClick={() => setScrollSpeed(SPEED_PRESETS[k])} className={cn("min-h-9 rounded-full text-xs font-medium", presetName === k ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground")}>
+                  {k}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <div className="sticky top-[61px] z-20 -mx-4 mb-6 flex items-center gap-2 overflow-x-auto border-y border-border bg-background/90 px-4 py-2 backdrop-blur">
+      <div className="sticky top-[61px] z-20 -mx-4 mb-6 flex items-center gap-2 overflow-x-auto border-y border-border bg-background/90 px-4 py-2 backdrop-blur md:top-[73px]">
         <Stepper label="Size" onMinus={() => setSize((s) => Math.max(14, s - 2))} onPlus={() => setSize((s) => Math.min(30, s + 2))} value={`${size}`} />
-        <Stepper label="Transpose" onMinus={() => setTr((t) => t - 1)} onPlus={() => setTr((t) => t + 1)} value={tr > 0 ? `+${tr}` : `${tr}`} />
+        <Stepper label="Key" onMinus={() => setTr((t) => t - 1)} onPlus={() => setTr((t) => t + 1)} value={tr > 0 ? `+${tr}` : `${tr}`} />
         <div className="ml-auto flex shrink-0 gap-1">
-          <Button variant="ghost" size="icon" aria-label="Save" onClick={() => requireAuth("Sign in to save this song.", () => { toggleSaved(song.id); toast(isSaved ? "Removed from Saved" : "Saved to My Songs"); })}>
+          <Button variant="ghost" size="icon" className="h-11 w-11" aria-label={isSaved ? "Unsave" : "Save"} onClick={() => requireAuth("Sign in to save songs to your songbook.", async () => { await toggleSaved(song.id); toast(isSaved ? "Removed from Saved" : "Saved to My Songs"); })}>
             <Heart className={cn("h-5 w-5", isSaved && "fill-primary text-primary")} />
           </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Add to playlist" onClick={(e) => { if (!useStoreSignedIn(e)) return; }}>
-                <ListPlus className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <PlaylistMenu songId={song.id} playlists={playlists} add={addToPlaylist} requireAuth={requireAuth} />
-          </DropdownMenu>
-          <Button variant="ghost" size="icon" aria-label="Edit" onClick={() => requireAuth("Sign in to edit songs.", () => navigate({ to: "/song/$id/edit", params: { id: song.id } }))}>
-            <Pencil className="h-5 w-5" />
-          </Button>
+          {signedIn ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Add to playlist"><ListPlus className="h-5 w-5" /></Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Add to playlist</DropdownMenuLabel>
+                {playlists.length ? playlists.map((p) => (
+                  <DropdownMenuItem key={p.id} onClick={async () => { await addToPlaylist(p.id, song.id); toast(`Added to ${p.name}`); }}>{p.name}</DropdownMenuItem>
+                )) : <DropdownMenuItem onClick={() => navigate({ to: "/playlists" })}>Create a playlist first</DropdownMenuItem>}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Add to playlist" onClick={() => requireAuth("Sign in to add songs to playlists.", () => {})}><ListPlus className="h-5 w-5" /></Button>
+          )}
+          {isMine && (
+            <>
+              <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Edit" onClick={() => navigate({ to: "/song/$id/edit", params: { id: song.id } })}><Pencil className="h-5 w-5" /></Button>
+              <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Delete" onClick={async () => { if (confirm("Delete this song?")) { await deleteSong(song.id); navigate({ to: "/my-songs" }); } }}><Trash2 className="h-5 w-5" /></Button>
+            </>
+          )}
         </div>
       </div>
 
       <SongSheet sections={song.sections} fontSize={size} transpose={tr} />
-      {isMine && <p className="mt-10 text-xs text-muted-foreground">You added this song.</p>}
+      <div className="h-[40vh]" aria-hidden />
 
-      {play && <PlayMode title={song.title} artist={song.artist} sections={song.sections} transpose={tr} onClose={() => setPlay(false)} />}
+      {/* Floating control when main controls are off-screen */}
+      <button
+        onClick={toggle}
+        aria-label={playing ? "Pause auto-scroll" : "Play auto-scroll"}
+        className={cn(
+          "fixed right-4 z-30 grid h-14 w-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-lift transition-all duration-200",
+          "bottom-[calc(5.5rem+env(safe-area-inset-bottom))] md:bottom-8",
+          controlsVisible ? "pointer-events-none scale-75 opacity-0" : "scale-100 opacity-100",
+        )}
+        tabIndex={controlsVisible ? -1 : 0}
+      >
+        {playing ? <Pause className="h-6 w-6 fill-current" /> : <Play className="h-6 w-6 fill-current" />}
+        {playing && suspended && <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-accent ring-2 ring-background" />}
+      </button>
     </div>
-  );
-}
-
-// Dropdown opens regardless; menu items gate on auth.
-function useStoreSignedIn(_e: unknown) {
-  return true;
-}
-
-function PlaylistMenu({ songId, playlists, add, requireAuth }: { songId: string; playlists: { id: string; name: string }[]; add: (p: string, s: string) => void; requireAuth: (r: string, f: () => void) => void }) {
-  return (
-    <DropdownMenuContent align="end">
-      <DropdownMenuLabel>Add to playlist</DropdownMenuLabel>
-      {playlists.map((p) => (
-        <DropdownMenuItem key={p.id} onClick={() => requireAuth("Sign in to add songs to playlists.", () => { add(p.id, songId); toast(`Added to ${p.name}`); })}>
-          {p.name}
-        </DropdownMenuItem>
-      ))}
-    </DropdownMenuContent>
   );
 }
 
@@ -132,43 +174,9 @@ function Stepper({ label, value, onMinus, onPlus }: { label: string; value: stri
   return (
     <div className="flex shrink-0 items-center gap-1 rounded-full bg-secondary px-1 py-1">
       <span className="px-2 text-xs font-medium text-muted-foreground">{label}</span>
-      <button aria-label={`${label} down`} onClick={onMinus} className="grid h-8 w-8 place-items-center rounded-full bg-card shadow-soft"><Minus className="h-3.5 w-3.5" /></button>
+      <button aria-label={`${label} down`} onClick={onMinus} className="grid h-9 w-9 place-items-center rounded-full bg-card shadow-soft"><Minus className="h-3.5 w-3.5" /></button>
       <span className="w-7 text-center font-mono text-sm font-semibold">{value}</span>
-      <button aria-label={`${label} up`} onClick={onPlus} className="grid h-8 w-8 place-items-center rounded-full bg-card shadow-soft"><Plus className="h-3.5 w-3.5" /></button>
-    </div>
-  );
-}
-
-function PlayMode({ title, artist, sections, transpose, onClose }: { title: string; artist: string; sections: Parameters<typeof SongSheet>[0]["sections"]; transpose: number; onClose: () => void }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [scrolling, setScrolling] = useState(false);
-  const [size, setSize] = useState(24);
-  useEffect(() => {
-    if (!scrolling) return;
-    const t = setInterval(() => ref.current?.scrollBy({ top: 1 }), 50);
-    return () => clearInterval(t);
-  }, [scrolling]);
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
-        <div className="min-w-0">
-          <p className="truncate font-display text-lg font-semibold">{title}</p>
-          <p className="truncate text-xs text-muted-foreground">{artist}</p>
-        </div>
-        <div className="flex shrink-0 items-center gap-1">
-          <Button variant="ghost" size="icon" onClick={() => setSize((s) => Math.max(16, s - 2))} aria-label="Smaller"><Minus className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="icon" onClick={() => setSize((s) => Math.min(40, s + 2))} aria-label="Larger"><Plus className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Exit Play Mode"><X className="h-5 w-5" /></Button>
-        </div>
-      </div>
-      <div ref={ref} className="flex-1 overflow-y-auto px-5 py-8">
-        <div className="mx-auto max-w-3xl pb-[60vh]">
-          <SongSheet sections={sections} fontSize={size} transpose={transpose} />
-        </div>
-      </div>
-      <Button size="lg" onClick={() => setScrolling((v) => !v)} className="absolute bottom-6 left-1/2 h-14 -translate-x-1/2 rounded-full px-8 shadow-lift">
-        {scrolling ? <><Pause className="mr-2 h-5 w-5" /> Pause scroll</> : <><Play className="mr-2 h-5 w-5" /> Auto-scroll</>}
-      </Button>
+      <button aria-label={`${label} up`} onClick={onPlus} className="grid h-9 w-9 place-items-center rounded-full bg-card shadow-soft"><Plus className="h-3.5 w-3.5" /></button>
     </div>
   );
 }
