@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { SongForm } from "@/components/SongForm";
 import { useStore } from "@/lib/store";
 
-export const Route = createFileRoute("/admin/songs/new")({
+export const Route = createFileRoute("/admin_/songs/new")({
   ssr: false,
   head: () => ({
     meta: [

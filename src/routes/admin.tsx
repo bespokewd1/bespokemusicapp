@@ -127,7 +127,7 @@ function Users() {
       supabase.from("profiles").select("id,email,display_name,created_at,last_active_at"),
       supabase.from("user_roles").select("user_id,role"),
     ]).then(([p, r]) => {
-      if (p.error) return toast.error("Couldn't load users");
+      if (p.error) { toast.error("Couldn't load users"); return; }
       setRows((p.data ?? []).map((u) => ({ ...u, roles: (r.data ?? []).filter((x) => x.user_id === u.id).map((x) => x.role) })));
     });
   }, []);
@@ -177,12 +177,12 @@ function Content() {
   const [songs, setSongs] = useState<Song[] | null>(null);
   const load = useCallback(async () => {
     const { data, error } = await supabase.from("songs").select("*").is("owner_id", null).order("sort_order");
-    if (error) return toast.error("Couldn't load demo songs");
+    if (error) { toast.error("Couldn't load demo songs"); return; }
     setSongs((data ?? []).map((r) => rowToSong(r as never)));
   }, []);
   useEffect(() => { load(); }, [load]);
 
-  const update = async (id: string, patch: Record<string, unknown>) => {
+  const update = async (id: string, patch: { featured?: boolean; featured_order?: number | null; published?: boolean }) => {
     const { error } = await supabase.from("songs").update(patch).eq("id", id);
     if (error) toast.error("Update failed");
     await Promise.all([load(), reloadSongs()]);
