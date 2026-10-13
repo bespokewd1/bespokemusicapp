@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/PageHeader";
 import { useStore } from "@/lib/store";
-import { SignedOutState } from "./my-songs";
+import { SignedOutState } from "@/components/SignedOutState";
 
 export const Route = createFileRoute("/playlists/")({
   head: () => ({
