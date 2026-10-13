@@ -153,6 +153,38 @@ export type Database = {
           },
         ]
       }
+      song_user_data: {
+        Row: {
+          annotations: Json
+          notes: string
+          song_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          annotations?: Json
+          notes?: string
+          song_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          annotations?: Json
+          notes?: string
+          song_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "song_user_data_song_id_fkey"
+            columns: ["song_id"]
+            isOneToOne: false
+            referencedRelation: "songs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       songs: {
         Row: {
           artist: string
@@ -162,6 +194,7 @@ export type Database = {
           featured: boolean
           featured_order: number | null
           id: string
+          images: Json
           key: string
           owner_id: string | null
           published: boolean
@@ -179,6 +212,7 @@ export type Database = {
           featured?: boolean
           featured_order?: number | null
           id?: string
+          images?: Json
           key?: string
           owner_id?: string | null
           published?: boolean
@@ -196,6 +230,7 @@ export type Database = {
           featured?: boolean
           featured_order?: number | null
           id?: string
+          images?: Json
           key?: string
           owner_id?: string | null
           published?: boolean
