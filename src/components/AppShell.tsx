@@ -6,6 +6,8 @@ import type { ReactNode } from "react";
 import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { LoginDialog } from "./LoginDialog";
+import { BackupDialog } from "./BackupDialog";
+import { useState } from "react";
 
 const TABS = [
   { to: "/", label: "Home", icon: Compass },
@@ -112,6 +114,7 @@ function HeaderActions() {
 
 function AccountMenu() {
   const { user, isAdmin, signOut } = useStore();
+  const [backupOpen, setBackupOpen] = useState(false);
   const name = (user?.user_metadata?.["full_name"] as string) || user?.email || "Account";
   const avatar = user?.user_metadata?.["avatar_url"] as string | undefined;
   return (
@@ -132,8 +135,10 @@ function AccountMenu() {
             <Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard</Link>
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem onClick={() => setBackupOpen(true)}><Download className="mr-2 h-4 w-4" /> Backup My Library</DropdownMenuItem>
         <DropdownMenuItem onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> Sign out</DropdownMenuItem>
       </DropdownMenuContent>
+      <BackupDialog open={backupOpen} onOpenChange={setBackupOpen} />
     </DropdownMenu>
   );
 }
