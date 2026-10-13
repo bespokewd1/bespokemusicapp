@@ -55,7 +55,7 @@ interface Store {
   saved: string[];
   toggleSaved: (id: string) => Promise<void>;
   added: Song[];
-  upsertSong: (song: Omit<Song, "id"> & { id?: string }, opts?: { demo?: boolean }) => Promise<string | null>;
+  upsertSong: (song: Omit<Song, "id"> & { id?: string | undefined }, opts?: { demo?: boolean | undefined }) => Promise<string | null>;
   deleteSong: (id: string) => Promise<void>;
   recent: string[];
   markPlayed: (id: string) => void;

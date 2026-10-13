@@ -8,7 +8,7 @@ export type ChordCategory = "Major" | "Minor" | "7th" | "Maj7" | "Min7" | "Sus" 
 export interface Voicing {
   frets: (number | null)[]; // null = muted
   fingers: number[];
-  barre?: { fret: number; from: number; to: number };
+  barre?: { fret: number; from: number; to: number } | undefined;
 }
 
 export interface Chord {

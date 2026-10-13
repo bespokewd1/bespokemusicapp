@@ -79,8 +79,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
 function AccountMenu() {
   const { user, isAdmin, signOut } = useStore();
-  const name = (user?.user_metadata?.full_name as string) || user?.email || "Account";
-  const avatar = user?.user_metadata?.avatar_url as string | undefined;
+  const name = (user?.user_metadata?.["full_name"] as string) || user?.email || "Account";
+  const avatar = user?.user_metadata?.["avatar_url"] as string | undefined;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
