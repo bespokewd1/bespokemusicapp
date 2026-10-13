@@ -8,5 +8,8 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
-- Prototype state lives in an in-memory React context (src/lib/store.tsx); no backend — the brief is a prototype with fake sign-in.
+- App data lives in Lovable Cloud tables guarded by RLS; src/lib/store.tsx is the single client data layer — keeps ownership checks in the database, not the UI.
+- Admin rights come only from public.user_roles (owner granted by the signup trigger); admin stats use the security-definer admin_stats() — never trust client-side role checks.
+- Demo songs are songs rows with owner_id NULL; personal songs carry owner_id — one table keeps playlists/saves uniform.
+- Chord voicings live as structured data in src/lib/chords.ts (unit-tested), rendered by ChordDiagram.
 - Tuner pitch math/detection lives in pure src/lib/tuner.ts (unit-tested); mic/Web Audio wiring in src/hooks/use-tuner.ts, never routed to speakers.
