@@ -39,7 +39,8 @@ export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
       setBusy(false);
       if (!id) return;
       toast.success(song ? "Song updated" : demo ? "Demo song added (unpublished)" : "Song added to My Songs");
-      navigate({ to: demo ? "/admin" : "/song/$id", params: { id } } as never);
+      if (demo) navigate({ to: "/admin" });
+      else navigate({ to: "/song/$id", params: { id } });
     });
   };
 
