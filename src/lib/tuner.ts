@@ -40,11 +40,11 @@ function str(midi: number, num: number, extra = ""): GuitarString {
 export const PRESETS: TuningPreset[] = [
   {
     id: "standard",
-    name: "Standard",
+    name: "Normal Tuning",
     strings: [str(40, 6, "Low E"), str(45, 5), str(50, 4), str(55, 3), str(59, 2), str(64, 1, "High E")],
   },
-  // Architected for later: Drop D, Half-step down, Open G
-  { id: "drop-d", name: "Drop D", strings: [str(38, 6, "Low D"), str(45, 5), str(50, 4), str(55, 3), str(59, 2), str(64, 1)] },
+  { id: "drop-d", name: "Drop D Tuning", strings: [str(38, 6, "Low D"), str(45, 5), str(50, 4), str(55, 3), str(59, 2), str(64, 1)] },
+  { id: "drop-c", name: "Drop C Tuning", strings: [str(36, 6, "Low C"), str(43, 5), str(48, 4), str(53, 3), str(57, 2), str(62, 1)] },
 ];
 
 /** Closest string to a detected frequency (by cents distance). */
@@ -83,7 +83,7 @@ export function tuningState(cents: number, tolerance = IN_TUNE_CENTS): "flat" | 
  * Search range tuned for guitar (≈ 60 Hz – 1000 Hz).
  */
 export function detectPitch(buf: Float32Array, sampleRate: number, opts: { minFreq?: number; maxFreq?: number; threshold?: number; minRms?: number } = {}): number | null {
-  const { minFreq = 60, maxFreq = 1000, threshold = 0.12, minRms = 0.008 } = opts;
+  const { minFreq = 55, maxFreq = 1000, threshold = 0.15, minRms = 0.004 } = opts;
   let rms = 0;
   for (let i = 0; i < buf.length; i++) rms += buf[i]! * buf[i]!;
   rms = Math.sqrt(rms / buf.length);
@@ -117,7 +117,13 @@ export function detectPitch(buf: Float32Array, sampleRate: number, opts: { minFr
       break;
     }
   }
-  if (tau < 0) return null;
+  if (tau < 0) {
+    // fallback: global minimum if reasonably periodic
+    let best = -1, bv = 0.3;
+    for (let t = minTau; t <= maxTau; t++) if (cmnd[t]! < bv) { bv = cmnd[t]!; best = t; }
+    if (best < 0) return null;
+    tau = best;
+  }
   // parabolic interpolation
   const x0 = tau > 1 ? cmnd[tau - 1]! : cmnd[tau]!;
   const x2 = tau < maxTau ? cmnd[tau + 1]! : cmnd[tau]!;
