@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Search, Sparkles } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SongCard } from "@/components/SongCard";
@@ -11,10 +11,18 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Explore Songs — Bespoke Music" },
-      { name: "description", content: "Browse guitar songs with chords and lyrics. Pick up and play — no ads, no distractions." },
-      { property: "og:title", content: "Explore Songs — Bespoke Music" },
-      { property: "og:description", content: "Your personal guitar songbook. No ads. No distractions." },
+      { name: "description", content: "Add your favourite songs, save chords and lyrics, create playlists, and build your personal guitar collection. No Ads. No Distractions." },
+      { property: "og:title", content: "Bespoke Music — Your Personal Guitar Songbook" },
+      { property: "og:description", content: "Add your favourite songs, save chords and lyrics, create playlists, and build your personal guitar collection. No Ads. No Distractions." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://bespokemusicapp.lovable.app/" },
+      { property: "og:image", content: "https://bespokemusicapp.lovable.app/og-image.png" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Your Music. Your Songs. Your Way." },
+      { name: "twitter:description", content: "One place for all your guitar chords, lyrics, and playlists. Save, organize, and play anytime." },
+      { name: "twitter:image", content: "https://bespokemusicapp.lovable.app/og-image.png" },
     ],
+    links: [{ rel: "canonical", href: "https://bespokemusicapp.lovable.app/" }],
   }),
   component: Explore,
 });
@@ -41,8 +49,8 @@ function Explore() {
       <section className="bg-hero relative mb-8 overflow-hidden rounded-3xl px-6 py-10 text-primary-foreground shadow-lift md:px-12 md:py-14">
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full border-[18px] border-primary-foreground/10" />
         <div className="pointer-events-none absolute -right-4 -top-4 h-40 w-40 rounded-full border-[6px] border-primary-foreground/10" />
-        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] opacity-80">
-          <Sparkles className="h-3.5 w-3.5" /> No ads. No distractions.
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] opacity-80">
+          No ads. No distractions.
         </p>
         <h1 className="mt-3 max-w-xl font-display text-4xl font-semibold leading-[1.05] md:text-6xl">
           Your personal <em className="font-normal">guitar songbook.</em>
