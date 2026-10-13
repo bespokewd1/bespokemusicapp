@@ -5,8 +5,8 @@ import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export function SongCard({ song, action }: { song: Song; action?: React.ReactNode }) {
-  const { saved, toggleSaved, requireAuth } = useStore();
-  const isSaved = saved.includes(song.id);
+  const { saved, toggleSaved, requireAuth, signedIn } = useStore();
+  const isSaved = signedIn && saved.includes(song.id);
   const chords = uniqueChords(song);
   return (
     <div className="group relative flex items-start gap-3 rounded-2xl border border-border bg-card p-4 shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift">

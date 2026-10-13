@@ -23,7 +23,7 @@ export const Route = createFileRoute("/song/$id")({
 
 function SongPage() {
   const { id } = Route.useParams();
-  const { getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, added } = useStore();
+  const { signedIn, getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, added } = useStore();
   const navigate = useNavigate();
   const song = getSong(id);
   const [size, setSize] = useState(18);
@@ -43,7 +43,7 @@ function SongPage() {
       </div>
     );
   }
-  const isSaved = saved.includes(song.id);
+  const isSaved = signedIn && saved.includes(song.id);
   const isMine = added.some((a) => a.id === song.id);
 
   return (
@@ -87,7 +87,7 @@ function SongPage() {
             </DropdownMenuTrigger>
             <PlaylistMenu songId={song.id} playlists={playlists} add={addToPlaylist} requireAuth={requireAuth} />
           </DropdownMenu>
-          <Button variant="ghost" size="icon" aria-label="Edit" onClick={() => requireAuth("Sign in to edit songs.", () => navigate({ to: "/song_/$id/edit", params: { id: song.id } }))}>
+          <Button variant="ghost" size="icon" aria-label="Edit" onClick={() => requireAuth("Sign in to edit songs.", () => navigate({ to: "/song/$id/edit", params: { id: song.id } }))}>
             <Pencil className="h-5 w-5" />
           </Button>
         </div>
