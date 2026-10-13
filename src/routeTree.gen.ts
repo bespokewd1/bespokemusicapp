@@ -17,7 +17,7 @@ import { Route as PlaylistsIndexRouteImport } from './routes/playlists.index'
 import { Route as PlaylistsIdRouteImport } from './routes/playlists.$id'
 import { Route as SongIdRouteImport } from './routes/song.$id'
 import { Route as SongsNewRouteImport } from './routes/songs.new'
-import { Route as AdminSongsNewRouteImport } from './routes/admin.songs.new'
+import { Route as AdminSongsNewRouteImport } from './routes/admin_.songs.new'
 import { Route as SongIdEditRouteImport } from './routes/song_.$id.edit'
 
 const IndexRoute = IndexRouteImport.update({
@@ -61,9 +61,9 @@ const SongsNewRoute = SongsNewRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminSongsNewRoute = AdminSongsNewRouteImport.update({
-  id: '/songs/new',
-  path: '/songs/new',
-  getParentRoute: () => AdminRoute,
+  id: '/admin_/songs/new',
+  path: '/admin/songs/new',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const SongIdEditRoute = SongIdEditRouteImport.update({
   id: '/song_/$id/edit',
@@ -73,7 +73,7 @@ const SongIdEditRoute = SongIdEditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
+  '/admin': typeof AdminRoute
   '/my-songs': typeof MySongsRoute
   '/tools': typeof ToolsRoute
   '/playlists/$id': typeof PlaylistsIdRoute
@@ -85,7 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
+  '/admin': typeof AdminRoute
   '/my-songs': typeof MySongsRoute
   '/tools': typeof ToolsRoute
   '/playlists/$id': typeof PlaylistsIdRoute
@@ -98,14 +98,14 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
+  '/admin': typeof AdminRoute
   '/my-songs': typeof MySongsRoute
   '/tools': typeof ToolsRoute
   '/playlists/$id': typeof PlaylistsIdRoute
   '/song/$id': typeof SongIdRoute
   '/songs/new': typeof SongsNewRoute
   '/playlists/': typeof PlaylistsIndexRoute
-  '/admin/songs/new': typeof AdminSongsNewRoute
+  '/admin_/songs/new': typeof AdminSongsNewRoute
   '/song_/$id/edit': typeof SongIdEditRoute
 }
 export interface FileRouteTypes {
@@ -143,19 +143,20 @@ export interface FileRouteTypes {
     | '/song/$id'
     | '/songs/new'
     | '/playlists/'
-    | '/admin/songs/new'
+    | '/admin_/songs/new'
     | '/song_/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRouteWithChildren
+  AdminRoute: typeof AdminRoute
   MySongsRoute: typeof MySongsRoute
   ToolsRoute: typeof ToolsRoute
   PlaylistsIdRoute: typeof PlaylistsIdRoute
   SongIdRoute: typeof SongIdRoute
   SongsNewRoute: typeof SongsNewRoute
   PlaylistsIndexRoute: typeof PlaylistsIndexRoute
+  AdminSongsNewRoute: typeof AdminSongsNewRoute
   SongIdEditRoute: typeof SongIdEditRoute
 }
 
@@ -217,12 +218,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SongsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/songs/new': {
-      id: '/admin/songs/new'
-      path: '/songs/new'
+    '/admin_/songs/new': {
+      id: '/admin_/songs/new'
+      path: '/admin/songs/new'
       fullPath: '/admin/songs/new'
       preLoaderRoute: typeof AdminSongsNewRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/song_/$id/edit': {
       id: '/song_/$id/edit'
@@ -234,25 +235,16 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AdminRouteChildren {
-  AdminSongsNewRoute: typeof AdminSongsNewRoute
-}
-
-const AdminRouteChildren: AdminRouteChildren = {
-  AdminSongsNewRoute: AdminSongsNewRoute,
-}
-
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRouteWithChildren,
+  AdminRoute: AdminRoute,
   MySongsRoute: MySongsRoute,
   ToolsRoute: ToolsRoute,
   PlaylistsIdRoute: PlaylistsIdRoute,
   SongIdRoute: SongIdRoute,
   SongsNewRoute: SongsNewRoute,
   PlaylistsIndexRoute: PlaylistsIndexRoute,
+  AdminSongsNewRoute: AdminSongsNewRoute,
   SongIdEditRoute: SongIdEditRoute,
 }
 export const routeTree = rootRouteImport
