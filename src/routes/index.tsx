@@ -20,11 +20,12 @@ export const Route = createFileRoute("/")({
 });
 
 function Explore() {
-  const { allSongs } = useStore();
+  const { allSongs, songsLoaded, user } = useStore();
   const [q, setQ] = useState("");
   const [tab, setTab] = useState("pick");
   const query = q.trim().toLowerCase();
   const list = allSongs
+    .filter((s) => !s.ownerId || s.ownerId === user?.id)
     .filter((s) => (tab === "pick" ? s.pickUp : tab === "easy" ? s.difficulty !== "Intermediate" : true))
     .filter(
       (s) =>
@@ -32,7 +33,8 @@ function Explore() {
         s.title.toLowerCase().includes(query) ||
         s.artist.toLowerCase().includes(query) ||
         uniqueChords(s).some((c) => c.toLowerCase() === query),
-    );
+    )
+    .sort((a, b) => (tab === "pick" ? (a.featuredOrder ?? 99) - (b.featuredOrder ?? 99) : 0));
 
   return (
     <div>
@@ -69,7 +71,9 @@ function Explore() {
         {tab === "all" && `${list.length} songs in the library.`}
       </p>
 
-      {list.length ? (
+      {!songsLoaded ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl bg-secondary" />)}</div>
+      ) : list.length ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((s) => <SongCard key={s.id} song={s} />)}
         </div>
