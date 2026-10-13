@@ -69,7 +69,7 @@ function Explore() {
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search songs, artists or a chord (e.g. G)"
+            placeholder="Search songs or chords"
             className="h-12 w-full rounded-full border-0 bg-card pl-11 text-base text-foreground shadow-soft"
           />
         </div>
