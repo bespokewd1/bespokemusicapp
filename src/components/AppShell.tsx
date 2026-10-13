@@ -78,6 +78,38 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
+function HeaderActions() {
+  const { signedIn, requireAuth } = useStore();
+  const navigate = useNavigate();
+  const go = (to: string, reason: string) => {
+    if (signedIn) navigate({ to });
+    else requireAuth(reason, () => {});
+  };
+  return (
+    <div className="flex items-center gap-2">
+      <Button
+        size="sm"
+        className="h-10 rounded-full px-3 sm:px-4"
+        onClick={() => go("/songs/new", "Sign in to add your own songs.")}
+      >
+        <Plus className="h-4 w-4 sm:mr-1" />
+        <span className="hidden sm:inline">Add Song</span>
+        <span className="sr-only sm:hidden">Add Song</span>
+      </Button>
+      <Button
+        size="sm"
+        variant="outline"
+        className="h-10 rounded-full px-3 sm:px-4"
+        onClick={() => go("/playlists", "Sign in to create playlists, save your favourite songs, and keep your music organized.")}
+      >
+        <Plus className="h-4 w-4 sm:mr-1" />
+        <span className="hidden sm:inline">Create Playlist</span>
+        <span className="sr-only sm:hidden">Create Playlist</span>
+      </Button>
+    </div>
+  );
+}
+
 function AccountMenu() {
   const { user, isAdmin, signOut } = useStore();
   const name = (user?.user_metadata?.["full_name"] as string) || user?.email || "Account";
