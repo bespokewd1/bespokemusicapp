@@ -3,7 +3,11 @@ import type { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
-import type { Section, Song, Difficulty } from "./songs";
+import type { Section, Song, Difficulty, SongImage } from "./songs";
+
+export type Stroke = { color: string; w: number; pts: [number, number][] };
+export interface SongUserData { notes: string; annotations: Stroke[] }
+export const IMAGE_BUCKET = "song-images";
 
 export interface Playlist {
   id: string;
@@ -23,14 +27,14 @@ export const PLAYLIST_TEMPLATES = [
 type SongRow = {
   id: string; owner_id: string | null; title: string; artist: string; key: string; capo: number;
   difficulty: string; tempo: number; sections: unknown; published: boolean; featured: boolean;
-  featured_order: number | null; sort_order: number;
+  featured_order: number | null; sort_order: number; images?: unknown;
 };
 
 export function rowToSong(r: SongRow): Song {
   return {
     id: r.id, title: r.title, artist: r.artist, key: r.key, capo: r.capo,
     difficulty: r.difficulty as Difficulty, tempo: r.tempo, sections: (r.sections as Section[]) ?? [],
-    pickUp: r.featured, ownerId: r.owner_id, published: r.published, featuredOrder: r.featured_order, sortOrder: r.sort_order,
+    pickUp: r.featured, ownerId: r.owner_id, published: r.published, featuredOrder: r.featured_order, sortOrder: r.sort_order, images: (r.images as SongImage[]) ?? [],
   };
 }
 
@@ -55,7 +59,12 @@ interface Store {
   saved: string[];
   toggleSaved: (id: string) => Promise<void>;
   added: Song[];
-  upsertSong: (song: Omit<Song, "id"> & { id?: string | undefined }, opts?: { demo?: boolean | undefined }) => Promise<string | null>;
+  upsertSong: (song: Omit<Song, "id"> & { id?: string | undefined }, opts?: { demo?: boolean | undefined; featured?: boolean | undefined }) => Promise<string | null>;
+  uploadSongImage: (file: File, demo?: boolean) => Promise<string | null>;
+  removeSongImage: (path: string) => Promise<void>;
+  imageUrl: (path: string) => Promise<string | null>;
+  loadSongData: (songId: string) => Promise<SongUserData>;
+  saveSongData: (songId: string, patch: Partial<SongUserData>) => Promise<boolean>;
   deleteSong: (id: string) => Promise<void>;
   recent: string[];
   markPlayed: (id: string) => void;
@@ -195,7 +204,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (!uid) return null;
       const row = {
         title: song.title, artist: song.artist, key: song.key, capo: song.capo, difficulty: song.difficulty,
-        tempo: song.tempo, sections: song.sections as unknown as never, updated_at: new Date().toISOString(),
+        tempo: song.tempo, sections: song.sections as unknown as never, images: (song.images ?? []) as unknown as never,
+        updated_at: new Date().toISOString(),
+        ...(opts?.featured !== undefined ? { featured: opts.featured } : {}),
       };
       const q = song.id
         ? supabase.from("songs").update(row).eq("id", song.id).select("id").single()
@@ -204,6 +215,36 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (fail("Couldn't save the song")(error)) return null;
       await reloadSongs();
       return data!.id;
+    },
+    uploadSongImage: async (file, demo) => {
+      if (!uid) return null;
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) { toast.error("Use a JPG, PNG or WebP image"); return null; }
+      if (file.size > 5 * 1024 * 1024) { toast.error("Images must be under 5 MB"); return null; }
+      const ext = file.type.split("/")[1]!.replace("jpeg", "jpg");
+      const path = `${demo ? "demo" : uid}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from(IMAGE_BUCKET).upload(path, file, { contentType: file.type });
+      if (fail("Couldn't upload the image")(error)) return null;
+      return path;
+    },
+    removeSongImage: async (path) => {
+      await supabase.storage.from(IMAGE_BUCKET).remove([path]);
+    },
+    imageUrl: async (path) => {
+      const { data } = await supabase.storage.from(IMAGE_BUCKET).createSignedUrl(path, 3600);
+      return data?.signedUrl ?? null;
+    },
+    loadSongData: async (songId) => {
+      if (!uid) return { notes: "", annotations: [] };
+      const { data } = await supabase.from("song_user_data").select("notes,annotations").eq("song_id", songId).maybeSingle();
+      return { notes: data?.notes ?? "", annotations: (data?.annotations as Stroke[] | undefined) ?? [] };
+    },
+    saveSongData: async (songId, patch) => {
+      if (!uid) return false;
+      const { error } = await supabase.from("song_user_data").upsert(
+        { user_id: uid, song_id: songId, ...patch, annotations: patch.annotations as never, updated_at: new Date().toISOString() },
+        { onConflict: "user_id,song_id" },
+      );
+      return !fail("Couldn't save")(error);
     },
     deleteSong: async (id) => {
       const { error } = await supabase.from("songs").delete().eq("id", id);

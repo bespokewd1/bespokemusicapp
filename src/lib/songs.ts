@@ -5,6 +5,11 @@ export interface Section {
   lines: string[]; // ChordPro-style: "[G]Words over [C]chords"
 }
 
+export interface SongImage {
+  path: string;
+  caption?: string;
+}
+
 export interface Song {
   id: string;
   title: string;
@@ -19,6 +24,7 @@ export interface Song {
   published?: boolean;
   featuredOrder?: number | null;
   sortOrder?: number;
+  images?: SongImage[];
 }
 
 const s = (
