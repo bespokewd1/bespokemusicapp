@@ -54,6 +54,12 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-tuner-bg: var(--tuner-bg);
+  --color-tuner-fg: var(--tuner-fg);
+  --color-tuner-dim: var(--tuner-dim);
+  --color-tuner-off: var(--tuner-off);
+  --color-tuner-ok: var(--tuner-ok);
+  --color-tuner-warn: var(--tuner-warn);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -98,6 +104,12 @@
   --sidebar-accent-foreground: oklch(0.24 0.03 50);
   --sidebar-border: oklch(0.88 0.02 75);
   --sidebar-ring: oklch(0.6 0.1 60);
+  --tuner-bg: oklch(0.2 0.015 50);
+  --tuner-fg: oklch(0.95 0.02 85);
+  --tuner-dim: oklch(0.65 0.02 70);
+  --tuner-off: oklch(0.32 0.015 50);
+  --tuner-ok: oklch(0.8 0.18 150);
+  --tuner-warn: oklch(0.8 0.14 70);
   --shadow-soft: 0 1px 2px oklch(0.3 0.04 50 / 0.06), 0 4px 14px -6px oklch(0.3 0.04 50 / 0.12);
   --shadow-lift: 0 12px 30px -12px oklch(0.35 0.08 40 / 0.3);
   --gradient-hero: radial-gradient(120% 120% at 0% 0%, oklch(0.42 0.11 35), oklch(0.26 0.05 45));
@@ -141,6 +153,14 @@
 @utility bg-hero { background: var(--gradient-hero); }
 @utility soundhole {
   background: radial-gradient(circle, var(--card) 52%, var(--accent) 54%, var(--accent) 62%, var(--secondary) 64%);
+}
+@utility tuner-panel {
+  background: var(--tuner-bg);
+  color: var(--tuner-fg);
+}
+@utility tuner-screen {
+  background: radial-gradient(120% 90% at 50% 0%, oklch(0.26 0.02 55), oklch(0.15 0.01 50));
+  box-shadow: inset 0 2px 12px oklch(0 0 0 / 0.5), inset 0 0 0 1px oklch(1 0 0 / 0.05);
 }
 @utility fret-line {
   background: repeating-linear-gradient(90deg, var(--border) 0 18px, transparent 18px 22px);

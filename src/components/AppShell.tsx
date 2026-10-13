@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Compass, Library, ListMusic, Wrench, Music2 } from "lucide-react";
+import { Compass, Library, ListMusic, Wrench } from "lucide-react";
+import logoH from "@/assets/bespoke-logo-horizontal.png.asset.json";
 import type { ReactNode } from "react";
 import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
@@ -14,13 +15,8 @@ const TABS = [
 
 export function Logo() {
   return (
-    <Link to="/" className="flex min-w-0 items-center gap-2">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-soft">
-        <Music2 className="h-4 w-4" />
-      </span>
-      <span className="truncate font-display text-xl font-semibold tracking-tight">
-        Bespoke <span className="italic text-accent-foreground">Music</span>
-      </span>
+    <Link to="/" aria-label="Bespoke Music — home" className="flex shrink-0 items-center py-1">
+      <img src={logoH.url} alt="Bespoke Music" width={1398} height={349} className="h-8 w-auto dark:invert sm:h-9 md:h-10" />
     </Link>
   );
 }
