@@ -23,14 +23,31 @@ export const Route = createFileRoute("/tools")({
 const CATS: ("All" | ChordCategory)[] = ["All", "Major", "Minor", "7th", "Maj7", "Min7", "Sus", "Add9", "6th", "Dim", "Aug", "Slash"];
 
 function Tools() {
+  const [tab, setTab] = useState<"tuner" | "chords">("tuner");
   return (
-    <div className="space-y-14">
+    <div className="space-y-6">
       <PageHeader eyebrow="Toolbox" title="Tools" />
-      <section aria-labelledby="tuner-h">
-        <h2 id="tuner-h" className="mb-4 text-center font-display text-2xl font-semibold">Guitar Tuner</h2>
-        <GuitarTuner />
-      </section>
-      <ChordLibrary />
+      <div className="grid grid-cols-2 gap-1 rounded-full bg-secondary p-1 sm:max-w-md" role="tablist" aria-label="Tools">
+        {([["tuner", "Guitar Tuner"], ["chords", "Chord Library"]] as const).map(([id, label]) => (
+          <button
+            key={id}
+            role="tab"
+            aria-selected={tab === id}
+            onClick={() => setTab(id)}
+            className={cn("min-h-11 rounded-full px-4 text-sm font-medium transition", tab === id ? "bg-card text-foreground shadow-soft" : "text-muted-foreground hover:text-foreground")}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {tab === "tuner" ? (
+        <section aria-labelledby="tuner-h">
+          <h2 id="tuner-h" className="sr-only">Guitar Tuner</h2>
+          <GuitarTuner />
+        </section>
+      ) : (
+        <ChordLibrary />
+      )}
     </div>
   );
 }
