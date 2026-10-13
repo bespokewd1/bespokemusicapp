@@ -18,7 +18,7 @@ import type { SongImage } from "@/lib/songs";
 const EXAMPLE = "{Verse}\n[G]Write your words and [C]put chords\n[G]in square brackets [D]like this\n\n{Chorus}\n[C]Sing it [G]loud";
 
 export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
-  const { upsertSong, requireAuth, uploadSongImage, removeSongImage, signedIn } = useStore();
+  const { upsertSong, requireAuth, uploadSongImage, removeSongImage, signedIn, allSongs, user } = useStore();
   const isDemo = !!demo || (!!song && !song.ownerId);
   const [images, setImages] = useState<SongImage[]>(song?.images ?? []);
   const [featured, setFeatured] = useState(song?.pickUp ?? false);
