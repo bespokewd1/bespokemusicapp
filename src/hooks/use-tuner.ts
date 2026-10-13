@@ -36,7 +36,7 @@ export function useTuner() {
       await ctx.resume();
       const src = ctx.createMediaStreamSource(stream);
       const analyser = ctx.createAnalyser();
-      analyser.fftSize = 4096;
+      analyser.fftSize = 8192;
       src.connect(analyser); // NOT connected to ctx.destination → no feedback
       res.current = { ctx, stream };
       stream.getTracks().forEach((t) =>
@@ -62,7 +62,7 @@ export function useTuner() {
           // reset smoothing when the pitch jumps (new string plucked)
           if (recent.length && Math.abs(1200 * Math.log2(f / recent[recent.length - 1]!)) > 150) recent.length = 0;
           recent.push(f);
-          if (recent.length > 5) recent.shift();
+          if (recent.length > 7) recent.shift();
           lastHeard = now;
           const m = median(recent);
           if (shown === null || Math.abs(m - shown) > 0.05) {

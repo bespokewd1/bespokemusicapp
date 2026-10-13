@@ -50,3 +50,17 @@ describe("pitch detection", () => {
     expect(detectPitch(new Float32Array(4096), 48000)).toBeNull();
   });
 });
+
+describe("tuning presets", () => {
+  it("has Normal, Drop D and Drop C", () => {
+    expect(PRESETS.map((p) => p.strings.map((s) => s.label).join(" "))).toEqual([
+      "E2 A2 D3 G3 B3 E4",
+      "D2 A2 D3 G3 B3 E4",
+      "C2 G2 C3 F3 A3 D4",
+    ]);
+  });
+  it.each([73.42, 65.41])("detects low %f Hz", (f) => {
+    const got = detectPitch(tone(f, 48000, 8192), 48000)!;
+    expect(Math.abs(centsToTarget(got, f))).toBeLessThan(3);
+  });
+});
