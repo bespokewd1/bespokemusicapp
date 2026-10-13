@@ -12,7 +12,7 @@ import { sectionsToText, textToSections, type Difficulty, type Song } from "@/li
 
 const EXAMPLE = "{Verse}\n[G]Write your words and [C]put chords\n[G]in square brackets [D]like this\n\n{Chorus}\n[C]Sing it [G]loud";
 
-export function SongForm({ song }: { song?: Song }) {
+export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
   const { upsertSong, requireAuth } = useStore();
   const navigate = useNavigate();
   const [title, setTitle] = useState(song?.title ?? "");
@@ -22,6 +22,7 @@ export function SongForm({ song }: { song?: Song }) {
   const [difficulty, setDifficulty] = useState<Difficulty>(song?.difficulty ?? "Easy");
   const [text, setText] = useState(song ? sectionsToText(song.sections) : EXAMPLE);
   const sections = textToSections(text);
+  const [busy, setBusy] = useState(false);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,11 +30,16 @@ export function SongForm({ song }: { song?: Song }) {
       toast.error("Give your song a title");
       return;
     }
-    requireAuth("Sign in to add songs to your songbook.", () => {
-      const id = song?.id ?? `my-${Date.now()}`;
-      upsertSong({ id, title, artist: artist || "Unknown artist", key, capo, difficulty, tempo: song?.tempo ?? 90, sections });
-      toast.success(song ? "Song updated" : "Song added to My Songs");
-      navigate({ to: "/song/$id", params: { id } });
+    requireAuth("Sign in to add songs to your songbook.", async () => {
+      setBusy(true);
+      const id = await upsertSong(
+        { id: song?.id, title: title.trim().slice(0, 120), artist: artist.trim().slice(0, 120) || "Unknown artist", key, capo: Math.max(0, Math.min(12, capo || 0)), difficulty, tempo: song?.tempo ?? 90, sections },
+        { demo },
+      );
+      setBusy(false);
+      if (!id) return;
+      toast.success(song ? "Song updated" : demo ? "Demo song added (unpublished)" : "Song added to My Songs");
+      navigate({ to: demo ? "/admin" : "/song/$id", params: { id } } as never);
     });
   };
 
@@ -58,7 +64,7 @@ export function SongForm({ song }: { song?: Song }) {
             <p className="mt-1 text-xs text-muted-foreground">Use {"{Verse}"} for section names and [C] before a word for chords.</p>
           </Field>
           <div className="flex gap-2">
-            <Button type="submit" className="h-11 flex-1 rounded-full">{song ? "Save changes" : "Add song"}</Button>
+            <Button type="submit" disabled={busy} className="h-11 flex-1 rounded-full">{song ? "Save changes" : "Add song"}</Button>
             <Button type="button" variant="outline" className="h-11 rounded-full" onClick={() => history.back()}>Cancel</Button>
           </div>
         </div>

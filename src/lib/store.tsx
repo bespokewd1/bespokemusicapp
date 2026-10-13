@@ -55,7 +55,7 @@ interface Store {
   saved: string[];
   toggleSaved: (id: string) => Promise<void>;
   added: Song[];
-  upsertSong: (song: Omit<Song, "id"> & { id?: string }) => Promise<string | null>;
+  upsertSong: (song: Omit<Song, "id"> & { id?: string }, opts?: { demo?: boolean }) => Promise<string | null>;
   deleteSong: (id: string) => Promise<void>;
   recent: string[];
   markPlayed: (id: string) => void;
@@ -191,7 +191,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (fail("Couldn't update Saved")(error)) setSaved((p) => (has ? [id, ...p] : p.filter((x) => x !== id)));
     },
     added: songs.filter((s) => uid && s.ownerId === uid),
-    upsertSong: async (song) => {
+    upsertSong: async (song, opts) => {
       if (!uid) return null;
       const row = {
         title: song.title, artist: song.artist, key: song.key, capo: song.capo, difficulty: song.difficulty,
@@ -199,7 +199,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       };
       const q = song.id
         ? supabase.from("songs").update(row).eq("id", song.id).select("id").single()
-        : supabase.from("songs").insert({ ...row, owner_id: uid }).select("id").single();
+        : supabase.from("songs").insert({ ...row, owner_id: opts?.demo ? null : uid, published: !opts?.demo }).select("id").single();
       const { data, error } = await q;
       if (fail("Couldn't save the song")(error)) return null;
       await reloadSongs();
