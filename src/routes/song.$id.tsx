@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Heart, Minus, Pencil, Play, Plus, ListPlus, Pause, Trash2, Hash, PenLine, Eraser, StickyNote, ChevronDown } from "lucide-react";
+import { ArrowLeft, Heart, Minus, Pencil, Play, Plus, ListPlus, Pause, Trash2, Hash, PenLine, Eraser, StickyNote, ChevronDown, FileDown } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -15,6 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { SongSheet } from "@/components/SongSheet";
 import { useStore } from "@/lib/store";
 import { transposeChord, uniqueChords } from "@/lib/songs";
+import { exportSongPdf } from "@/lib/pdf";
 import { SPEED_PRESETS, useAutoScroll } from "@/hooks/use-auto-scroll";
 import { cn } from "@/lib/utils";
 
@@ -168,6 +169,16 @@ function SongPage() {
           ) : (
             <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Add to playlist" onClick={() => requireAuth("Sign in to add songs to playlists.", () => {})}><ListPlus className="h-5 w-5" /></Button>
           )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Export PDF"><FileDown className="h-5 w-5" /></Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Export PDF</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => exportSongPdf(song, { transpose: tr })}>Song sheet only</DropdownMenuItem>
+              <DropdownMenuItem disabled={!signedIn || !savedNotes.trim()} onClick={() => exportSongPdf(song, { transpose: tr, notes })}>Include my notes</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           {isMine && (
             <>
               <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Edit" onClick={() => navigate({ to: "/song/$id/edit", params: { id: song.id } })}><Pencil className="h-5 w-5" /></Button>

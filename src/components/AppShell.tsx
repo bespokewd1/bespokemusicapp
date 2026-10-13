@@ -1,14 +1,16 @@
-import { Link } from "@tanstack/react-router";
-import { Compass, Library, ListMusic, Wrench, LayoutDashboard, LogOut } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Compass, Library, ListMusic, Wrench, LayoutDashboard, LogOut, Plus, Download, Upload } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import logoH from "@/assets/bespoke-logo-horizontal.png.asset.json";
 import type { ReactNode } from "react";
 import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { LoginDialog } from "./LoginDialog";
+import { BackupDialog } from "./BackupDialog";
+import { useState } from "react";
 
 const TABS = [
-  { to: "/", label: "Explore", icon: Compass },
+  { to: "/", label: "Home", icon: Compass },
   { to: "/my-songs", label: "My Songs", icon: Library },
   { to: "/playlists", label: "Playlists", icon: ListMusic },
   { to: "/tools", label: "Tools", icon: Wrench },
@@ -42,6 +44,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Link>
             ))}
           </nav>
+          <HeaderActions />
           {!ready ? (
             <span className="h-9 w-20" />
           ) : signedIn ? (
@@ -77,8 +80,41 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
+function HeaderActions() {
+  const { signedIn, requireAuth } = useStore();
+  const navigate = useNavigate();
+  const go = (to: string, reason: string) => {
+    if (signedIn) navigate({ to });
+    else requireAuth(reason, () => {});
+  };
+  return (
+    <div className="flex items-center gap-2">
+      <Button
+        size="sm"
+        className="h-10 rounded-full px-3 sm:px-4"
+        onClick={() => go("/songs/new", "Sign in to add your own songs.")}
+      >
+        <Plus className="h-4 w-4 sm:mr-1" />
+        <span className="hidden sm:inline">Add Song</span>
+        <span className="sr-only sm:hidden">Add Song</span>
+      </Button>
+      <Button
+        size="sm"
+        variant="outline"
+        className="h-10 rounded-full px-3 sm:px-4"
+        onClick={() => go("/playlists", "Sign in to create playlists, save your favourite songs, and keep your music organized.")}
+      >
+        <Plus className="h-4 w-4 sm:mr-1" />
+        <span className="hidden sm:inline">Create Playlist</span>
+        <span className="sr-only sm:hidden">Create Playlist</span>
+      </Button>
+    </div>
+  );
+}
+
 function AccountMenu() {
   const { user, isAdmin, signOut } = useStore();
+  const [backupOpen, setBackupOpen] = useState(false);
   const name = (user?.user_metadata?.["full_name"] as string) || user?.email || "Account";
   const avatar = user?.user_metadata?.["avatar_url"] as string | undefined;
   return (
@@ -99,8 +135,10 @@ function AccountMenu() {
             <Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard</Link>
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem onClick={() => setBackupOpen(true)}><Download className="mr-2 h-4 w-4" /> Backup My Library</DropdownMenuItem>
         <DropdownMenuItem onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> Sign out</DropdownMenuItem>
       </DropdownMenuContent>
+      <BackupDialog open={backupOpen} onOpenChange={setBackupOpen} />
     </DropdownMenu>
   );
 }

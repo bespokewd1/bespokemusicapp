@@ -33,6 +33,7 @@ export function LoginDialog() {
             Cancel
           </Button>
           <p className="text-center text-xs text-muted-foreground">Free forever. No ads. No distractions.</p>
+          <p className="text-center text-xs text-muted-foreground/70">We're in Beta and continuously improving. Thanks for being part of our early community.</p>
         </div>
       </DialogContent>
     </Dialog>
