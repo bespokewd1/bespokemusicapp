@@ -15,6 +15,10 @@ export interface Song {
   tempo: number;
   pickUp?: boolean;
   sections: Section[];
+  ownerId?: string | null;
+  published?: boolean;
+  featuredOrder?: number | null;
+  sortOrder?: number;
 }
 
 const s = (
