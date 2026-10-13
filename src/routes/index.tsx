@@ -49,12 +49,14 @@ function Explore() {
       <section className="bg-hero relative mb-8 overflow-hidden rounded-3xl px-6 py-10 text-primary-foreground shadow-lift md:px-12 md:py-14">
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full border-[18px] border-primary-foreground/10" />
         <div className="pointer-events-none absolute -right-4 -top-4 h-40 w-40 rounded-full border-[6px] border-primary-foreground/10" />
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] opacity-80">
+        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] opacity-80">
           No ads. No distractions.
+          <span className="rounded-full border border-primary-foreground/40 px-2 py-0.5 text-[10px] tracking-[0.15em]">Beta</span>
         </p>
         <h1 className="mt-3 max-w-xl font-display text-4xl font-semibold leading-[1.05] md:text-6xl">
           Your personal <em className="font-normal">guitar songbook.</em>
         </h1>
+        <p className="mt-3 text-sm opacity-75">Bespoke Music is in Beta. We're continuously improving your experience.</p>
         <div className="relative mt-6 max-w-lg">
           <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -86,6 +88,15 @@ function Explore() {
           No songs match “{q}”. Try another title or chord.
         </p>
       )}
+
+      <footer className="mt-16 border-t border-border pt-6 pb-2 text-center">
+        <p className="text-xs text-muted-foreground">
+          Built by{" "}
+          <a href="https://bespokewebdesign.ca/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">
+            Bespoke Web Design
+          </a>
+        </p>
+      </footer>
     </div>
   );
 }
