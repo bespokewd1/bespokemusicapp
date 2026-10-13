@@ -87,7 +87,7 @@ function SongPage() {
             </DropdownMenuTrigger>
             <PlaylistMenu songId={song.id} playlists={playlists} add={addToPlaylist} requireAuth={requireAuth} />
           </DropdownMenu>
-          <Button variant="ghost" size="icon" aria-label="Edit" onClick={() => requireAuth("Sign in to edit songs.", () => navigate({ to: "/song_/$id/edit", params: { id: song.id } }))}>
+          <Button variant="ghost" size="icon" aria-label="Edit" onClick={() => requireAuth("Sign in to edit songs.", () => navigate({ to: "/song/$id/edit", params: { id: song.id } }))}>
             <Pencil className="h-5 w-5" />
           </Button>
         </div>
