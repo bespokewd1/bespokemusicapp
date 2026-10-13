@@ -8,7 +8,8 @@ import { cn } from "@/lib/utils";
 const SEGMENTS = 25; // -50 … +50 cents
 
 export function GuitarTuner() {
-  const preset = PRESETS[0]!;
+  const [presetId, setPresetId] = useState(PRESETS[0]!.id);
+  const preset = PRESETS.find((p) => p.id === presetId) ?? PRESETS[0]!;
   const { status, freq, error, start, stop } = useTuner();
   const [mode, setMode] = useState<"auto" | "manual">("auto");
   const [manual, setManual] = useState(0);
@@ -24,11 +25,25 @@ export function GuitarTuner() {
   return (
     <section className="tuner-panel mx-auto w-full max-w-xl rounded-3xl p-4 shadow-lift sm:p-6" aria-label="Guitar tuner">
       <div className="flex items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-tuner-dim">
-        <span className="truncate">{preset.name} · E A D G B E</span>
+        <span className="truncate">{preset.name} · {preset.strings.map((s) => s.note).join(" ")}</span>
         <span className="flex shrink-0 items-center gap-1.5" role="status">
           <span className={cn("h-2 w-2 rounded-full", listening ? "animate-pulse bg-tuner-ok" : "bg-tuner-dim")} />
           {listening ? "Listening" : status === "starting" ? "Starting…" : "Mic off"}
         </span>
+      </div>
+
+      <div className="mt-3 grid grid-cols-3 gap-1.5" role="radiogroup" aria-label="Tuning">
+        {PRESETS.map((p) => (
+          <button
+            key={p.id}
+            role="radio"
+            aria-checked={p.id === preset.id}
+            onClick={() => { playClick(); setPresetId(p.id); }}
+            className={cn("min-h-10 rounded-full border px-2 font-mono text-[11px] uppercase tracking-wider", p.id === preset.id ? "border-tuner-fg bg-tuner-fg text-tuner-bg" : "border-tuner-off text-tuner-dim hover:text-tuner-fg")}
+          >
+            {p.name.replace(" Tuning", "")}
+          </button>
+        ))}
       </div>
 
       {/* Display */}
@@ -75,7 +90,7 @@ export function GuitarTuner() {
         {preset.strings.map((s, i) => (
           <button
             key={s.label}
-            onClick={() => { setMode("manual"); setManual(i); }}
+            onClick={() => { playClick(); setMode("manual"); setManual(i); }}
             aria-pressed={idx === i}
             aria-label={`String ${s.name}, ${s.label}`}
             className={cn(
@@ -113,4 +128,25 @@ export function GuitarTuner() {
       </p>
     </section>
   );
+}
+
+let clickCtx: AudioContext | null = null;
+/** Short UI click so users hear the tap. Plays through its own context (not the mic). */
+function playClick() {
+  try {
+    clickCtx ??= new AudioContext();
+    const ctx = clickCtx;
+    void ctx.resume();
+    const t = ctx.currentTime;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "square";
+    o.frequency.setValueAtTime(1800, t);
+    o.frequency.exponentialRampToValueAtTime(600, t + 0.03);
+    g.gain.setValueAtTime(0.15, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+    o.connect(g).connect(ctx.destination);
+    o.start(t);
+    o.stop(t + 0.06);
+  } catch { /* audio unavailable */ }
 }
