@@ -56,6 +56,12 @@ export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
       return;
     }
     requireAuth("Sign in to add songs to your songbook.", async () => {
+      if (!song && user) {
+        const dup = allSongs.some(
+          (s) => s.ownerId === user.id && s.title.toLowerCase() === title.trim().toLowerCase() && s.artist.toLowerCase() === (artist.trim() || "Unknown artist").toLowerCase(),
+        );
+        if (dup && !window.confirm("You already have a song with this title and artist. Add it anyway?")) return;
+      }
       setBusy(true);
       const id = await upsertSong(
         { id: song?.id, title: title.trim().slice(0, 120), artist: artist.trim().slice(0, 120) || "Unknown artist", key, capo: Math.max(0, Math.min(12, capo || 0)), difficulty, tempo: song?.tempo ?? 90, sections, images },
