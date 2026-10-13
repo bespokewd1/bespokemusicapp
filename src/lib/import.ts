@@ -19,7 +19,7 @@ export function isChordLine(line: string) {
 function heading(line: string): string | null {
   const t = line.trim();
   const bracket = t.match(/^[[{(]\s*([^\]})]+?)\s*[\]})]:?$/);
-  if (bracket && !isChordToken(bracket[1])) return bracket[1];
+  if (bracket?.[1] && !isChordToken(bracket[1])) return bracket[1];
   const plain = t.replace(/:$/, "");
   if (SECTION_WORDS.test(plain)) return plain.charAt(0).toUpperCase() + plain.slice(1);
   return null;
@@ -32,7 +32,7 @@ function merge(chordLine: string, lyric: string) {
   while ((m = re.exec(chordLine))) if (isChordToken(m[0])) positions.push({ col: m.index, chord: m[0].replace(/[()]/g, "") });
   let out = lyric.padEnd(Math.max(lyric.length, (positions.at(-1)?.col ?? 0)), " ");
   for (let i = positions.length - 1; i >= 0; i--) {
-    const { col, chord } = positions[i];
+    const { col, chord } = positions[i]!;
     out = out.slice(0, col) + `[${chord}]` + out.slice(col);
   }
   return out.replace(/\s+$/, "");
@@ -43,7 +43,7 @@ export function toNativeFormat(raw: string): string {
   const lines = raw.replace(/\r\n?/g, "\n").replace(/\t/g, "    ").split("\n").map((l) => l.replace(/\s+$/, ""));
   const out: string[] = [];
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+    const line = lines[i]!;
     if (/^\s*\{[^}]+\}\s*$/.test(line)) { out.push(line.trim()); continue; }
     const h = line.trim() ? heading(line) : null;
     if (h) {
