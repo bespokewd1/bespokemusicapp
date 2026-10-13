@@ -133,7 +133,7 @@ function SongPage() {
         </div>
       </div>
 
-      <div className="sticky top-[61px] z-20 -mx-4 mb-6 flex items-center gap-2 overflow-x-auto border-y border-border bg-background/90 px-4 py-2 backdrop-blur md:top-[73px]">
+      <div className="sticky top-[61px] z-20 -mx-4 mb-6 flex flex-wrap items-center gap-2 border-y border-border bg-background/90 px-4 py-2 backdrop-blur md:top-[73px]">
         <Stepper label="Size" onMinus={() => setSize((s) => Math.max(14, s - 2))} onPlus={() => setSize((s) => Math.min(30, s + 2))} value={`${size}`} />
         <Stepper label={`Key ${isValidKey(song.key) ? transposeChord(song.key, tr) : ""}`} onMinus={() => setTr((t) => t - 1)} onPlus={() => setTr((t) => t + 1)} value={tr > 0 ? `+${tr}` : `${tr}`} />
         {tr !== 0 && <button onClick={() => setTr(0)} className="min-h-9 shrink-0 rounded-full px-2 text-xs text-muted-foreground underline">Reset</button>}
@@ -178,7 +178,7 @@ function SongPage() {
       </div>
 
       {annotate && (
-        <div className="sticky top-[122px] z-20 mb-4 flex flex-wrap items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-soft md:top-[134px]">
+        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-soft">
           {([["Red", "#dc2626"], ["Yellow", "#facc15"], ["Black", "#111827"]] as const).map(([n, c]) => (
             <button key={c} aria-label={`${n} pen`} aria-pressed={tool.kind === "pen" && tool.color === c} onClick={() => setTool({ kind: "pen", color: c })}
               className={cn("h-8 w-8 rounded-full border-2", tool.kind === "pen" && tool.color === c ? "border-primary ring-2 ring-primary/30" : "border-border")} style={{ background: c }} />
