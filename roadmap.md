@@ -5,3 +5,5 @@
 - [x] Play Mode auto-scroll: speed, floating control, manual-scroll pause/resume, end stop, remembered speed
 - [x] Admin role (arjiv28@gmail.com) + private dashboard: stats, users, charts, demo song management
 - [x] Add Song: three entry methods (Create Manually / Copy & Paste / From Ultimate Guitar) feeding the existing editor
+- [x] Admin demo songs: Pick Up & Play toggle; Explore = Pick Up & Play + All Songs
+- [x] Song notes, transpose, Nashville, images, annotate

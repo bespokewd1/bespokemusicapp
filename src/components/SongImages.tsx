@@ -15,7 +15,7 @@ export function useImageUrl(path: string) {
   return url;
 }
 
-function Img({ img, onRemove }: { img: SongImage; onRemove?: () => void }) {
+function Img({ img, onRemove }: { img: SongImage; onRemove?: (() => void) | undefined }) {
   const url = useImageUrl(img.path);
   return (
     <figure className="relative overflow-hidden rounded-2xl border border-border bg-card">
