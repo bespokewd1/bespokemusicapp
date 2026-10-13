@@ -3,7 +3,7 @@ import { isUltimateGuitarUrl, toNativeFormat, ultimateGuitarSearchUrl } from "./
 
 describe("toNativeFormat", () => {
   it("places chords at their column above lyrics", () => {
-    expect(toNativeFormat("G       C\nHello my friend")).toBe("[G]Hello m[C]y friend");
+    expect(toNativeFormat("G       C\nHello my friend")).toBe("[G]Hello my[C] friend");
   });
   it("converts bracket headings to sections", () => {
     expect(toNativeFormat("[Verse 1]\nG\nla la")).toBe("{Verse 1}\n[G]la la");
