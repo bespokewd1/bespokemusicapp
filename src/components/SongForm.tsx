@@ -79,7 +79,7 @@ export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
     return (
       <div>
         <PageHeader eyebrow="New song" title="Add a song" />
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {([
             ["manual", ClipboardPen, "Create Manually", "Type title, artist and chords yourself."],
             ["paste", ClipboardPaste, "Copy & Paste", "Paste chords-over-lyrics; we convert it."],
@@ -131,7 +131,7 @@ export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
           </Button>
         </div>
       )}
-      <form onSubmit={submit} className="grid gap-8 lg:grid-cols-2">
+      <form onSubmit={submit} className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <div className="space-y-4">
           <Field label="Title"><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Song title" className="h-11" /></Field>
           <Field label="Artist"><Input value={artist} onChange={(e) => setArtist(e.target.value)} placeholder="Artist" className="h-11" /></Field>

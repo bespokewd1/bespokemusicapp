@@ -47,7 +47,7 @@ function Playlists() {
       </PageHeader>
 
       <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">Starter playlists</h2>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {PLAYLIST_TEMPLATES.map((t) => {
           const Icon = ICONS[t.icon];
           const mine = playlists.find((p) => p.template === t.id);
@@ -67,7 +67,7 @@ function Playlists() {
         <>
           <h2 className="mb-3 mt-10 text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">Your playlists</h2>
           {custom.length ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {custom.map((p) => (
                 <Link key={p.id} to="/playlists/$id" params={{ id: p.id }} className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift">
                   <div className="bg-hero relative h-20 p-4 text-primary-foreground">

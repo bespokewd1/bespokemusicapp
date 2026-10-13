@@ -45,7 +45,7 @@ function MySongs() {
             </TabsList>
           </Tabs>
           {list.length ? (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{list.map((s) => <SongCard key={s.id} song={s} />)}</div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{list.map((s) => <SongCard key={s.id} song={s} />)}</div>
           ) : (
             <p className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
               {tab === "added" ? <>Nothing here yet. <Link to="/songs/new" className="text-primary underline">Add your first song</Link>.</> : "Nothing here yet — explore and start playing."}
