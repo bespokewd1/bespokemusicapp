@@ -10,12 +10,31 @@ import { PageHeader } from "./PageHeader";
 import { useStore } from "@/lib/store";
 import { sectionsToText, textToSections, type Difficulty, type Song } from "@/lib/songs";
 import { isUltimateGuitarUrl, toNativeFormat, ultimateGuitarSearchUrl } from "@/lib/import";
-import { ClipboardPaste, ClipboardPen, ExternalLink, Globe } from "lucide-react";
+import { ClipboardPaste, ClipboardPen, ExternalLink, Globe, ImagePlus } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { SongImages } from "./SongImages";
+import type { SongImage } from "@/lib/songs";
 
 const EXAMPLE = "{Verse}\n[G]Write your words and [C]put chords\n[G]in square brackets [D]like this\n\n{Chorus}\n[C]Sing it [G]loud";
 
 export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
-  const { upsertSong, requireAuth } = useStore();
+  const { upsertSong, requireAuth, uploadSongImage, removeSongImage, signedIn } = useStore();
+  const isDemo = !!demo || (!!song && !song.ownerId);
+  const [images, setImages] = useState<SongImage[]>(song?.images ?? []);
+  const [featured, setFeatured] = useState(song?.pickUp ?? false);
+  const [uploading, setUploading] = useState(false);
+  const addFiles = (files: File[]) => requireAuth("Sign in to add images.", async () => {
+    setUploading(true);
+    for (const f of files.slice(0, 10 - images.length)) {
+      const path = await uploadSongImage(f, isDemo);
+      if (path) setImages((p) => [...p, { path }]);
+    }
+    setUploading(false);
+  });
+  const onPaste = (e: React.ClipboardEvent) => {
+    const files = [...e.clipboardData.files].filter((f) => f.type.startsWith("image/"));
+    if (files.length) { e.preventDefault(); addFiles(files); }
+  };
   const navigate = useNavigate();
   const [title, setTitle] = useState(song?.title ?? "");
   const [artist, setArtist] = useState(song?.artist ?? "");
@@ -39,8 +58,8 @@ export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
     requireAuth("Sign in to add songs to your songbook.", async () => {
       setBusy(true);
       const id = await upsertSong(
-        { id: song?.id, title: title.trim().slice(0, 120), artist: artist.trim().slice(0, 120) || "Unknown artist", key, capo: Math.max(0, Math.min(12, capo || 0)), difficulty, tempo: song?.tempo ?? 90, sections },
-        { demo },
+        { id: song?.id, title: title.trim().slice(0, 120), artist: artist.trim().slice(0, 120) || "Unknown artist", key, capo: Math.max(0, Math.min(12, capo || 0)), difficulty, tempo: song?.tempo ?? 90, sections, images },
+        { demo, featured: isDemo ? featured : undefined },
       );
       setBusy(false);
       if (!id) return;
@@ -120,9 +139,23 @@ export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
             </Field>
           </div>
           <Field label="Chords & lyrics">
-            <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={14} className="font-mono text-sm" />
+            <Textarea value={text} onPaste={onPaste} onChange={(e) => setText(e.target.value)} rows={14} className="font-mono text-sm" />
             <p className="mt-1 text-xs text-muted-foreground">Use {"{Verse}"} for section names and [C] before a word for chords.</p>
           </Field>
+          <Field label="Images (tabs, chord charts, screenshots)">
+            <label onPaste={onPaste} tabIndex={0} className="flex min-h-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-border bg-card p-4 text-center text-sm text-muted-foreground hover:border-primary">
+              <ImagePlus className="h-5 w-5 text-primary" />
+              {uploading ? "Uploading…" : "Tap to upload, or paste an image here (JPG, PNG, WebP · max 5 MB)"}
+              <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" disabled={uploading} onChange={(e) => { addFiles([...(e.target.files ?? [])]); e.target.value = ""; }} />
+            </label>
+            <SongImages images={images} onRemove={(path) => { setImages((p) => p.filter((i) => i.path !== path)); if (signedIn && !song?.images?.some((i) => i.path === path)) removeSongImage(path); }} />
+          </Field>
+          {isDemo && (
+            <label className="flex min-h-12 items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4">
+              <span className="text-sm font-medium">Show in Pick Up &amp; Play</span>
+              <Switch checked={featured} onCheckedChange={setFeatured} />
+            </label>
+          )}
           <div className="flex gap-2">
             <Button type="submit" disabled={busy} className="h-11 flex-1 rounded-full">{song ? "Save changes" : "Add song"}</Button>
             <Button type="button" variant="outline" className="h-11 rounded-full" onClick={() => history.back()}>Cancel</Button>
@@ -131,6 +164,7 @@ export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
         <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
           <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Live preview</p>
           <SongSheet sections={sections} fontSize={16} />
+          <SongImages images={images} />
         </div>
       </form>
     </div>
