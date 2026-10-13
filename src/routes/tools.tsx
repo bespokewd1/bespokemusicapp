@@ -24,7 +24,7 @@ function Tools() {
   return (
     <div className="space-y-10">
       <PageHeader eyebrow="Toolbox" title="Tools" />
-      <h2 className="-mb-8 font-display text-2xl font-semibold">Guitar Tuner</h2>
+      <h2 className="-mb-6 text-center font-display text-2xl font-semibold">Guitar Tuner</h2>
       <GuitarTuner />
       <section>
         <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
