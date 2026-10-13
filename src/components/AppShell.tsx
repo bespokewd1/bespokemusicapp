@@ -1,5 +1,5 @@
-import { Link } from "@tanstack/react-router";
-import { Compass, Library, ListMusic, Wrench, LayoutDashboard, LogOut } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Compass, Library, ListMusic, Wrench, LayoutDashboard, LogOut, Plus, Download, Upload } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import logoH from "@/assets/bespoke-logo-horizontal.png.asset.json";
 import type { ReactNode } from "react";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { LoginDialog } from "./LoginDialog";
 
 const TABS = [
-  { to: "/", label: "Explore", icon: Compass },
+  { to: "/", label: "Home", icon: Compass },
   { to: "/my-songs", label: "My Songs", icon: Library },
   { to: "/playlists", label: "Playlists", icon: ListMusic },
   { to: "/tools", label: "Tools", icon: Wrench },
