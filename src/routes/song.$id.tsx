@@ -1,6 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Heart, Minus, Pencil, Play, Plus, ListPlus, Pause, Trash2 } from "lucide-react";
+import { ArrowLeft, Heart, Minus, Pencil, Play, Plus, ListPlus, Pause, Trash2, Hash, PenLine, Eraser, StickyNote, ChevronDown } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AnnotationLayer, type Tool } from "@/components/AnnotationLayer";
+import { SongImages } from "@/components/SongImages";
+import { isValidKey, KEY_OPTIONS } from "@/lib/nashville";
+import type { Stroke } from "@/lib/store";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -25,7 +32,7 @@ export const Route = createFileRoute("/song/$id")({
 
 function SongPage() {
   const { id } = Route.useParams();
-  const { user, signedIn, songsLoaded, getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, deleteSong, scrollSpeed, setScrollSpeed } = useStore();
+  const { user, signedIn, songsLoaded, getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, deleteSong, scrollSpeed, setScrollSpeed, loadSongData, saveSongData } = useStore();
   const navigate = useNavigate();
   const song = getSong(id);
   const [size, setSize] = useState(18);
@@ -33,6 +40,21 @@ function SongPage() {
   const { playing, suspended, toggle, stop } = useAutoScroll(scrollSpeed);
   const controlsRef = useRef<HTMLDivElement>(null);
   const [controlsVisible, setControlsVisible] = useState(true);
+  const [nash, setNash] = useState(false);
+  const [nashKey, setNashKey] = useState("");
+  const [annotate, setAnnotate] = useState(false);
+  const [tool, setTool] = useState<Tool>({ kind: "pen", color: "#dc2626" });
+  const [strokes, setStrokes] = useState<Stroke[]>([]);
+  const [notes, setNotes] = useState("");
+  const [savedNotes, setSavedNotes] = useState("");
+
+  useEffect(() => {
+    if (!signedIn) { setStrokes([]); setNotes(""); setSavedNotes(""); return; }
+    loadSongData(id).then((d) => { setStrokes(d.annotations); setNotes(d.notes); setSavedNotes(d.notes); });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, signedIn]);
+
+  const changeStrokes = (s: Stroke[]) => { setStrokes(s); saveSongData(id, { annotations: s }); };
 
   useEffect(() => {
     if (song && signedIn) markPlayed(song.id);
@@ -60,6 +82,8 @@ function SongPage() {
   }
   const isSaved = signedIn && saved.includes(song.id);
   const isMine = !!user && song.ownerId === user.id;
+  const baseKey = isValidKey(song.key) ? transposeChord(song.key, tr) : nashKey;
+  const nashvilleKey = nash && baseKey ? baseKey : null;
   const presetName = (Object.entries(SPEED_PRESETS).find(([, v]) => Math.abs(v - scrollSpeed) < 0.05)?.[0]) ?? `${scrollSpeed.toFixed(1)}×`;
 
   return (
@@ -111,7 +135,20 @@ function SongPage() {
 
       <div className="sticky top-[61px] z-20 -mx-4 mb-6 flex items-center gap-2 overflow-x-auto border-y border-border bg-background/90 px-4 py-2 backdrop-blur md:top-[73px]">
         <Stepper label="Size" onMinus={() => setSize((s) => Math.max(14, s - 2))} onPlus={() => setSize((s) => Math.min(30, s + 2))} value={`${size}`} />
-        <Stepper label="Key" onMinus={() => setTr((t) => t - 1)} onPlus={() => setTr((t) => t + 1)} value={tr > 0 ? `+${tr}` : `${tr}`} />
+        <Stepper label={`Key ${isValidKey(song.key) ? transposeChord(song.key, tr) : ""}`} onMinus={() => setTr((t) => t - 1)} onPlus={() => setTr((t) => t + 1)} value={tr > 0 ? `+${tr}` : `${tr}`} />
+        {tr !== 0 && <button onClick={() => setTr(0)} className="min-h-9 shrink-0 rounded-full px-2 text-xs text-muted-foreground underline">Reset</button>}
+        <button aria-pressed={nash} onClick={() => setNash((v) => !v)} className={cn("flex min-h-11 shrink-0 items-center gap-1 rounded-full px-3 text-xs font-medium", nash ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground")}>
+          <Hash className="h-3.5 w-3.5" /> Nashville
+        </button>
+        {nash && !isValidKey(song.key) && (
+          <select aria-label="Song key for Nashville" value={nashKey} onChange={(e) => setNashKey(e.target.value)} className="min-h-9 shrink-0 rounded-full border border-border bg-card px-2 text-xs">
+            <option value="">Pick key</option>
+            {KEY_OPTIONS.map((k) => <option key={k}>{k}</option>)}
+          </select>
+        )}
+        <button aria-pressed={annotate} onClick={() => requireAuth("Sign in to annotate songs.", () => setAnnotate((v) => !v))} className={cn("flex min-h-11 shrink-0 items-center gap-1 rounded-full px-3 text-xs font-medium", annotate ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground")}>
+          <PenLine className="h-3.5 w-3.5" /> Annotate
+        </button>
         <div className="ml-auto flex shrink-0 gap-1">
           <Button variant="ghost" size="icon" className="h-11 w-11" aria-label={isSaved ? "Unsave" : "Save"} onClick={() => requireAuth("Sign in to save songs to your songbook.", async () => { await toggleSaved(song.id); toast(isSaved ? "Removed from Saved" : "Saved to My Songs"); })}>
             <Heart className={cn("h-5 w-5", isSaved && "fill-primary text-primary")} />
@@ -140,7 +177,45 @@ function SongPage() {
         </div>
       </div>
 
-      <SongSheet sections={song.sections} fontSize={size} transpose={tr} />
+      {annotate && (
+        <div className="sticky top-[122px] z-20 mb-4 flex flex-wrap items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-soft md:top-[134px]">
+          {([["Red", "#dc2626"], ["Yellow", "#facc15"], ["Black", "#111827"]] as const).map(([n, c]) => (
+            <button key={c} aria-label={`${n} pen`} aria-pressed={tool.kind === "pen" && tool.color === c} onClick={() => setTool({ kind: "pen", color: c })}
+              className={cn("h-8 w-8 rounded-full border-2", tool.kind === "pen" && tool.color === c ? "border-primary ring-2 ring-primary/30" : "border-border")} style={{ background: c }} />
+          ))}
+          <button aria-label="Eraser" aria-pressed={tool.kind === "eraser"} onClick={() => setTool({ kind: "eraser" })} className={cn("grid h-9 w-9 place-items-center rounded-full", tool.kind === "eraser" ? "bg-primary text-primary-foreground" : "bg-secondary")}>
+            <Eraser className="h-4 w-4" />
+          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild><Button variant="ghost" size="sm" className="rounded-full" disabled={!strokes.length}>Clear all</Button></AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader><AlertDialogTitle>Clear all drawings?</AlertDialogTitle><AlertDialogDescription>This removes every mark on this song. Chords and lyrics stay untouched.</AlertDialogDescription></AlertDialogHeader>
+              <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => changeStrokes([])}>Clear all</AlertDialogAction></AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <Button size="sm" className="ml-auto rounded-full" onClick={() => setAnnotate(false)}>Done</Button>
+        </div>
+      )}
+
+      {signedIn && (
+        <Collapsible className="mb-6 rounded-2xl border border-border bg-card shadow-soft">
+          <CollapsibleTrigger className="group flex min-h-12 w-full items-center gap-2 px-4 text-sm font-medium">
+            <StickyNote className="h-4 w-4 text-primary" /> Notes {savedNotes && <span className="text-xs text-muted-foreground">· saved</span>}
+            <ChevronDown className="ml-auto h-4 w-4 transition group-data-[state=open]:rotate-180" />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-2 px-4 pb-4">
+            <Textarea value={notes} maxLength={5000} onChange={(e) => setNotes(e.target.value)} placeholder="Strumming patterns, reminders, chord variations…" className="min-h-28" />
+            <div className="flex justify-end">
+              <Button size="sm" className="rounded-full" disabled={notes === savedNotes} onClick={async () => { if (await saveSongData(song.id, { notes })) { setSavedNotes(notes); toast("Notes saved"); } }}>Save notes</Button>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+
+      <AnnotationLayer strokes={strokes} onChange={changeStrokes} active={annotate} tool={tool}>
+        <SongSheet sections={song.sections} fontSize={size} transpose={tr} nashvilleKey={nashvilleKey} />
+        <SongImages images={song.images ?? []} />
+      </AnnotationLayer>
       <div className="h-[40vh]" aria-hidden />
 
       {/* Floating control when main controls are off-screen */}
