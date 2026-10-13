@@ -23,7 +23,7 @@ export const Route = createFileRoute("/song/$id")({
 
 function SongPage() {
   const { id } = Route.useParams();
-  const { getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, added } = useStore();
+  const { signedIn, getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, added } = useStore();
   const navigate = useNavigate();
   const song = getSong(id);
   const [size, setSize] = useState(18);
@@ -43,7 +43,7 @@ function SongPage() {
       </div>
     );
   }
-  const isSaved = saved.includes(song.id);
+  const isSaved = signedIn && saved.includes(song.id);
   const isMine = added.some((a) => a.id === song.id);
 
   return (
