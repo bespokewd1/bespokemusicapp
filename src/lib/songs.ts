@@ -104,7 +104,7 @@ export function parseLine(line: string): Segment[] {
   let m: RegExpExecArray | null;
   while ((m = re.exec(line))) {
     if (m.index > last || chord) out.push({ chord, text: line.slice(last, m.index) });
-    chord = m[1];
+    chord = m[1] ?? "";
     last = re.lastIndex;
   }
   out.push({ chord, text: line.slice(last) });
@@ -122,7 +122,7 @@ const FLAT: Record<string, string> = { Db: "C#", Eb: "D#", Gb: "F#", Ab: "G#", B
 function shiftNote(n: string, by: number) {
   const idx = NOTES.indexOf(FLAT[n] ?? n);
   if (idx < 0) return n;
-  return NOTES[(idx + by + 120) % 12];
+  return NOTES[(idx + by + 120) % 12] ?? n;
 }
 export function transposeChord(chord: string, by: number): string {
   if (!by) return chord;
@@ -143,14 +143,16 @@ export function textToSections(text: string): Section[] {
     const line = raw.trimEnd();
     const h = line.match(/^\{(.+)\}$/);
     if (h) {
-      cur = { name: h[1], lines: [] };
-      sections.push(cur);
+      const sec: Section = { name: h[1] ?? "Section", lines: [] };
+      cur = sec;
+      sections.push(sec);
     } else if (line.trim()) {
       if (!cur) {
-        cur = { name: "Verse", lines: [] };
-        sections.push(cur);
+        const sec: Section = { name: "Verse", lines: [] };
+        cur = sec;
+        sections.push(sec);
       }
-      cur.lines.push(line);
+      (cur as Section).lines.push(line);
     }
   });
   return sections;

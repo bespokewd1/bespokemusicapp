@@ -25,7 +25,10 @@ export function SongForm({ song }: { song?: Song }) {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return toast.error("Give your song a title");
+    if (!title.trim()) {
+      toast.error("Give your song a title");
+      return;
+    }
     requireAuth("Sign in to add songs to your songbook.", () => {
       const id = song?.id ?? `my-${Date.now()}`;
       upsertSong({ id, title, artist: artist || "Unknown artist", key, capo, difficulty, tempo: song?.tempo ?? 90, sections });
