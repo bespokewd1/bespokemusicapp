@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import type React from "react";
 import type { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -79,7 +80,8 @@ interface Store {
   setScrollSpeed: (v: number) => void;
 }
 
-const Ctx = createContext<Store | null>(null);
+const g = globalThis as { __bmStoreCtx?: React.Context<Store | null> };
+const Ctx = (g.__bmStoreCtx ??= createContext<Store | null>(null));
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
