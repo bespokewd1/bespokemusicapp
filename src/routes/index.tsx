@@ -69,12 +69,10 @@ function Explore() {
       <Tabs value={tab} onValueChange={setTab} className="mb-5">
         <TabsList className="h-11 w-full rounded-full bg-secondary p-1 sm:w-auto">
           <TabsTrigger value="pick" className="flex-1 rounded-full px-4">Pick Up & Play</TabsTrigger>
-          <TabsTrigger value="all" className="flex-1 rounded-full px-4">All Songs</TabsTrigger>
         </TabsList>
       </Tabs>
       <p className="mb-4 text-sm text-muted-foreground">
-        {tab === "pick" && "Three or four chords, big singalong energy. Perfect for a quick strum."}
-        {tab === "all" && `${list.length} songs in the library.`}
+        Free demo songs to try. Sign in to add your own songs and playlists — only you can see them.
       </p>
 
       {!songsLoaded ? (
