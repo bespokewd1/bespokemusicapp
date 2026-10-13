@@ -1,6 +1,7 @@
 import { parseLine, transposeChord, type Section } from "@/lib/songs";
+import { toNashville } from "@/lib/nashville";
 
-export function SongSheet({ sections, fontSize = 18, transpose = 0 }: { sections: Section[]; fontSize?: number; transpose?: number }) {
+export function SongSheet({ sections, fontSize = 18, transpose = 0, nashvilleKey }: { sections: Section[]; fontSize?: number; transpose?: number; nashvilleKey?: string | null }) {
   return (
     <div className="space-y-8" style={{ fontSize }}>
       {sections.map((sec, i) => (
@@ -15,7 +16,7 @@ export function SongSheet({ sections, fontSize = 18, transpose = 0 }: { sections
                 {parseLine(line).map((seg, k) => (
                   <span key={k} className="inline-flex flex-col">
                     <span className="min-h-[1.25em] pr-2 font-mono text-[0.85em] font-bold text-primary">
-                      {seg.chord ? transposeChord(seg.chord, transpose) : "\u00a0"}
+                      {seg.chord ? (nashvilleKey ? toNashville(transposeChord(seg.chord, transpose), nashvilleKey) : transposeChord(seg.chord, transpose)) : "\u00a0"}
                     </span>
                     <span className="whitespace-pre">{seg.text || "\u00a0"}</span>
                   </span>
