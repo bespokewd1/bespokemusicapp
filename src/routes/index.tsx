@@ -28,13 +28,13 @@ export const Route = createFileRoute("/")({
 });
 
 function Explore() {
-  const { allSongs, songsLoaded, user } = useStore();
+  const { allSongs, songsLoaded } = useStore();
   const [q, setQ] = useState("");
   const [tab, setTab] = useState("pick");
   const query = q.trim().toLowerCase();
   const list = allSongs
-    .filter((s) => !s.ownerId || s.ownerId === user?.id)
-    .filter((s) => (tab === "pick" ? s.pickUp : tab === "easy" ? s.difficulty !== "Intermediate" : true))
+    .filter((s) => !s.ownerId && s.published !== false)
+    .filter((s) => (tab === "pick" ? s.pickUp : true))
     .filter(
       (s) =>
         !query ||
@@ -69,13 +69,11 @@ function Explore() {
       <Tabs value={tab} onValueChange={setTab} className="mb-5">
         <TabsList className="h-11 w-full rounded-full bg-secondary p-1 sm:w-auto">
           <TabsTrigger value="pick" className="flex-1 rounded-full px-4">Pick Up & Play</TabsTrigger>
-          <TabsTrigger value="easy" className="flex-1 rounded-full px-4">Easy Songs</TabsTrigger>
           <TabsTrigger value="all" className="flex-1 rounded-full px-4">All Songs</TabsTrigger>
         </TabsList>
       </Tabs>
       <p className="mb-4 text-sm text-muted-foreground">
         {tab === "pick" && "Three or four chords, big singalong energy. Perfect for a quick strum."}
-        {tab === "easy" && "Friendly open chords and steady rhythms."}
         {tab === "all" && `${list.length} songs in the library.`}
       </p>
 
