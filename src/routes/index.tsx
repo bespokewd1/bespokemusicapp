@@ -46,27 +46,35 @@ function Explore() {
 
   return (
     <div>
-      <section className="bg-hero relative mb-8 overflow-hidden rounded-3xl px-6 py-10 text-primary-foreground shadow-lift md:px-12 md:py-14">
+      <section className="bg-hero relative mb-8 overflow-hidden rounded-3xl px-5 py-8 text-primary-foreground shadow-lift sm:px-8 sm:py-12 md:px-12 md:py-14">
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full border-[18px] border-primary-foreground/10" />
         <div className="pointer-events-none absolute -right-4 -top-4 h-40 w-40 rounded-full border-[6px] border-primary-foreground/10" />
-        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] opacity-80">
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] opacity-80 sm:text-xs sm:tracking-[0.25em]">
           No ads. No distractions.
-          <span className="rounded-full border border-primary-foreground/40 px-2 py-0.5 text-[10px] tracking-[0.15em]">Beta</span>
+          <span className="shrink-0 rounded-full border border-primary-foreground/40 px-2 py-0.5 text-[10px] tracking-[0.15em]">Beta</span>
         </p>
-        <h1 className="mt-3 max-w-xl font-display text-4xl font-semibold leading-[1.05] md:text-6xl">
+        <h1 className="mt-3 max-w-xl font-display text-[2rem] font-semibold leading-[1.08] sm:text-5xl md:text-6xl md:leading-[1.05]">
           Your personal <em className="font-normal">guitar songbook.</em>
         </h1>
-        <p className="mt-3 text-sm opacity-75">Bespoke Music is in Beta. We're continuously improving your experience.</p>
+        <p className="mt-4 max-w-xl text-base leading-relaxed opacity-85 sm:text-lg">
+          Add your favourite songs, organize chords and lyrics, create playlists, and grow your
+          music collection—all in one place.
+        </p>
+        <p className="mt-3 max-w-lg rounded-2xl bg-primary-foreground/10 px-4 py-3 text-sm leading-relaxed opacity-90">
+          Free during Beta. Be among the first to try Bespoke Music as we continue to improve and
+          add new features.
+        </p>
         <div className="relative mt-6 max-w-lg">
           <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search songs, artists or a chord (e.g. G)"
-            className="h-12 rounded-full border-0 bg-card pl-11 text-base text-foreground shadow-soft"
+            placeholder="Search songs or chords"
+            className="h-12 w-full rounded-full border-0 bg-card pl-11 text-base text-foreground shadow-soft"
           />
         </div>
       </section>
+
 
       <Tabs value={tab} onValueChange={setTab} className="mb-5">
         <TabsList className="h-11 w-full rounded-full bg-secondary p-1 sm:w-auto">
@@ -78,9 +86,10 @@ function Explore() {
       </p>
 
       {!songsLoaded ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl bg-secondary" />)}</div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl bg-secondary" />)}</div>
       ) : list.length ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+
           {list.map((s) => <SongCard key={s.id} song={s} />)}
         </div>
       ) : (

@@ -33,7 +33,7 @@ function Img({ img, onRemove }: { img: SongImage; onRemove?: (() => void) | unde
 export function SongImages({ images, onRemove }: { images: SongImage[]; onRemove?: (path: string) => void }) {
   if (!images.length) return null;
   return (
-    <div className="mt-8 grid gap-4 sm:grid-cols-2">
+    <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
       {images.map((img) => <Img key={img.path} img={img} onRemove={onRemove ? () => onRemove(img.path) : undefined} />)}
     </div>
   );
