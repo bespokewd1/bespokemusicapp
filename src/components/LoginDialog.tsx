@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useStore } from "@/lib/store";
-import { Music2 } from "lucide-react";
+import pick from "@/assets/bespoke-pick.png.asset.json";
 
 export function LoginDialog() {
   const { loginOpen, setLoginOpen, loginReason, signIn } = useStore();
@@ -10,9 +10,7 @@ export function LoginDialog() {
     <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
       <DialogContent className="max-w-sm rounded-2xl">
         <DialogHeader className="items-center text-center">
-          <span className="mb-2 grid h-12 w-12 place-items-center rounded-full bg-primary text-primary-foreground">
-            <Music2 className="h-5 w-5" />
-          </span>
+          <img src={pick.url} alt="" width={300} height={349} className="mb-2 h-14 w-auto dark:invert" />
           <DialogTitle className="font-display text-2xl">Your songbook awaits</DialogTitle>
           <DialogDescription>
             {loginReason || "Sign in to save songs, add your own, and build playlists."} It's free — no ads, ever.

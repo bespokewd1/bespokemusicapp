@@ -9,3 +9,4 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 - Prototype state lives in an in-memory React context (src/lib/store.tsx); no backend — the brief is a prototype with fake sign-in.
+- Tuner pitch math/detection lives in pure src/lib/tuner.ts (unit-tested); mic/Web Audio wiring in src/hooks/use-tuner.ts, never routed to speakers.
