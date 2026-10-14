@@ -8,3 +8,7 @@
 - [x] Admin demo songs: Pick Up & Play toggle; Explore = Pick Up & Play + All Songs
 - [x] Song notes, transpose, Nashville, images, annotate
 - [x] UI/UX brief: auto-scroll keeps going on manual scroll + tap to resume, headstock tuner, simplified song toolbar + More menu, Add Song cards, collapsible floating controls
+- [ ] Chord library: shapes 2 and 3 plus one triad per chord
+- [ ] English / French language switch
+- [ ] Offline access (published app)
+- [ ] Later: capo 0–12, better tab pasting, themes, Delete Account button

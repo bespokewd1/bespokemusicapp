@@ -9,6 +9,7 @@ export interface Voicing {
   frets: (number | null)[]; // null = muted
   fingers: number[];
   barre?: { fret: number; from: number; to: number } | undefined;
+  label?: "Triad" | undefined;
 }
 
 export interface Chord {
@@ -114,7 +115,89 @@ const RAW: [string, ChordCategory, Voicing[]][] = [
   ["F/C", "Slash", [v("x33211", "034211", "1:4-5")]],
 ];
 
-export const CHORD_LIBRARY: Chord[] = RAW.map(([name, category, voicings]) => ({ name, category, voicings }));
+/* ---------- Generated movable shapes (CAGED barre shapes + triads) ---------- */
+const PC: Record<string, number> = { C: 0, "C#": 1, Db: 1, D: 2, "D#": 3, Eb: 3, E: 4, F: 5, "F#": 6, Gb: 6, G: 7, "G#": 8, Ab: 8, A: 9, "A#": 10, Bb: 10, B: 11 };
+const OPEN = [4, 9, 2, 7, 11, 4]; // E A D G B e
+export const STRING_PCS = OPEN;
+
+/** Template: offsets from barre fret n (null = muted), fingers, barre strings, root open-string pitch class. */
+type Tpl = { off: (number | null)[]; fingers: string; barre?: [number, number]; rootPc: number };
+const E_ROOT = 4, A_ROOT = 9, D_ROOT = 2;
+const TEMPLATES: Partial<Record<ChordCategory, Tpl[]>> = {
+  Major: [
+    { off: [0, 2, 2, 1, 0, 0], fingers: "134211", barre: [0, 5], rootPc: E_ROOT },
+    { off: [null, 0, 2, 2, 2, 0], fingers: "013331", barre: [1, 5], rootPc: A_ROOT },
+    { off: [null, null, 0, 2, 3, 2], fingers: "001243", rootPc: D_ROOT },
+  ],
+  Minor: [
+    { off: [0, 2, 2, 0, 0, 0], fingers: "134111", barre: [0, 5], rootPc: E_ROOT },
+    { off: [null, 0, 2, 2, 1, 0], fingers: "013421", barre: [1, 5], rootPc: A_ROOT },
+    { off: [null, null, 0, 2, 3, 1], fingers: "001342", rootPc: D_ROOT },
+  ],
+  "7th": [
+    { off: [0, 2, 0, 1, 0, 0], fingers: "131211", barre: [0, 5], rootPc: E_ROOT },
+    { off: [null, 0, 2, 0, 2, 0], fingers: "013141", barre: [1, 5], rootPc: A_ROOT },
+  ],
+  Min7: [
+    { off: [0, 2, 0, 0, 0, 0], fingers: "131111", barre: [0, 5], rootPc: E_ROOT },
+    { off: [null, 0, 2, 0, 1, 0], fingers: "013121", barre: [1, 5], rootPc: A_ROOT },
+  ],
+  Maj7: [{ off: [null, 0, 2, 1, 2, 0], fingers: "013241", barre: [1, 5], rootPc: A_ROOT }],
+};
+const TRIAD_INTERVALS: Partial<Record<ChordCategory, number[]>> = { Major: [0, 4, 7], Minor: [0, 3, 7], Dim: [0, 3, 6], Aug: [0, 4, 8] };
+
+export function chordRootPc(name: string): number | undefined {
+  const m = name.match(/^([A-G][#b]?)/);
+  return m ? PC[m[1]!] : undefined;
+}
+
+function fromTemplate(t: Tpl, root: number): Voicing | null {
+  const n = (root - t.rootPc + 12) % 12;
+  if (n === 0) return null; // that is the open chord, already listed
+  return {
+    frets: t.off.map((o) => (o === null ? null : o + n)),
+    fingers: t.fingers.split("").map(Number),
+    barre: t.barre ? { fret: n, from: t.barre[0], to: t.barre[1] } : undefined,
+  };
+}
+
+/** Lowest-position 3-note triad on the G, B and high e strings (root, 3rd, 5th each once). */
+export function triadVoicing(root: number, intervals: number[]): Voicing | undefined {
+  const want = intervals.map((i) => (root + i) % 12);
+  let best: number[] | undefined;
+  for (let a = 0; a <= 12; a++) for (let b = 0; b <= 12; b++) for (let c = 0; c <= 12; c++) {
+    const fr = [a, b, c];
+    if (Math.max(...fr) - Math.min(...fr) > 3) continue;
+    const pcs = fr.map((f, i) => (OPEN[3 + i]! + f) % 12);
+    if (new Set(pcs).size !== 3 || !want.every((p) => pcs.includes(p))) continue;
+    if (!best || Math.max(...fr) < Math.max(...best) || (Math.max(...fr) === Math.max(...best) && fr.reduce((x, y) => x + y) < best.reduce((x, y) => x + y))) best = fr;
+  }
+  if (!best) return undefined;
+  const ranks = [...new Set(best.filter((f) => f > 0))].sort((x, y) => x - y);
+  return {
+    frets: [null, null, null, ...best],
+    fingers: [0, 0, 0, ...best.map((f) => (f === 0 ? 0 : ranks.indexOf(f) + 1))],
+    label: "Triad",
+  };
+}
+
+function enrich(name: string, category: ChordCategory, base: Voicing[]): Voicing[] {
+  const root = chordRootPc(name);
+  if (root === undefined || name.includes("/")) return base;
+  const out = [...base];
+  const key = (v: Voicing) => v.frets.map((f) => (f === null ? "x" : f)).join(",");
+  for (const t of TEMPLATES[category] ?? []) {
+    if (out.length >= 3) break;
+    const v = fromTemplate(t, root);
+    if (v && !out.some((o) => key(o) === key(v))) out.push(v);
+  }
+  const iv = TRIAD_INTERVALS[category];
+  const tri = iv && triadVoicing(root, iv);
+  if (tri) out.push(tri);
+  return out;
+}
+
+export const CHORD_LIBRARY: Chord[] = RAW.map(([name, category, voicings]) => ({ name, category, voicings: enrich(name, category, voicings) }));
 
 const ENHARMONIC: Record<string, string> = { "A#": "Bb", "D#": "Eb", "G#": "Ab", Db: "C#", Gb: "F#", Cb: "B", "E#": "F", Fb: "E" };
 const MINOR_ENHARMONIC: Record<string, string> = { Abm: "G#m", Dbm: "C#m", Gbm: "F#m", "A#m": "Bbm", "D#m": "Ebm" };
