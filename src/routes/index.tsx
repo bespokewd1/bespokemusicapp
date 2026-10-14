@@ -89,7 +89,8 @@ function MarketingHero() {
 function Welcome() {
   const { user, allSongs, playlists, recent, getSong } = useStore();
   const navigate = useNavigate();
-  const first = ((user?.user_metadata?.["full_name"] as string) || user?.email || "").split(/[\s@]/)[0];
+  const first = ((user?.user_metadata?.["full_name"] as string) || user?.email || "").split(/[\s@._]/)[0];
+  const firstName = first ? first.charAt(0).toUpperCase() + first.slice(1) : "";
   const mine = allSongs.filter((s) => s.ownerId === user?.id).slice(-6).reverse();
   const played = recent.map((id) => getSong(id)).filter(Boolean).slice(0, 3) as NonNullable<ReturnType<typeof getSong>>[];
   const isNew = !mine.length && !playlists.length;
@@ -98,7 +99,7 @@ function Welcome() {
       <section className="mb-10 grid gap-6 rounded-3xl border border-border bg-card p-6 shadow-soft md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-10">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">Your songbook</p>
-          <h1 className="mt-2 font-display text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl">Welcome back{first ? `, ${first}` : ""}!</h1>
+          <h1 className="mt-2 font-display text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl">Welcome back{firstName ? `, ${firstName}` : ""}!</h1>
           <p className="mt-3 max-w-xl text-muted-foreground md:text-lg">
             {isNew ? "Let's start your collection. Add your first song or create a playlist." : "Your songbook is ready. Add songs, create playlists, and keep your music collection growing."}
           </p>
@@ -124,7 +125,7 @@ function Welcome() {
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-secondary text-primary"><ListMusic className="h-5 w-5" /></span>
               <span className="min-w-0">
                 <span className="block truncate font-display text-lg font-semibold">{p.name}</span>
-                <span className="block text-sm text-muted-foreground">{p.songIds.length} songs</span>
+                <span className="block text-sm text-muted-foreground">{p.songIds.length} {p.songIds.length === 1 ? "song" : "songs"}</span>
               </span>
             </Link>
           ))}
