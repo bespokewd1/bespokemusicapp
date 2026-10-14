@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PenLine, ListMusic, Play, ArrowRight, Plus, Library, ScrollText, ClipboardPaste, Wrench, Check, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,38 +47,40 @@ function Explore() {
 
 function MarketingHero() {
   const { requireAuth } = useStore();
+  const { t } = useT();
   const navigate = useNavigate();
   return (
     <section className="bg-hero relative mb-10 overflow-hidden rounded-3xl px-5 py-8 text-primary-foreground shadow-lift sm:px-8 sm:py-12 md:px-12 md:py-14">
       <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full border-[18px] border-primary-foreground/10" />
       <div className="pointer-events-none absolute -right-4 -top-4 h-40 w-40 rounded-full border-[6px] border-primary-foreground/10" />
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] opacity-80 sm:text-xs sm:tracking-[0.25em]">
-        No ads. No distractions.
-        <span className="shrink-0 rounded-full border border-primary-foreground/40 px-2 py-0.5 text-[10px] tracking-[0.15em]">Beta</span>
+        {t("No ads. No distractions.")}
+        <span className="shrink-0 rounded-full border border-primary-foreground/40 px-2 py-0.5 text-[10px] tracking-[0.15em]">{t("Beta")}</span>
       </p>
       <h1 className="mt-3 max-w-xl font-display text-[2rem] font-semibold leading-[1.08] sm:text-5xl md:text-6xl md:leading-[1.05]">
-        Your personal <em className="font-normal">guitar songbook.</em>
+        {t("Your personal")} <em className="font-normal">{t("guitar songbook.")}</em>
       </h1>
       <ul className="mt-5 space-y-2 text-base opacity-90 sm:text-lg">
-        {["Save your favourite chords & lyrics.", "Create playlists for practice and performances.", "Grow your collection, all in one place."].map((t) => (
-          <li key={t} className="flex items-start gap-2"><Check className="mt-1 h-4 w-4 shrink-0" />{t}</li>
+        {["Save your favourite chords & lyrics.", "Create playlists for practice and performances.", "Grow your collection, all in one place."].map((b) => (
+          <li key={b} className="flex items-start gap-2"><Check className="mt-1 h-4 w-4 shrink-0" />{t(b)}</li>
         ))}
       </ul>
       <div className="mt-7 flex flex-col gap-3 sm:flex-row">
         <Button size="lg" variant="secondary" className="h-12 rounded-full px-6 text-base" onClick={() => requireAuth("Sign in to start your songbook.", () => navigate({ to: "/my-songs" }))}>
-          Start Your Free Songbook
+          {t("Start Your Free Songbook")}
         </Button>
         <Button size="lg" variant="outline" className="h-12 rounded-full border-primary-foreground/50 bg-transparent px-6 text-base text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground" onClick={() => scrollTo("demo-songs")}>
-          Try Demo Songs
+          {t("Try Demo Songs")}
         </Button>
       </div>
-      <p className="mt-4 text-sm opacity-80">Free during Beta. Your personal songs and playlists stay private.</p>
+      <p className="mt-4 text-sm opacity-80">{t("Free during Beta. Your personal songs and playlists stay private.")}</p>
     </section>
   );
 }
 
 function Welcome() {
   const { user, allSongs, playlists, recent, getSong } = useStore();
+  const { t } = useT();
   const navigate = useNavigate();
   const first = ((user?.user_metadata?.["full_name"] as string) || user?.email || "").split(/[\s@._]/)[0];
   const firstName = first ? first.charAt(0).toUpperCase() + first.slice(1) : "";
@@ -88,15 +91,15 @@ function Welcome() {
     <>
       <section className="mb-10 grid gap-6 rounded-3xl border border-border bg-card p-6 shadow-soft md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-10">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">Your songbook</p>
-          <h1 className="mt-2 font-display text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl">Welcome back{firstName ? `, ${firstName}` : ""}!</h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">{t("Your songbook")}</p>
+          <h1 className="mt-2 font-display text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl">{firstName ? t("Welcome back, {name}!", { name: firstName }) : t("Welcome back!")}</h1>
           <p className="mt-3 max-w-xl text-muted-foreground md:text-lg">
-            {isNew ? "Let's start your collection. Add your first song or create a playlist." : "Your songbook is ready. Add songs, create playlists, and keep your music collection growing."}
+            {t(isNew ? "Let's start your collection. Add your first song or create a playlist." : "Your songbook is ready. Add songs, create playlists, and keep your music collection growing.")}
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row md:flex-col">
-          <Button size="lg" className="h-12 rounded-full px-6" onClick={() => navigate({ to: "/songs/new" })}><Plus className="mr-1 h-4 w-4" /> Add Song</Button>
-          <Button size="lg" variant="outline" className="h-12 rounded-full px-6" onClick={() => navigate({ to: "/playlists" })}><Plus className="mr-1 h-4 w-4" /> Create Playlist</Button>
+          <Button size="lg" className="h-12 rounded-full px-6" onClick={() => navigate({ to: "/songs/new" })}><Plus className="mr-1 h-4 w-4" /> {t("Add Song")}</Button>
+          <Button size="lg" variant="outline" className="h-12 rounded-full px-6" onClick={() => navigate({ to: "/playlists" })}><Plus className="mr-1 h-4 w-4" /> {t("Create Playlist")}</Button>
         </div>
       </section>
 
@@ -115,7 +118,7 @@ function Welcome() {
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-secondary text-primary"><ListMusic className="h-5 w-5" /></span>
               <span className="min-w-0">
                 <span className="block truncate font-display text-lg font-semibold">{p.name}</span>
-                <span className="block text-sm text-muted-foreground">{p.songIds.length} {p.songIds.length === 1 ? "song" : "songs"}</span>
+                <span className="block text-sm text-muted-foreground">{t(p.songIds.length === 1 ? "{n} song" : "{n} songs", { n: p.songIds.length })}</span>
               </span>
             </Link>
           ))}
@@ -135,29 +138,32 @@ function Welcome() {
 }
 
 function SectionHead({ title, to }: { title: string; to?: "/my-songs" | "/playlists" }) {
+  const { t } = useT();
   return (
     <div className="mb-3 flex items-end justify-between gap-3">
-      <h2 className="font-display text-xl font-semibold sm:text-2xl">{title}</h2>
-      {to && <Link to={to} className="shrink-0 text-sm text-muted-foreground hover:text-foreground">View all →</Link>}
+      <h2 className="font-display text-xl font-semibold sm:text-2xl">{t(title)}</h2>
+      {to && <Link to={to} className="shrink-0 text-sm text-muted-foreground hover:text-foreground">{t("View all →")}</Link>}
     </div>
   );
 }
 
 function Empty({ text }: { text: string }) {
-  return <p className="mb-10 rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">{text}</p>;
+  const { t } = useT();
+  return <p className="mb-10 rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">{t(text)}</p>;
 }
 
 function QuickFeatures() {
+  const { t } = useT();
   return (
     <section className="mb-12">
-      <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">Built for musicians who play.</h2>
+      <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">{t("Built for musicians who play.")}</h2>
       <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
         {FEATURES.map((f) => (
           <div key={f.title} className="flex min-w-0 gap-3 rounded-2xl border border-border bg-card p-4 md:flex-col md:p-5">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary"><f.icon className="h-5 w-5" /></span>
             <span className="min-w-0">
-              <span className="block font-semibold">{f.title}</span>
-              <span className="block text-sm text-muted-foreground">{f.text}</span>
+              <span className="block font-semibold">{t(f.title)}</span>
+              <span className="block text-sm text-muted-foreground">{t(f.text)}</span>
             </span>
           </div>
         ))}
@@ -168,15 +174,16 @@ function QuickFeatures() {
 
 function DemoSongs({ compact }: { compact: boolean }) {
   const { allSongs, songsLoaded } = useStore();
+  const { t } = useT();
   const list = allSongs
     .filter((s) => !s.ownerId && s.published !== false && s.pickUp)
     .sort((a, b) => (a.featuredOrder ?? 99) - (b.featuredOrder ?? 99));
   return (
     <section id="demo-songs" className="scroll-mt-24">
-      {compact && <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">Pick Up & Play</p>}
-      <h2 className="mt-1 font-display text-2xl font-semibold sm:text-3xl">{compact ? "Try Demo Songs" : "Pick Up & Play"}</h2>
+      {compact && <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">{t("Pick Up & Play")}</p>}
+      <h2 className="mt-1 font-display text-2xl font-semibold sm:text-3xl">{t(compact ? "Try Demo Songs" : "Pick Up & Play")}</h2>
       <p className="mb-4 mt-1 text-sm text-muted-foreground">
-        {compact ? "Explore a few sample songs and test the player." : "Try real song sheets with no sign-in required."}
+        {t(compact ? "Explore a few sample songs and test the player." : "Try real song sheets with no sign-in required.")}
       </p>
       {!songsLoaded ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl bg-secondary" />)}</div>
@@ -210,6 +217,7 @@ export function _SignUpCta() {
 
 function HowItWorks() {
   const { signedIn, ready, requireAuth } = useStore();
+  const { t } = useT();
   const navigate = useNavigate();
   const steps = [
     { icon: PenLine, title: "Add Your Songs", text: "Copy and paste your chords, lyrics, or guitar tabs from your own collection or another source you're permitted to use. You can also create songs from scratch." },
@@ -219,28 +227,28 @@ function HowItWorks() {
   ];
   return (
     <section id="how-it-works" className="mt-14 scroll-mt-24">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">How It Works</p>
-      <h2 className="mt-1 font-display text-2xl font-semibold tracking-tight sm:text-3xl">Your music collection, all in one place.</h2>
-      <p className="mt-2 max-w-2xl text-muted-foreground">Save your chords, lyrics, and tabs, organize the songs you love, and keep everything ready whenever it's time to play.</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">{t("How It Works")}</p>
+      <h2 className="mt-1 font-display text-2xl font-semibold tracking-tight sm:text-3xl">{t("Your music collection, all in one place.")}</h2>
+      <p className="mt-2 max-w-2xl text-muted-foreground">{t("Save your chords, lyrics, and tabs, organize the songs you love, and keep everything ready whenever it's time to play.")}</p>
       <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 md:gap-5">
         {steps.map((s, i) => (
           <div key={s.title} className="flex min-w-0 flex-col gap-3 rounded-2xl border border-border bg-card p-5 md:p-6">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary"><s.icon className="h-5 w-5" /></span>
             <span className="min-w-0">
-              <span className="block font-display text-lg font-semibold">{i + 1}. {s.title}</span>
-              <span className="mt-1 block text-sm leading-relaxed text-muted-foreground">{s.text}</span>
+              <span className="block font-display text-lg font-semibold">{i + 1}. {t(s.title)}</span>
+              <span className="mt-1 block text-sm leading-relaxed text-muted-foreground">{t(s.text)}</span>
             </span>
           </div>
         ))}
       </div>
-      <p className="mt-5 text-muted-foreground">Your collection grows with you, whether you're practising at home, jamming with friends, or preparing for a performance.</p>
+      <p className="mt-5 text-muted-foreground">{t("Your collection grows with you, whether you're practising at home, jamming with friends, or preparing for a performance.")}</p>
       <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
         {!(ready && signedIn) && (
-          <Button className="h-12 rounded-full px-6" onClick={() => requireAuth("Create your free Beta account.", () => navigate({ to: "/my-songs" }))}>Start Building Your Songbook</Button>
+          <Button className="h-12 rounded-full px-6" onClick={() => requireAuth("Create your free Beta account.", () => navigate({ to: "/my-songs" }))}>{t("Start Building Your Songbook")}</Button>
         )}
-        <button onClick={() => scrollTo("demo-songs")} className="text-sm font-medium text-primary hover:underline">Try a Demo Song</button>
+        <button onClick={() => scrollTo("demo-songs")} className="text-sm font-medium text-primary hover:underline">{t("Try a Demo Song")}</button>
         <Link to="/features" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-          Explore All Features <ArrowRight className="h-4 w-4" />
+          {t("Explore All Features")} <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
     </section>
