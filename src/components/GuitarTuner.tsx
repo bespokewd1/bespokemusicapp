@@ -5,8 +5,6 @@ import { useTuner } from "@/hooks/use-tuner";
 import { centsToTarget, IN_TUNE_CENTS, nearestString, PRESETS, tuningState } from "@/lib/tuner";
 import { cn } from "@/lib/utils";
 
-const SEGMENTS = 25; // -50 … +50 cents
-
 export function GuitarTuner() {
   const [presetId, setPresetId] = useState(PRESETS[0]!.id);
   const preset = PRESETS.find((p) => p.id === presetId) ?? PRESETS[0]!;
@@ -20,114 +18,113 @@ export function GuitarTuner() {
   const cents = freq && target ? centsToTarget(freq, target.freq) : 0;
   const state = freq ? tuningState(cents) : null;
   const clamped = Math.max(-50, Math.min(50, cents));
-  const lit = Math.round(((clamped + 50) / 100) * (SEGMENTS - 1));
+  const needle = freq ? clamped * 1.4 : 0; // degrees, ±70°
+
+  const pick = (i: number) => { playClick(); setMode("manual"); setManual(i); };
+  // Strings low (6th) -> high (1st); headstock 3+3: left pegs = strings 6,5,4 (top→bottom reversed for realism)
+  const left = [2, 1, 0];
+  const right = [5, 4, 3];
 
   return (
-    <section className="tuner-panel mx-auto w-full max-w-xl rounded-3xl p-4 shadow-lift sm:p-6" aria-label="Guitar tuner">
-      <div className="flex items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-tuner-dim">
-        <span className="truncate">{preset.name} · {preset.strings.map((s) => s.note).join(" ")}</span>
-        <span className="flex shrink-0 items-center gap-1.5" role="status">
-          <span className={cn("h-2 w-2 rounded-full", listening ? "animate-pulse bg-tuner-ok" : "bg-tuner-dim")} />
-          {listening ? "Listening" : status === "starting" ? "Starting…" : "Mic off"}
-        </span>
+    <section className="mx-auto w-full max-w-2xl" aria-label="Guitar tuner">
+      <div className="text-center">
+        <h2 className="font-display text-3xl font-semibold md:text-4xl">Tune Your Guitar</h2>
+        <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">Tune your guitar quickly and accurately. Free, online, and no downloads required.</p>
       </div>
 
-      <div className="mt-3 grid grid-cols-3 gap-1.5" role="radiogroup" aria-label="Tuning">
-        {PRESETS.map((p) => (
-          <button
-            key={p.id}
-            role="radio"
-            aria-checked={p.id === preset.id}
-            onClick={() => { playClick(); setPresetId(p.id); }}
-            className={cn("min-h-10 rounded-full border px-2 font-mono text-[11px] uppercase tracking-wider", p.id === preset.id ? "border-tuner-fg bg-tuner-fg text-tuner-bg" : "border-tuner-off text-tuner-dim hover:text-tuner-fg")}
-          >
-            {p.name.replace(" Tuning", "")}
-          </button>
-        ))}
-      </div>
-
-      {/* Display */}
-      <div className="tuner-screen mt-4 rounded-2xl px-4 py-5 text-center">
-        <div className="flex items-baseline justify-center gap-1">
-          <span className={cn("font-mono text-7xl font-bold leading-none transition-colors sm:text-8xl", state === "in-tune" ? "text-tuner-ok" : "text-tuner-fg", !freq && "opacity-30")}>
-            {target ? target.note : "–"}
-          </span>
-          <span className="font-mono text-xl text-tuner-dim">{target ? target.label.slice(-1) : ""}</span>
-        </div>
-        <div className="mt-2 flex justify-center gap-4 font-mono text-sm text-tuner-dim">
-          <span>{freq ? `${freq.toFixed(1)} Hz` : "--- Hz"}</span>
-          <span>target {target ? `${target.freq.toFixed(2)}` : "---"}</span>
-        </div>
-
-        {/* Segment meter */}
-        <div className="mt-5 flex h-10 items-end justify-center gap-[3px]" aria-hidden>
-          {Array.from({ length: SEGMENTS }).map((_, i) => {
-            const center = i === (SEGMENTS - 1) / 2;
-            const on = freq && (i === lit || (state === "in-tune" && Math.abs(i - (SEGMENTS - 1) / 2) <= 1));
-            return (
-              <span
-                key={i}
-                className={cn(
-                  "w-full max-w-3 rounded-sm transition-all duration-100",
-                  center ? "h-10" : i % 4 === 0 ? "h-7" : "h-5",
-                  on ? (state === "in-tune" ? "bg-tuner-ok" : "bg-tuner-warn") : "bg-tuner-off",
-                )}
-              />
-            );
-          })}
-        </div>
-        <div className="mt-1 flex justify-between font-mono text-[10px] uppercase tracking-widest text-tuner-dim">
-          <span>♭ Flat</span><span>0</span><span>Sharp ♯</span>
-        </div>
-
-        <p className={cn("mt-4 font-mono text-lg font-bold uppercase tracking-[0.2em]", state === "in-tune" ? "text-tuner-ok" : "text-tuner-warn", !freq && "text-tuner-dim")} aria-live="polite">
-          {!listening ? "Tap Start Tuning" : !freq ? "Pluck a string" : state === "in-tune" ? "In tune" : `${cents > 0 ? "+" : ""}${Math.round(cents)}¢ · ${state === "flat" ? "tune up" : "tune down"}`}
-        </p>
-      </div>
-
-      {/* Strings */}
-      <div className="mt-4 grid grid-cols-6 gap-1.5 sm:gap-2">
-        {preset.strings.map((s, i) => (
-          <button
-            key={s.label}
-            onClick={() => { playClick(); setMode("manual"); setManual(i); }}
-            aria-pressed={idx === i}
-            aria-label={`String ${s.name}, ${s.label}`}
-            className={cn(
-              "flex min-h-12 flex-col items-center justify-center rounded-xl border font-mono transition",
-              idx === i ? (state === "in-tune" ? "border-tuner-ok bg-tuner-ok/15 text-tuner-ok" : "border-tuner-fg/60 bg-tuner-fg/10 text-tuner-fg") : "border-tuner-off text-tuner-dim hover:text-tuner-fg",
-            )}
-          >
-            <span className="text-base font-bold leading-none">{s.note}</span>
-            <span className="text-[10px] opacity-70">{s.label}</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] gap-2">
-        <div className="flex rounded-full border border-tuner-off p-1 font-mono text-xs">
-          {(["auto", "manual"] as const).map((m) => (
-            <button key={m} onClick={() => setMode(m)} className={cn("min-h-10 rounded-full px-3 uppercase tracking-wider", mode === m ? "bg-tuner-fg text-tuner-bg" : "text-tuner-dim")}>
-              {m}
+      <div className="tuner-panel mt-5 rounded-3xl p-4 shadow-lift sm:p-6">
+        <div className="grid grid-cols-3 gap-1.5" role="radiogroup" aria-label="Tuning">
+          {PRESETS.map((p) => (
+            <button key={p.id} role="radio" aria-checked={p.id === preset.id} onClick={() => { playClick(); setPresetId(p.id); }}
+              className={cn("min-h-10 rounded-full border px-2 text-xs font-semibold", p.id === preset.id ? "border-tuner-fg bg-tuner-fg text-tuner-bg" : "border-tuner-off text-tuner-dim hover:text-tuner-fg")}>
+              {p.name.replace(" Tuning", "")}
             </button>
           ))}
         </div>
-        {listening ? (
-          <Button variant="outline" onClick={stop} className="h-12 rounded-full border-tuner-off bg-transparent text-tuner-fg hover:bg-tuner-fg/10 hover:text-tuner-fg">
-            <MicOff className="mr-2 h-4 w-4" /> Stop
-          </Button>
-        ) : (
-          <Button onClick={start} disabled={status === "starting"} className="h-12 rounded-full">
-            <Mic className="mr-2 h-4 w-4" /> Start Tuning
-          </Button>
-        )}
+
+        {/* Gauge */}
+        <div className="relative mx-auto mt-5 h-28 w-full max-w-xs overflow-hidden" aria-hidden>
+          <svg viewBox="0 0 200 110" className="h-full w-full">
+            <path d="M20 100 A80 80 0 0 1 180 100" fill="none" className="stroke-tuner-off" strokeWidth="10" strokeLinecap="round" />
+            <path d="M93 21 A80 80 0 0 1 107 21" fill="none" className="stroke-tuner-ok" strokeWidth="10" />
+            <g style={{ transform: `rotate(${needle}deg)`, transformOrigin: "100px 100px", transition: "transform 120ms ease-out" }}>
+              <line x1="100" y1="100" x2="100" y2="28" strokeWidth="3" strokeLinecap="round" className={state === "in-tune" ? "stroke-tuner-ok" : freq ? "stroke-tuner-warn" : "stroke-tuner-dim"} />
+            </g>
+            <circle cx="100" cy="100" r="6" className="fill-tuner-fg" />
+          </svg>
+          <span className="absolute bottom-0 left-0 text-[10px] font-semibold uppercase tracking-widest text-tuner-dim">♭ Flat</span>
+          <span className="absolute bottom-0 right-0 text-[10px] font-semibold uppercase tracking-widest text-tuner-dim">Sharp ♯</span>
+        </div>
+        <p className={cn("mt-1 text-center text-lg font-bold uppercase tracking-[0.15em]", state === "in-tune" ? "text-tuner-ok" : freq ? "text-tuner-warn" : "text-tuner-dim")} aria-live="polite">
+          {!listening ? "Tap Start Tuning" : !freq ? "Pluck a string" : state === "in-tune" ? "In tune ✓" : `${state === "flat" ? "Flat · tune up" : "Sharp · tune down"} (${cents > 0 ? "+" : ""}${Math.round(cents)}¢)`}
+        </p>
+        <p className="text-center font-mono text-xs text-tuner-dim">{freq ? `${freq.toFixed(1)} Hz` : "--- Hz"} · target {target ? target.freq.toFixed(1) : "---"} Hz</p>
+
+        {/* Headstock */}
+        <div className="mx-auto mt-5 grid max-w-sm grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
+          {Pegs({ side: "left", order: left })}
+          <svg viewBox="0 0 120 230" className="h-56 w-28 sm:h-64 sm:w-32" aria-hidden>
+            <path d="M18 10 Q60 -2 102 10 L96 190 Q60 200 24 190 Z" className="fill-tuner-off" />
+            <rect x="30" y="196" width="60" height="34" rx="3" className="fill-tuner-off opacity-70" />
+            <rect x="28" y="192" width="64" height="5" className="fill-tuner-fg opacity-60" />
+            {[0, 1, 2, 3, 4, 5].map((s) => {
+              const x = 38 + s * 8.8;
+              const pegIdx = s; // string 6 at left
+              const peg = pegIdx < 3 ? { x: 24, y: 52 + (2 - pegIdx) * 50 } : { x: 96, y: 52 + (5 - pegIdx) * 50 };
+              const on = idx === pegIdx;
+              return (
+                <g key={s}>
+                  <line x1={x} y1={230} x2={x} y2={196} strokeWidth={on ? 2.2 : 1.2} className={on ? (state === "in-tune" ? "stroke-tuner-ok" : "stroke-tuner-warn") : "stroke-tuner-dim"} />
+                  <line x1={x} y1={196} x2={peg.x} y2={peg.y} strokeWidth={on ? 2.2 : 1.2} className={on ? (state === "in-tune" ? "stroke-tuner-ok" : "stroke-tuner-warn") : "stroke-tuner-dim"} />
+                  <circle cx={peg.x} cy={peg.y} r="5" className="fill-tuner-fg" />
+                </g>
+              );
+            })}
+          </svg>
+          {Pegs({ side: "right", order: right })}
+        </div>
+
+        <div className="mt-5 grid grid-cols-[auto_minmax(0,1fr)] gap-2">
+          <div className="flex rounded-full border border-tuner-off p-1 text-xs font-semibold">
+            {(["auto", "manual"] as const).map((m) => (
+              <button key={m} onClick={() => setMode(m)} className={cn("min-h-10 rounded-full px-3 capitalize", mode === m ? "bg-tuner-fg text-tuner-bg" : "text-tuner-dim")}>{m}</button>
+            ))}
+          </div>
+          {listening ? (
+            <Button variant="outline" onClick={stop} className="h-12 rounded-full border-tuner-off bg-transparent text-tuner-fg hover:bg-tuner-fg/10 hover:text-tuner-fg">
+              <MicOff className="mr-2 h-4 w-4" /> Stop
+            </Button>
+          ) : (
+            <Button onClick={start} disabled={status === "starting"} className="h-12 rounded-full">
+              <Mic className="mr-2 h-4 w-4" /> {status === "starting" ? "Starting…" : "Start Tuning"}
+            </Button>
+          )}
+        </div>
+        {error && <p className="mt-3 text-center text-sm text-tuner-warn">{error}</p>}
+        <p className="mt-3 text-center text-xs text-tuner-dim">
+          {mode === "auto" ? "Auto finds the closest string." : "Manual: tap a peg to tune just that string."} In tune within ±{IN_TUNE_CENTS}¢.
+        </p>
       </div>
-      {error && <p className="mt-3 text-center text-sm text-tuner-warn">{error}</p>}
-      <p className="mt-3 text-center text-xs text-tuner-dim">
-        {mode === "auto" ? "Auto finds the closest string." : "Manual: tap a string to tune just that one."} In tune within ±{IN_TUNE_CENTS}¢.
-      </p>
     </section>
   );
+
+  function Pegs({ side, order }: { side: "left" | "right"; order: number[] }) {
+    return (
+      <div className={cn("flex flex-col gap-5 sm:gap-7", side === "left" ? "items-end" : "items-start")}>
+        {order.map((i) => {
+          const s = preset.strings[i]!;
+          const on = idx === i;
+          return (
+            <button key={i} onClick={() => pick(i)} aria-pressed={on} aria-label={`String ${s.name}, ${s.label}`}
+              className={cn("grid h-14 w-14 place-items-center rounded-full border-2 text-xl font-bold transition sm:h-16 sm:w-16",
+                on ? (state === "in-tune" ? "border-tuner-ok bg-tuner-ok text-tuner-bg" : "border-tuner-warn bg-tuner-warn/20 text-tuner-fg") : "border-tuner-off text-tuner-fg hover:border-tuner-fg")}>
+              {s.note}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
 }
 
 let clickCtx: AudioContext | null = null;

@@ -79,16 +79,21 @@ export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
     return (
       <div>
         <PageHeader eyebrow="New song" title="Add a song" />
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {([
-            ["manual", ClipboardPen, "Create Manually", "Type title, artist and chords yourself."],
-            ["paste", ClipboardPaste, "Copy & Paste", "Paste chords-over-lyrics; we convert it."],
-            ["ug", Globe, "From Ultimate Guitar", "Find a song there, then paste it in."],
-          ] as const).map(([m, Icon, t, d]) => (
-            <button key={m} type="button" onClick={() => { setMethod(m); if (m !== "manual") setText(""); }} className="rounded-2xl border border-border bg-card p-5 text-left shadow-soft transition-colors hover:border-primary">
+            ["paste", ClipboardPaste, "Copy & Paste", "Paste your chords and lyrics from your own source. We'll help format them into a readable song sheet.", ["Paste chords & lyrics", "Convert & Preview", "Add title & artist, then Save"], true],
+            ["manual", ClipboardPen, "Create Manually", "Build your own chord sheet from scratch.", ["Enter title & artist", "Add chords, lyrics & sections", "Optional key, capo, then Save"], false],
+            ["ug", Globe, "Import from Ultimate Guitar", "Bring in chord sheets you are permitted to use, by pasting them in.", ["Find the song on Ultimate Guitar", "Copy content you may use", "Paste here & Convert"], false],
+          ] as const).map(([m, Icon, t, d, steps, rec]) => (
+            <button key={m} type="button" onClick={() => { setMethod(m); if (m !== "manual") setText(""); }}
+              className={`relative rounded-2xl border bg-card p-5 text-left shadow-soft transition-colors hover:border-primary ${rec ? "border-primary ring-1 ring-primary/30" : "border-border"}`}>
+              {rec && <span className="absolute right-4 top-4 rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">Recommended</span>}
               <Icon className="mb-3 h-6 w-6 text-primary" />
               <p className="font-semibold">{t}</p>
               <p className="mt-1 text-sm text-muted-foreground">{d}</p>
+              <ol className="mt-3 space-y-1 text-xs text-muted-foreground">
+                {steps.map((s, i) => <li key={s}><span className="mr-1.5 font-mono font-semibold text-primary">{i + 1}</span>{s}</li>)}
+              </ol>
             </button>
           ))}
         </div>
@@ -127,7 +132,7 @@ export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
             <Textarea value={paste} onChange={(e) => setPaste(e.target.value)} rows={8} className="font-mono text-sm" placeholder={"[Verse]\nG        C\nWrite your words here"} />
           </Field>
           <Button type="button" className="h-11 rounded-full" disabled={!paste.trim()} onClick={() => { setText(toNativeFormat(paste)); toast.success("Converted — check the editor below"); }}>
-            Convert to editor
+            Convert &amp; Preview
           </Button>
         </div>
       )}

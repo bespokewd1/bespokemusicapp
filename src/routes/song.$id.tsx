@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Heart, Minus, Pencil, Play, Plus, ListPlus, Pause, Trash2, Hash, PenLine, Eraser, StickyNote, FileDown, MoreHorizontal, Maximize, Minimize, SkipBack, SkipForward, ListTree } from "lucide-react";
+import { forwardRef } from "react";
+import { ArrowLeft, Heart, Minus, Pencil, Play, Plus, ListPlus, Pause, Trash2, Hash, PenLine, Eraser, StickyNote, FileDown, MoreHorizontal, Maximize, Minimize, SkipBack, SkipForward, ChevronLeft, ChevronRight } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { AnnotationLayer, type Tool } from "@/components/AnnotationLayer";
 import { SongImages } from "@/components/SongImages";
 import { ChordDiagram } from "@/components/ChordDiagram";
@@ -52,7 +53,10 @@ function SongPage() {
   const [tr, setTr] = useState(0);
   const [nash, setNash] = useState(false);
   const [prefsLoaded, setPrefsLoaded] = useState(false);
-  const { playing, suspended, toggle, stop } = useAutoScroll(scrollSpeed);
+  const { playing, toggle, play, stop } = useAutoScroll(scrollSpeed);
+  const everPlayed = useRef(false);
+  if (playing) everPlayed.current = true;
+  const [barCollapsed, setBarCollapsed] = useState(false);
   const controlsRef = useRef<HTMLDivElement>(null);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [nashKey, setNashKey] = useState("");
@@ -148,10 +152,7 @@ function SongPage() {
 
   const close = () => setMoreOpen(false);
   const items: MenuItem[] = [
-    { key: "pl", label: "Add to Playlist", icon: ListPlus, onSelect: () => requireAuth("Sign in to add songs to playlists.", () => setPlOpen(true)) },
-    { key: "notes", label: savedNotes ? "Song Notes · saved" : "Song Notes", icon: StickyNote, onSelect: () => requireAuth("Sign in to keep private notes.", () => setNotesOpen(true)) },
-    ...(isMine ? [{ key: "edit", label: "Edit Song", icon: Pencil, onSelect: () => navigate({ to: "/song/$id/edit", params: { id: song.id } }) }] : []),
-    { key: "ann", label: annotate ? "Stop Annotating" : "Annotate", icon: PenLine, onSelect: () => requireAuth("Sign in to annotate songs.", () => setAnnotate((v) => !v)) },
+    { key: "fs", label: "Full screen", icon: Maximize, onSelect: () => { setAnnotate(false); setPerf(true); } },
     { key: "pdf", label: "Export PDF", icon: FileDown, onSelect: () => exportSongPdf(song, { transpose: tr }) },
     ...(signedIn && savedNotes.trim() ? [{ key: "pdfn", label: "Export PDF with notes", icon: FileDown, onSelect: () => exportSongPdf(song, { transpose: tr, notes: savedNotes }) }] : []),
   ];
@@ -159,6 +160,47 @@ function SongPage() {
 
   const speedLabel = `${scrollSpeed.toFixed(1)}×`;
   const chordInfo = chord ? findChord(chord) : undefined;
+
+  const moreBody = (
+    <div className="grid gap-3">
+      <div>
+        <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Song settings</p>
+        <div className="grid gap-2">
+          <Stepper label="Size" value={`${size}`} onMinus={() => setSize((s) => Math.max(SIZE_MIN, s - 2))} onPlus={() => setSize((s) => Math.min(SIZE_MAX, s + 2))} />
+          <div className="flex items-center gap-2">
+            <Stepper label="Transpose" value={tr > 0 ? `+${tr}` : `${tr}`} onMinus={() => changeTr(tr - 1)} onPlus={() => changeTr(tr + 1)} />
+            {tr !== 0 && <button onClick={() => changeTr(0)} className="min-h-9 rounded-full px-2 text-xs text-muted-foreground underline">Reset</button>}
+          </div>
+          <button aria-pressed={nash} onClick={() => setNash((v) => !v)} className={cn("flex min-h-11 items-center justify-between rounded-xl px-3 text-sm font-medium", nash ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground")}>
+            <span className="flex items-center gap-2"><Hash className="h-4 w-4" /> Nashville Numbers</span>
+            <span className="text-xs">{nash ? "On" : "Off"}</span>
+          </button>
+        </div>
+      </div>
+      <div className="grid gap-0.5 border-t border-border pt-2">
+        {items.map((it) => (
+          <button key={it.key} onClick={() => { close(); it.onSelect(); }} className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-left text-sm font-medium hover:bg-secondary">
+            <it.icon className="h-4 w-4 text-primary" />{it.label}
+          </button>
+        ))}
+      </div>
+      {sections.length > 0 && (
+        <div className="border-t border-border pt-2">
+          <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Jump to section</p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {sections.map((s) => <button key={s.i} onClick={() => { close(); setTimeout(() => jump(s.i), 250); }} className="min-h-9 rounded-full bg-secondary px-3 text-sm">{s.name}</button>)}
+          </div>
+        </div>
+      )}
+      {isMine && (
+        <div className="border-t border-border pt-2">
+          <button onClick={() => { close(); setDelOpen(true); }} className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-destructive hover:bg-destructive/10">
+            <Trash2 className="h-4 w-4" />Delete Song
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -183,14 +225,9 @@ function SongPage() {
       )}
 
       <header className={cn("mb-4", perf && "pt-2")}>
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
-          <div className="min-w-0">
-            <h1 className="break-words font-display text-3xl font-semibold leading-tight md:text-5xl">{song.title}</h1>
-            <p className="mt-0.5 text-base text-muted-foreground md:text-lg">{song.artist}</p>
-          </div>
-          <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0 rounded-full" aria-label={isSaved ? "Remove from favourites" : "Add to favourites"} onClick={() => requireAuth("Sign in to save songs to your songbook.", async () => { await toggleSaved(song.id); toast(isSaved ? "Removed from Saved" : "Saved to My Songs"); })}>
-            <Heart className={cn("h-6 w-6", isSaved && "fill-primary text-primary")} />
-          </Button>
+        <div className="min-w-0">
+          <h1 className="break-words font-display text-3xl font-semibold leading-tight md:text-5xl">{song.title}</h1>
+          <p className="mt-0.5 text-base text-muted-foreground md:text-lg">{song.artist}</p>
         </div>
         <div className="mt-2 flex flex-wrap gap-1.5 text-xs md:text-sm">
           <Chip>Key {keyNow}</Chip>
@@ -206,80 +243,51 @@ function SongPage() {
           <Button size="lg" onClick={toggle} aria-pressed={playing} className="h-12 rounded-full px-5 text-base shadow-lift md:h-14 md:px-6">
             {playing ? <><Pause className="mr-2 h-5 w-5 fill-current" /> Pause</> : <><Play className="mr-2 h-5 w-5 fill-current" /> Play</>}
           </Button>
-          <SpeedSlider speed={scrollSpeed} onChange={setScrollSpeed} status={playing ? (suspended ? "Paused while you scroll…" : speedLabel) : speedLabel} active={playing} />
+          <SpeedSlider speed={scrollSpeed} onChange={setScrollSpeed} status={!playing && everPlayed.current ? "Paused · tap song to resume" : speedLabel} active={playing} />
         </div>
       )}
 
-      {/* Toolbar: Size | Transpose | Nashville | More */}
+      {/* Toolbar: Edit/Save | Annotate | Playlist | Notes | More */}
       {!perf && (
-        <div className="sticky top-[61px] z-20 -mx-4 mb-6 flex flex-wrap items-center gap-1.5 border-y border-border bg-background/90 px-4 py-2 sm:gap-2 backdrop-blur md:top-[73px]">
-          <Stepper label="Size" value={`${size}`} onMinus={() => setSize((s) => Math.max(SIZE_MIN, s - 2))} onPlus={() => setSize((s) => Math.min(SIZE_MAX, s + 2))} />
-          <Stepper label="Transpose" value={tr > 0 ? `+${tr}` : `${tr}`} onMinus={() => changeTr(tr - 1)} onPlus={() => changeTr(tr + 1)} />
-          {tr !== 0 && <button onClick={() => changeTr(0)} className="min-h-9 shrink-0 rounded-full px-2 text-xs text-muted-foreground underline">Reset</button>}
-          <button aria-pressed={nash} onClick={() => setNash((v) => !v)} className={cn("flex min-h-11 shrink-0 items-center gap-1 rounded-full px-3 text-xs font-medium", nash ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground")}>
-            <Hash className="h-3.5 w-3.5" /> Nashville
-          </button>
-          {nash && !isValidKey(song.key) && (
-            <select aria-label="Song key for Nashville" value={nashKey} onChange={(e) => setNashKey(e.target.value)} className="min-h-9 shrink-0 rounded-full border border-border bg-card px-2 text-xs">
-              <option value="">Pick key</option>
-              {KEY_OPTIONS.map((k) => <option key={k}>{k}</option>)}
-            </select>
-          )}
-          <div className="ml-auto flex shrink-0 items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Full screen" onClick={() => { setAnnotate(false); setPerf(true); }}><Maximize className="h-5 w-5" /></Button>
-            {isMobile ? (
-              <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="More actions" onClick={() => setMoreOpen(true)}><MoreHorizontal className="h-5 w-5" /></Button>
+        <div className="sticky top-[61px] z-20 -mx-4 mb-6 border-y border-border bg-background/90 px-2 py-1.5 backdrop-blur md:top-[73px] md:px-4">
+          <div className="grid grid-cols-5 gap-1 sm:flex sm:items-center sm:gap-2">
+            {isMine ? (
+              <ToolBtn icon={Pencil} label="Edit" onClick={() => navigate({ to: "/song/$id/edit", params: { id: song.id } })} />
             ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="More actions"><MoreHorizontal className="h-5 w-5" /></Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-60">
-                  {items.map((it) => (
-                    <DropdownMenuItem key={it.key} onSelect={it.onSelect}><it.icon className="mr-2 h-4 w-4" />{it.label}</DropdownMenuItem>
-                  ))}
-                  {sections.length > 0 && (<>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel className="text-xs text-muted-foreground">Jump to section</DropdownMenuLabel>
-                    {sections.map((s) => <DropdownMenuItem key={s.i} onSelect={() => jump(s.i)}><ListTree className="mr-2 h-4 w-4" />{s.name}</DropdownMenuItem>)}
-                  </>)}
-                  {isMine && (<>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => setDelOpen(true)} className="text-destructive focus:text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete Song</DropdownMenuItem>
-                  </>)}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <ToolBtn icon={Heart} label={isSaved ? "Saved" : "Save"} active={isSaved} title={isSaved ? "Remove from My Songs" : "Save to My Songs"}
+                onClick={() => requireAuth("Sign in to save songs to your songbook.", async () => { await toggleSaved(song.id); toast(isSaved ? "Removed from My Songs" : "Saved to My Songs"); })} />
+            )}
+            <ToolBtn icon={PenLine} label="Annotate" active={annotate} onClick={() => requireAuth("Sign in to annotate songs.", () => setAnnotate((v) => !v))} />
+            <ToolBtn icon={ListPlus} label="Playlist" title="Add to Playlist" onClick={() => requireAuth("Sign in to add songs to playlists.", () => setPlOpen(true))} />
+            <ToolBtn icon={StickyNote} label="Notes" active={!!savedNotes.trim()} title={savedNotes ? "Song notes (saved)" : "Add notes"} onClick={() => requireAuth("Sign in to keep private notes.", () => setNotesOpen(true))} />
+            {isMobile ? (
+              <ToolBtn icon={MoreHorizontal} label="More" onClick={() => setMoreOpen(true)} className="sm:ml-auto" />
+            ) : (
+              <Popover open={moreOpen} onOpenChange={setMoreOpen}>
+                <PopoverTrigger asChild>
+                  <ToolBtn icon={MoreHorizontal} label="More" className="sm:ml-auto" />
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-80 max-h-[70vh] overflow-y-auto p-3">{moreBody}</PopoverContent>
+              </Popover>
             )}
           </div>
+          {nash && !isValidKey(song.key) && (
+            <div className="mt-1.5 flex items-center gap-2 px-1 text-xs">
+              <span className="text-muted-foreground">Nashville needs a key:</span>
+              <select aria-label="Song key for Nashville" value={nashKey} onChange={(e) => setNashKey(e.target.value)} className="min-h-9 rounded-full border border-border bg-card px-2 text-xs">
+                <option value="">Pick key</option>
+                {KEY_OPTIONS.map((k) => <option key={k}>{k}</option>)}
+              </select>
+            </div>
+          )}
         </div>
       )}
 
       {/* Mobile bottom sheet */}
-      <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
-        <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto rounded-t-3xl pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      <Sheet open={isMobile && moreOpen} onOpenChange={setMoreOpen}>
+        <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-3xl pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <SheetHeader><SheetTitle className="text-left">More</SheetTitle></SheetHeader>
-          <div className="mt-2 grid gap-1">
-            {items.map((it) => (
-              <button key={it.key} onClick={() => { close(); it.onSelect(); }} className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-left text-sm font-medium hover:bg-secondary">
-                <it.icon className="h-5 w-5 text-primary" />{it.label}
-              </button>
-            ))}
-          </div>
-          {sections.length > 0 && (
-            <div className="mt-3 border-t border-border pt-3">
-              <p className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Jump to section</p>
-              <div className="mt-2 flex flex-wrap gap-2 px-3">
-                {sections.map((s) => <button key={s.i} onClick={() => { close(); setTimeout(() => jump(s.i), 250); }} className="min-h-10 rounded-full bg-secondary px-3 text-sm">{s.name}</button>)}
-              </div>
-            </div>
-          )}
-          {isMine && (
-            <div className="mt-3 border-t border-border pt-3">
-              <button onClick={() => { close(); setDelOpen(true); }} className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-destructive hover:bg-destructive/10">
-                <Trash2 className="h-5 w-5" />Delete Song
-              </button>
-            </div>
-          )}
+          <div className="mt-2">{moreBody}</div>
         </SheetContent>
       </Sheet>
 
@@ -355,10 +363,17 @@ function SongPage() {
         </div>
       )}
 
-      <AnnotationLayer strokes={strokes} onChange={changeStrokes} active={annotate && !perf} tool={tool}>
-        <SongSheet sections={song.sections} fontSize={size} transpose={tr} nashvilleKey={nashvilleKey} onChord={annotate ? undefined : setChord} />
-        <SongImages images={song.images ?? []} />
-      </AnnotationLayer>
+      <div
+        onClick={(e) => {
+          // Tap anywhere in the song to resume a paused auto-scroll
+          if (!playing && everPlayed.current && !annotate && !(e.target as HTMLElement).closest("button,a,input,select,textarea")) play();
+        }}
+      >
+        <AnnotationLayer strokes={strokes} onChange={changeStrokes} active={annotate && !perf} tool={tool}>
+          <SongSheet sections={song.sections} fontSize={size} transpose={tr} nashvilleKey={nashvilleKey} onChord={annotate ? undefined : setChord} />
+          <SongImages images={song.images ?? []} />
+        </AnnotationLayer>
+      </div>
       <div className="h-[40vh]" aria-hidden />
 
       {/* Performance mode bar */}
@@ -368,7 +383,7 @@ function SongPage() {
             <Button size="icon" onClick={toggle} aria-label={playing ? "Pause" : "Play"} className="h-12 w-12 rounded-full shadow-lift">
               {playing ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}
             </Button>
-            <SpeedSlider speed={scrollSpeed} onChange={setScrollSpeed} status={playing && suspended ? "Paused while you scroll…" : speedLabel} active={playing} />
+            <SpeedSlider speed={scrollSpeed} onChange={setScrollSpeed} status={speedLabel} active={playing} />
             <Button variant="secondary" className="h-11 rounded-full px-3" onClick={() => setPerf(false)} aria-label="Exit full screen">
               <Minimize className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Exit</span>
             </Button>
@@ -376,21 +391,24 @@ function SongPage() {
         </div>
       )}
 
-      {/* Floating play control when main controls are off-screen (never alongside performance bar) */}
-      {!perf && (
-        <button
-          onClick={toggle}
-          aria-label={playing ? "Pause auto-scroll" : "Play auto-scroll"}
-          className={cn(
-            "fixed right-4 z-30 grid h-14 w-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-lift transition-all duration-200",
-            "bottom-[calc(5.5rem+env(safe-area-inset-bottom))] md:bottom-8",
-            controlsVisible ? "pointer-events-none scale-75 opacity-0" : "scale-100 opacity-100",
-          )}
-          tabIndex={controlsVisible ? -1 : 0}
-        >
-          {playing ? <Pause className="h-6 w-6 fill-current" /> : <Play className="h-6 w-6 fill-current" />}
-          {playing && suspended && <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-accent ring-2 ring-background" />}
-        </button>
+      {/* Floating Play/Pause | Speed bar when main controls are off-screen (never alongside performance bar) */}
+      {!perf && !controlsVisible && (
+        <div className="fixed right-3 z-30 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] md:bottom-6 md:right-6">
+          <div className="flex items-center gap-2 rounded-full border border-border bg-card/95 p-1.5 shadow-lift backdrop-blur">
+            <Button size="icon" onClick={toggle} aria-label={playing ? "Pause auto-scroll" : "Play auto-scroll"} className="h-12 w-12 shrink-0 rounded-full">
+              {playing ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}
+            </Button>
+            {!barCollapsed && (
+              <div className="w-36 px-1 sm:w-48">
+                <div className="flex justify-between text-[11px] text-muted-foreground"><span>Speed</span><span className="font-mono font-semibold text-foreground">{speedLabel}</span></div>
+                <Slider className="mt-1.5" min={0.3} max={3} step={0.1} value={[scrollSpeed]} onValueChange={([v]) => setScrollSpeed(v ?? 1)} aria-label="Auto-scroll speed" />
+              </div>
+            )}
+            <button onClick={() => setBarCollapsed((v) => !v)} aria-label={barCollapsed ? "Show speed control" : "Hide speed control"} className="grid h-10 w-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:text-foreground">
+              {barCollapsed ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -423,3 +441,15 @@ function Stepper({ label, value, onMinus, onPlus }: { label: string; value: stri
     </div>
   );
 }
+
+type ToolBtnProps = { icon: React.ComponentType<{ className?: string }>; label: string; active?: boolean; title?: string; className?: string } & React.ButtonHTMLAttributes<HTMLButtonElement>;
+const ToolBtn = forwardRef<HTMLButtonElement, ToolBtnProps>(function ToolBtn({ icon: Icon, label, active, title, className, ...rest }, ref) {
+  return (
+    <button ref={ref} type="button" title={title ?? label} aria-label={title ?? label} aria-pressed={active} {...rest}
+      className={cn("flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[11px] font-medium transition-colors sm:flex-row sm:gap-1.5 sm:rounded-full sm:px-3 sm:text-sm",
+        active ? "bg-primary/10 text-primary" : "text-foreground hover:bg-secondary", className)}>
+      <Icon className={cn("h-5 w-5 shrink-0 sm:h-4 sm:w-4", active && label.startsWith("Save") && "fill-current")} />
+      <span className="truncate">{label}</span>
+    </button>
+  );
+});
