@@ -39,7 +39,6 @@ function Explore() {
       {ready && signedIn ? <Welcome /> : <MarketingHero />}
       {!(ready && signedIn) && <QuickFeatures />}
       <DemoSongs compact={ready && signedIn} />
-      {!(ready && signedIn) && <SignUpCta />}
       <HowItWorks />
     </div>
   );
@@ -190,7 +189,7 @@ function DemoSongs({ compact }: { compact: boolean }) {
   );
 }
 
-function SignUpCta() {
+export function _SignUpCta() {
   const { requireAuth } = useStore();
   const navigate = useNavigate();
   return (
