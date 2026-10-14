@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, PenLine, ListMusic, Play, ArrowDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SongCard } from "@/components/SongCard";
@@ -64,6 +64,9 @@ function Explore() {
           Free during Beta. Be among the first to try Bespoke Music as we continue to improve and
           add new features.
         </p>
+        <a href="#how-it-works" className="mt-4 inline-flex items-center gap-1 text-sm font-medium underline-offset-4 opacity-90 hover:underline">
+          How It Works <ArrowDown className="h-4 w-4" />
+        </a>
         <div className="relative mt-6 max-w-lg">
           <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -97,6 +100,27 @@ function Explore() {
           No songs match “{q}”. Try another title or chord.
         </p>
       )}
+
+      <section id="how-it-works" className="mt-14 scroll-mt-24">
+        <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">How Bespoke Music Works</h2>
+        <p className="mt-1 text-muted-foreground md:text-lg">From your first song to your next performance.</p>
+        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+          {[
+            { icon: PenLine, title: "Add Your Songs", text: "Write your chords and lyrics manually, or copy and paste your existing song sheets." },
+            { icon: ListMusic, title: "Organize Your Music", text: "Build playlists for practice, acoustic sets, songs to learn, or live performances." },
+            { icon: Play, title: "Play Your Way", text: "Open your songs, adjust the key, and use auto-scroll for distraction-free playing." },
+          ].map((s, i) => (
+            <div key={s.title} className="rounded-2xl border border-border bg-card p-5 shadow-soft md:p-7">
+              <div className="flex items-center gap-3">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-secondary text-primary"><s.icon className="h-5 w-5" /></span>
+                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">Step {i + 1}</span>
+              </div>
+              <h3 className="mt-4 font-display text-xl font-semibold md:text-2xl">{s.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-base">{s.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <footer className="mt-16 border-t border-border pt-6 pb-2 text-center">
         <p className="text-xs text-muted-foreground">
