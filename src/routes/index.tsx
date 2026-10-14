@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { PenLine, ListMusic, Play, ArrowRight, Plus, Library, ScrollText, Wrench, Check } from "lucide-react";
+import { PenLine, ListMusic, Play, ArrowRight, Plus, Library, ScrollText, ClipboardPaste, Wrench, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SongCard } from "@/components/SongCard";
 import { useStore } from "@/lib/store";
@@ -27,11 +27,9 @@ export const Route = createFileRoute("/")({
 const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 
 const FEATURES = [
-  { icon: PenLine, title: "Add Your Songs", text: "Write songs manually or copy and paste chords and lyrics." },
-  { icon: Library, title: "Build Your Collection", text: "Save your favourite songs and keep everything organized." },
-  { icon: ListMusic, title: "Create Playlists", text: "Organize music for practice, acoustic sets, and performances." },
-  { icon: ScrollText, title: "Auto-Scroll Play Mode", text: "Let your song sheets scroll automatically while you play guitar." },
-  { icon: Wrench, title: "Built-In Guitar Tools", text: "Tune your guitar and browse chord diagrams without leaving the app." },
+  { icon: ClipboardPaste, title: "Easy Song Import", text: "Write songs manually or copy and paste chords and lyrics." },
+  { icon: ScrollText, title: "Auto-Scroll Play Mode", text: "Keep playing while your song sheet scrolls automatically." },
+  { icon: Wrench, title: "Built-In Guitar Tools", text: "Tune your guitar and access a searchable chord reference." },
 ];
 
 function Explore() {
@@ -41,6 +39,7 @@ function Explore() {
       {ready && signedIn ? <Welcome /> : <MarketingHero />}
       {!(ready && signedIn) && <QuickFeatures />}
       <DemoSongs compact={ready && signedIn} />
+      {!(ready && signedIn) && <SignUpCta />}
       <HowItWorks />
       <footer className="mt-16 border-t border-border pt-6 pb-2 text-center">
         <p className="text-xs text-muted-foreground">
@@ -69,12 +68,12 @@ function MarketingHero() {
         Your personal <em className="font-normal">guitar songbook.</em>
       </h1>
       <ul className="mt-5 space-y-2 text-base opacity-90 sm:text-lg">
-        {["Save your favourite chords & lyrics.", "Create playlists and organize your songs.", "Grow your personal music collection."].map((t) => (
+        {["Save your favourite chords & lyrics.", "Create playlists for practice and performances.", "Grow your collection, all in one place."].map((t) => (
           <li key={t} className="flex items-start gap-2"><Check className="mt-1 h-4 w-4 shrink-0" />{t}</li>
         ))}
       </ul>
       <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-        <Button size="lg" variant="secondary" className="h-12 rounded-full px-6 text-base" onClick={() => requireAuth("Sign in to start your songbook.", () => navigate({ to: "/songs/new" }))}>
+        <Button size="lg" variant="secondary" className="h-12 rounded-full px-6 text-base" onClick={() => requireAuth("Sign in to start your songbook.", () => navigate({ to: "/my-songs" }))}>
           Start Your Songbook
         </Button>
         <Button size="lg" variant="outline" className="h-12 rounded-full border-primary-foreground/50 bg-transparent px-6 text-base text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground" onClick={() => scrollTo("demo-songs")}>
@@ -160,10 +159,10 @@ function Empty({ text }: { text: string }) {
 function QuickFeatures() {
   return (
     <section className="mb-12">
-      <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">Everything you need for your personal songbook.</h2>
-      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">Built for musicians who play.</h2>
+      <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
         {FEATURES.map((f) => (
-          <div key={f.title} className="flex min-w-0 gap-3 rounded-2xl border border-border bg-card p-4 lg:flex-col">
+          <div key={f.title} className="flex min-w-0 gap-3 rounded-2xl border border-border bg-card p-4 md:flex-col md:p-5">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary"><f.icon className="h-5 w-5" /></span>
             <span className="min-w-0">
               <span className="block font-semibold">{f.title}</span>
@@ -183,10 +182,10 @@ function DemoSongs({ compact }: { compact: boolean }) {
     .sort((a, b) => (a.featuredOrder ?? 99) - (b.featuredOrder ?? 99));
   return (
     <section id="demo-songs" className="scroll-mt-24">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">Pick Up & Play</p>
-      <h2 className="mt-1 font-display text-2xl font-semibold sm:text-3xl">Try Demo Songs</h2>
+      {compact && <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">Pick Up & Play</p>}
+      <h2 className="mt-1 font-display text-2xl font-semibold sm:text-3xl">{compact ? "Try Demo Songs" : "Pick Up & Play"}</h2>
       <p className="mb-4 mt-1 text-sm text-muted-foreground">
-        {compact ? "Explore a few sample songs and test the player." : "Free demo songs to try — no sign-in needed. Sign in to add your own songs and playlists — only you can see them."}
+        {compact ? "Explore a few sample songs and test the player." : "Try real song sheets with no sign-in required."}
       </p>
       {!songsLoaded ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl bg-secondary" />)}</div>
@@ -199,15 +198,34 @@ function DemoSongs({ compact }: { compact: boolean }) {
   );
 }
 
+function SignUpCta() {
+  const { requireAuth } = useStore();
+  const navigate = useNavigate();
+  return (
+    <section className="mt-12 flex flex-col gap-4 rounded-3xl border border-border bg-card p-6 shadow-soft md:flex-row md:items-center md:justify-between md:p-8">
+      <div className="min-w-0">
+        <h2 className="font-display text-2xl font-semibold sm:text-3xl">Ready to build your own songbook?</h2>
+        <p className="mt-1 text-muted-foreground">Save your songs, create playlists, and keep your collection yours.</p>
+      </div>
+      <div className="shrink-0 text-center">
+        <Button size="lg" className="h-12 w-full rounded-full px-6 md:w-auto" onClick={() => requireAuth("Create your free Beta account.", () => navigate({ to: "/my-songs" }))}>
+          Create Your Free Beta Account
+        </Button>
+        <p className="mt-2 text-xs text-muted-foreground">Free during Beta.</p>
+      </div>
+    </section>
+  );
+}
+
 function HowItWorks() {
   return (
     <section id="how-it-works" className="mt-14 scroll-mt-24">
-      <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">How Bespoke Music Works</h2>
+      <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">How It Works</h2>
       <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-5">
         {[
-          { icon: PenLine, title: "Add Your Songs", text: "Write chords and lyrics manually or copy and paste your existing song sheets." },
-          { icon: ListMusic, title: "Organize Your Music", text: "Save favourite songs, create playlists, and build your personal collection." },
-          { icon: Play, title: "Play Your Way", text: "Use auto-scroll, adjust song keys, and access built-in guitar tools." },
+          { icon: PenLine, title: "Add", text: "Write or paste your chords and lyrics." },
+          { icon: ListMusic, title: "Organize", text: "Save songs and create playlists." },
+          { icon: Play, title: "Play", text: "Use auto-scroll, transposition, and guitar tools." },
         ].map((s, i) => (
           <div key={s.title} className="flex min-w-0 gap-3 rounded-2xl border border-border bg-card p-5 md:p-6">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary"><s.icon className="h-5 w-5" /></span>
