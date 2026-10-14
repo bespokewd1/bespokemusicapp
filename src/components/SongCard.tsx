@@ -4,7 +4,7 @@ import { uniqueChords, type Song } from "@/lib/songs";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-export function SongCard({ song, action }: { song: Song; action?: React.ReactNode }) {
+export function SongCard({ song, action, playlistId }: { song: Song; action?: React.ReactNode; playlistId?: string }) {
   const { saved, toggleSaved, requireAuth, signedIn } = useStore();
   const isSaved = signedIn && saved.includes(song.id);
   const chords = uniqueChords(song);
@@ -13,7 +13,7 @@ export function SongCard({ song, action }: { song: Song; action?: React.ReactNod
       <div className="soundhole grid h-12 w-12 shrink-0 place-items-center rounded-full font-display text-lg font-semibold text-primary">
         {song.key}
       </div>
-      <Link to="/song/$id" params={{ id: song.id }} className="min-w-0 flex-1 after:absolute after:inset-0">
+      <Link to="/song/$id" params={{ id: song.id }} search={playlistId ? { pl: playlistId } : {}} className="min-w-0 flex-1 after:absolute after:inset-0">
         <h3 className="truncate font-display text-lg font-semibold leading-tight">{song.title}</h3>
         <p className="truncate text-sm text-muted-foreground">{song.artist}</p>
         <div className="mt-2 flex flex-wrap items-center gap-1.5">

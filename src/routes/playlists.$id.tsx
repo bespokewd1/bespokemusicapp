@@ -52,7 +52,7 @@ function PlaylistDetail() {
         <div className="relative mt-5 flex flex-wrap gap-2">
           {songs[0] && (
             <Button asChild variant="secondary" className="h-11 rounded-full">
-              <Link to="/song/$id" params={{ id: songs[0].id }}><Play className="mr-1 h-4 w-4 fill-current" /> Start playing</Link>
+              <Link to="/song/$id" params={{ id: songs[0].id }} search={{ pl: p.id }}><Play className="mr-1 h-4 w-4 fill-current" /> Start playing</Link>
             </Button>
           )}
           <DropdownMenu>

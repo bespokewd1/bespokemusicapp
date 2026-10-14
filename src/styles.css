@@ -178,3 +178,8 @@
     -webkit-font-smoothing: antialiased;
   }
 }
+
+/* Song performance mode: hide site header and tab bar */
+html[data-perf] [data-chrome] {
+  display: none;
+}
