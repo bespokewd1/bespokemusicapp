@@ -15,6 +15,8 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { StoreProvider } from "@/lib/store";
 import { AppShell } from "@/components/AppShell";
 import { Toaster } from "@/components/ui/sonner";
+import { LanguageProvider } from "@/lib/i18n";
+import { registerOfflineSupport } from "@/lib/pwa";
 
 function NotFoundComponent() {
   return (
@@ -86,6 +88,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Bespoke Music" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "theme-color", content: "#f6efe4" },
     ],
     links: [
       {
@@ -94,6 +97,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -124,16 +128,19 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => { registerOfflineSupport(); }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+      <LanguageProvider>
       <StoreProvider>
         <AppShell>
           <Outlet />
         </AppShell>
         <Toaster position="top-center" />
       </StoreProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }
