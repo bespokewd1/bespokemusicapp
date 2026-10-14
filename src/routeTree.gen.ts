@@ -10,10 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as AccountDeletionRouteImport } from './routes/account-deletion'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as FeaturesRouteImport } from './routes/features'
+import { Route as HelpRouteImport } from './routes/help'
 import { Route as MySongsRouteImport } from './routes/my-songs'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SupportRouteImport } from './routes/support'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ToolsRouteImport } from './routes/tools'
+import { Route as WhatsNewRouteImport } from './routes/whats-new'
 import { Route as PlaylistsIndexRouteImport } from './routes/playlists.index'
 import { Route as PlaylistsIdRouteImport } from './routes/playlists.$id'
 import { Route as SongIdRouteImport } from './routes/song.$id'
@@ -26,6 +34,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountDeletionRoute = AccountDeletionRouteImport.update({
+  id: '/account-deletion',
+  path: '/account-deletion',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -36,14 +54,44 @@ const FeaturesRoute = FeaturesRouteImport.update({
   path: '/features',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HelpRoute = HelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MySongsRoute = MySongsRouteImport.update({
   id: '/my-songs',
   path: '/my-songs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ToolsRoute = ToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WhatsNewRoute = WhatsNewRouteImport.update({
+  id: '/whats-new',
+  path: '/whats-new',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlaylistsIndexRoute = PlaylistsIndexRouteImport.update({
@@ -79,10 +127,18 @@ const SongIdEditRoute = SongIdEditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRoute
   '/features': typeof FeaturesRoute
+  '/help': typeof HelpRoute
   '/my-songs': typeof MySongsRoute
+  '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/support': typeof SupportRoute
+  '/terms': typeof TermsRoute
   '/tools': typeof ToolsRoute
+  '/whats-new': typeof WhatsNewRoute
   '/playlists/$id': typeof PlaylistsIdRoute
   '/song/$id': typeof SongIdRoute
   '/songs/new': typeof SongsNewRoute
@@ -92,10 +148,18 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRoute
   '/features': typeof FeaturesRoute
+  '/help': typeof HelpRoute
   '/my-songs': typeof MySongsRoute
+  '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/support': typeof SupportRoute
+  '/terms': typeof TermsRoute
   '/tools': typeof ToolsRoute
+  '/whats-new': typeof WhatsNewRoute
   '/playlists/$id': typeof PlaylistsIdRoute
   '/song/$id': typeof SongIdRoute
   '/songs/new': typeof SongsNewRoute
@@ -106,10 +170,18 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRoute
   '/features': typeof FeaturesRoute
+  '/help': typeof HelpRoute
   '/my-songs': typeof MySongsRoute
+  '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/support': typeof SupportRoute
+  '/terms': typeof TermsRoute
   '/tools': typeof ToolsRoute
+  '/whats-new': typeof WhatsNewRoute
   '/playlists/$id': typeof PlaylistsIdRoute
   '/song/$id': typeof SongIdRoute
   '/songs/new': typeof SongsNewRoute
@@ -121,10 +193,18 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
+    | '/account-deletion'
     | '/admin'
     | '/features'
+    | '/help'
     | '/my-songs'
+    | '/privacy'
+    | '/reset-password'
+    | '/support'
+    | '/terms'
     | '/tools'
+    | '/whats-new'
     | '/playlists/$id'
     | '/song/$id'
     | '/songs/new'
@@ -134,10 +214,18 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
+    | '/account-deletion'
     | '/admin'
     | '/features'
+    | '/help'
     | '/my-songs'
+    | '/privacy'
+    | '/reset-password'
+    | '/support'
+    | '/terms'
     | '/tools'
+    | '/whats-new'
     | '/playlists/$id'
     | '/song/$id'
     | '/songs/new'
@@ -147,10 +235,18 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/about'
+    | '/account-deletion'
     | '/admin'
     | '/features'
+    | '/help'
     | '/my-songs'
+    | '/privacy'
+    | '/reset-password'
+    | '/support'
+    | '/terms'
     | '/tools'
+    | '/whats-new'
     | '/playlists/$id'
     | '/song/$id'
     | '/songs/new'
@@ -161,10 +257,18 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+  AccountDeletionRoute: typeof AccountDeletionRoute
   AdminRoute: typeof AdminRoute
   FeaturesRoute: typeof FeaturesRoute
+  HelpRoute: typeof HelpRoute
   MySongsRoute: typeof MySongsRoute
+  PrivacyRoute: typeof PrivacyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  SupportRoute: typeof SupportRoute
+  TermsRoute: typeof TermsRoute
   ToolsRoute: typeof ToolsRoute
+  WhatsNewRoute: typeof WhatsNewRoute
   PlaylistsIdRoute: typeof PlaylistsIdRoute
   SongIdRoute: typeof SongIdRoute
   SongsNewRoute: typeof SongsNewRoute
@@ -182,6 +286,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account-deletion': {
+      id: '/account-deletion'
+      path: '/account-deletion'
+      fullPath: '/account-deletion'
+      preLoaderRoute: typeof AccountDeletionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -196,6 +314,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeaturesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/my-songs': {
       id: '/my-songs'
       path: '/my-songs'
@@ -203,11 +328,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MySongsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tools': {
       id: '/tools'
       path: '/tools'
       fullPath: '/tools'
       preLoaderRoute: typeof ToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/whats-new': {
+      id: '/whats-new'
+      path: '/whats-new'
+      fullPath: '/whats-new'
+      preLoaderRoute: typeof WhatsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/playlists/': {
@@ -257,10 +417,18 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  AccountDeletionRoute: AccountDeletionRoute,
   AdminRoute: AdminRoute,
   FeaturesRoute: FeaturesRoute,
+  HelpRoute: HelpRoute,
   MySongsRoute: MySongsRoute,
+  PrivacyRoute: PrivacyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  SupportRoute: SupportRoute,
+  TermsRoute: TermsRoute,
   ToolsRoute: ToolsRoute,
+  WhatsNewRoute: WhatsNewRoute,
   PlaylistsIdRoute: PlaylistsIdRoute,
   SongIdRoute: SongIdRoute,
   SongsNewRoute: SongsNewRoute,

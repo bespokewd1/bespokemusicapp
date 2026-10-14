@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { PenLine, ListMusic, Play, ArrowRight, Plus, Library, ScrollText, ClipboardPaste, Wrench, Check } from "lucide-react";
+import { PenLine, ListMusic, Play, ArrowRight, Plus, Library, ScrollText, ClipboardPaste, Wrench, Check, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SongCard } from "@/components/SongCard";
 import { useStore } from "@/lib/store";
@@ -41,14 +41,6 @@ function Explore() {
       <DemoSongs compact={ready && signedIn} />
       {!(ready && signedIn) && <SignUpCta />}
       <HowItWorks />
-      <footer className="mt-16 border-t border-border pt-6 pb-2 text-center">
-        <p className="text-xs text-muted-foreground">
-          Built by{" "}
-          <a href="https://bespokewebdesign.ca/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">
-            Bespoke Web Design
-          </a>
-        </p>
-      </footer>
     </div>
   );
 }
@@ -218,16 +210,22 @@ function SignUpCta() {
 }
 
 function HowItWorks() {
+  const { signedIn, ready, requireAuth } = useStore();
+  const navigate = useNavigate();
+  const steps = [
+    { icon: PenLine, title: "Add Your Songs", text: "Copy and paste your chords, lyrics, or guitar tabs from your own collection or another source you're permitted to use. You can also create songs from scratch." },
+    { icon: ListMusic, title: "Organize Your Collection", text: "Save favourites, create playlists, and arrange songs for practice, rehearsals, jam sessions, or performances." },
+    { icon: SlidersHorizontal, title: "Make It Yours", text: "Adjust chord keys, capo settings, font sizes, scroll speed, and add personal notes or annotations to suit your playing style." },
+    { icon: Play, title: "Play Anywhere", text: "Open your songbook, follow your chords and lyrics, and use auto-scroll for hands-free playing." },
+  ];
   return (
     <section id="how-it-works" className="mt-14 scroll-mt-24">
-      <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">How It Works</h2>
-      <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-5">
-        {[
-          { icon: PenLine, title: "Add", text: "Write or paste your chords and lyrics." },
-          { icon: ListMusic, title: "Organize", text: "Save songs and create playlists." },
-          { icon: Play, title: "Play", text: "Use auto-scroll, transposition, and guitar tools." },
-        ].map((s, i) => (
-          <div key={s.title} className="flex min-w-0 gap-3 rounded-2xl border border-border bg-card p-5 md:p-6">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">How It Works</p>
+      <h2 className="mt-1 font-display text-2xl font-semibold tracking-tight sm:text-3xl">Your music collection, all in one place.</h2>
+      <p className="mt-2 max-w-2xl text-muted-foreground">Save your chords, lyrics, and tabs, organize the songs you love, and keep everything ready whenever it's time to play.</p>
+      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 md:gap-5">
+        {steps.map((s, i) => (
+          <div key={s.title} className="flex min-w-0 flex-col gap-3 rounded-2xl border border-border bg-card p-5 md:p-6">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary"><s.icon className="h-5 w-5" /></span>
             <span className="min-w-0">
               <span className="block font-display text-lg font-semibold">{i + 1}. {s.title}</span>
@@ -236,9 +234,16 @@ function HowItWorks() {
           </div>
         ))}
       </div>
-      <Link to="/features" className="mt-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        Explore All Features <ArrowRight className="h-4 w-4" />
-      </Link>
+      <p className="mt-5 text-muted-foreground">Your collection grows with you, whether you're practising at home, jamming with friends, or preparing for a performance.</p>
+      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
+        {!(ready && signedIn) && (
+          <Button className="h-12 rounded-full px-6" onClick={() => requireAuth("Create your free Beta account.", () => navigate({ to: "/my-songs" }))}>Start Building Your Songbook</Button>
+        )}
+        <button onClick={() => scrollTo("demo-songs")} className="text-sm font-medium text-primary hover:underline">Try a Demo Song</button>
+        <Link to="/features" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          Explore All Features <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
     </section>
   );
 }
