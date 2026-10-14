@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n";
 import { Link } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 import { uniqueChords, type Song } from "@/lib/songs";
@@ -6,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 export function SongCard({ song, action, playlistId }: { song: Song; action?: React.ReactNode; playlistId?: string }) {
   const { saved, toggleSaved, requireAuth, signedIn } = useStore();
+  const { t } = useT();
   const isSaved = signedIn && saved.includes(song.id);
   const chords = uniqueChords(song);
   return (
@@ -31,7 +33,7 @@ export function SongCard({ song, action, playlistId }: { song: Song; action?: Re
       </Link>
       <div className="relative z-10 flex shrink-0 flex-col items-center gap-1">
         <button
-          aria-label={isSaved ? "Unsave song" : "Save song"}
+          aria-label={isSaved ? t("Unsave song") : t("Save song")}
           onClick={() => requireAuth("Sign in to save songs to your collection.", () => toggleSaved(song.id))}
           className="rounded-full p-2 text-muted-foreground transition hover:bg-secondary hover:text-primary"
         >

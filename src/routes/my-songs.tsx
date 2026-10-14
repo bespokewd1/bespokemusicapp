@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Library, Plus } from "lucide-react";
@@ -23,14 +24,15 @@ export const Route = createFileRoute("/my-songs")({
 function MySongs() {
   const { signedIn, saved, added, recent, getSong, requireAuth } = useStore();
   const [tab, setTab] = useState("saved");
+  const { t } = useT();
   const ids = tab === "saved" ? saved : tab === "added" ? added.map((a) => a.id) : recent;
   const list = ids.map(getSong).filter(Boolean) as NonNullable<ReturnType<typeof getSong>>[];
 
   return (
     <div>
-      <PageHeader eyebrow="Your collection" title="My Songs">
+      <PageHeader eyebrow={t("Your collection")} title={t("My Songs")}>
         <Button asChild={signedIn} className="rounded-full" onClick={signedIn ? undefined : () => requireAuth("Sign in to add your own songs.", () => {})}>
-          {signedIn ? <Link to="/songs/new"><Plus className="mr-1 h-4 w-4" />Add Song</Link> : <span><Plus className="mr-1 h-4 w-4" />Add Song</span>}
+          {signedIn ? <Link to="/songs/new"><Plus className="mr-1 h-4 w-4" />{t("Add Song")}</Link> : <span><Plus className="mr-1 h-4 w-4" />{t("Add Song")}</span>}
         </Button>
       </PageHeader>
       {!signedIn ? (
@@ -39,16 +41,16 @@ function MySongs() {
         <>
           <Tabs value={tab} onValueChange={setTab} className="mb-5">
             <TabsList className="h-11 w-full rounded-full bg-secondary p-1 sm:w-auto">
-              <TabsTrigger value="saved" className="flex-1 rounded-full px-4">Saved</TabsTrigger>
-              <TabsTrigger value="added" className="flex-1 rounded-full px-4">My Added</TabsTrigger>
-              <TabsTrigger value="recent" className="flex-1 rounded-full px-4">Recent</TabsTrigger>
+              <TabsTrigger value="saved" className="flex-1 rounded-full px-4">{t("Saved")}</TabsTrigger>
+              <TabsTrigger value="added" className="flex-1 rounded-full px-4">{t("My Added")}</TabsTrigger>
+              <TabsTrigger value="recent" className="flex-1 rounded-full px-4">{t("Recent")}</TabsTrigger>
             </TabsList>
           </Tabs>
           {list.length ? (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{list.map((s) => <SongCard key={s.id} song={s} />)}</div>
           ) : (
             <p className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
-              {tab === "added" ? <>Nothing here yet. <Link to="/songs/new" className="text-primary underline">Add your first song</Link>.</> : "Nothing here yet — explore and start playing."}
+              {tab === "added" ? <>{t("Nothing here yet.")} <Link to="/songs/new" className="text-primary underline">{t("Add your first song")}</Link>.</> : t("Nothing here yet — explore and start playing.")}
             </p>
           )}
         </>
