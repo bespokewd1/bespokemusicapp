@@ -27,9 +27,9 @@ describe("extra chord shapes", () => {
     expect(new Set(pcs(am.frets))).toEqual(new Set([9, 0, 4]));
     expect(findChord("C")!.voicings.find((v) => v.label === "Triad")!.frets).toEqual([null, null, null, 0, 1, 0]);
   });
-  it("C gets its A-shape barre at fret 3 and D-shape at fret 10", () => {
+  it("C gets its A-shape barre at fret 3 and E-shape at fret 8", () => {
     const frets = findChord("C")!.voicings.map((v) => v.frets.join(","));
     expect(frets).toContain(",3,5,5,5,3");
-    expect(frets).toContain(",,10,12,13,12");
+    expect(frets).toContain("8,10,10,9,8,8");
   });
 });
