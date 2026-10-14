@@ -23,7 +23,7 @@ export function GuitarTuner() {
   const pick = (i: number) => { playClick(); setMode("manual"); setManual(i); };
   // Strings low (6th) -> high (1st); headstock 3+3: left pegs = strings 6,5,4 (top→bottom reversed for realism)
   const left = [2, 1, 0];
-  const right = [3, 4, 5];
+  const right = [5, 4, 3];
 
   return (
     <section className="mx-auto w-full max-w-2xl" aria-label="Guitar tuner">
@@ -62,7 +62,7 @@ export function GuitarTuner() {
 
         {/* Headstock */}
         <div className="mx-auto mt-5 grid max-w-sm grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
-          <Pegs side="left" order={left} />
+          {Pegs({ side: "left", order: left })}
           <svg viewBox="0 0 120 230" className="h-56 w-28 sm:h-64 sm:w-32" aria-hidden>
             <path d="M18 10 Q60 -2 102 10 L96 190 Q60 200 24 190 Z" className="fill-tuner-off" />
             <rect x="30" y="196" width="60" height="34" rx="3" className="fill-tuner-off opacity-70" />
@@ -70,7 +70,7 @@ export function GuitarTuner() {
             {[0, 1, 2, 3, 4, 5].map((s) => {
               const x = 38 + s * 8.8;
               const pegIdx = s; // string 6 at left
-              const peg = pegIdx < 3 ? { x: 24, y: 52 + (2 - pegIdx) * 50 } : { x: 96, y: 52 + (pegIdx - 3) * 50 };
+              const peg = pegIdx < 3 ? { x: 24, y: 52 + (2 - pegIdx) * 50 } : { x: 96, y: 52 + (5 - pegIdx) * 50 };
               const on = idx === pegIdx;
               return (
                 <g key={s}>
@@ -81,7 +81,7 @@ export function GuitarTuner() {
               );
             })}
           </svg>
-          <Pegs side="right" order={right} />
+          {Pegs({ side: "right", order: right })}
         </div>
 
         <div className="mt-5 grid grid-cols-[auto_minmax(0,1fr)] gap-2">
