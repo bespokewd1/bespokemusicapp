@@ -25,7 +25,7 @@ const BLOCKS: [string, string][] = [
   ["Notes", "> Your performance note"],
 ];
 
-export function SongForm({ song, demo, playlistId }: { song?: Song; demo?: boolean; playlistId?: string }) {
+export function SongForm({ song, demo, playlistId }: { song?: Song; demo?: boolean; playlistId?: string | undefined }) {
   const { addToPlaylist, playlists, upsertSong, requireAuth, uploadSongImage, removeSongImage, signedIn, allSongs, user } = useStore();
   const isDemo = !!demo || (!!song && !song.ownerId);
   const [images, setImages] = useState<SongImage[]>(song?.images ?? []);
