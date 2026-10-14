@@ -12,7 +12,7 @@ export function SongSheet({
   fontSize?: number;
   transpose?: number;
   nashvilleKey?: string | null;
-  onChord?: (chord: string) => void;
+  onChord?: ((chord: string) => void) | undefined;
 }) {
   return (
     <div className="space-y-8" style={{ fontSize }}>

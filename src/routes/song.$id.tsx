@@ -25,7 +25,7 @@ import { loadTranspose, loadViewPrefs, playlistNeighbours, saveTranspose, saveVi
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/song/$id")({
-  validateSearch: (s: Record<string, unknown>): { pl?: string } => (typeof s.pl === "string" && s.pl ? { pl: s.pl } : {}),
+  validateSearch: (s: Record<string, unknown>): { pl?: string } => (typeof s["pl"] === "string" && s["pl"] ? { pl: s["pl"] as string } : {}),
   head: () => ({
     meta: [
       { title: "Song — Bespoke Music" },
@@ -106,7 +106,7 @@ function SongPage() {
   useEffect(() => {
     if (!perf) return;
     const root = document.documentElement;
-    root.dataset.perf = "1";
+    root.dataset["perf"] = "1";
     root.requestFullscreen?.().catch(() => {});
     let lock: { release: () => Promise<void> } | null = null;
     const nav = navigator as Navigator & { wakeLock?: { request: (t: "screen") => Promise<{ release: () => Promise<void> }> } };
@@ -119,7 +119,7 @@ function SongPage() {
     document.addEventListener("visibilitychange", onVis);
     document.addEventListener("fullscreenchange", fsCheck);
     return () => {
-      delete root.dataset.perf;
+      delete root.dataset["perf"];
       document.removeEventListener("visibilitychange", onVis);
       document.removeEventListener("fullscreenchange", fsCheck);
       lock?.release().catch(() => {});
@@ -143,7 +143,7 @@ function SongPage() {
   const nashvilleKey = nash && baseKey ? baseKey : null;
   const playlist = pl ? playlists.find((p) => p.id === pl) : undefined;
   const nb = playlist ? playlistNeighbours(playlist.songIds, song.id) : null;
-  const goTo = (sid: string) => { stop(); navigate({ to: "/song/$id", params: { id: sid }, search: { pl } }); };
+  const goTo = (sid: string) => { stop(); navigate({ to: "/song/$id", params: { id: sid }, search: pl ? { pl } : {} }); };
   const sections = song.sections.map((s, i) => ({ name: s.name, i })).filter((s) => s.name.trim());
 
   const close = () => setMoreOpen(false);
