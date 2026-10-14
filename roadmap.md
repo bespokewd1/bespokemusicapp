@@ -11,4 +11,5 @@
 - [x] Chord library: shapes 2 and 3 plus one triad per chord
 - [x] English / French language switch
 - [x] Offline access (published app)
-- [ ] Later: capo 0–12, better tab pasting, themes, Delete Account button
+- [x] Playlist "New song", tab blocks, section detection, chord hover, Space to play
+- [ ] Later: capo 0–12, themes, Delete Account button
