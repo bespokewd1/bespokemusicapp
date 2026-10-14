@@ -1,5 +1,6 @@
 // Deterministic chord-sheet import helpers (no AI). Kept separate from the UI so a
 // licensed search/import API can later plug in by producing the same native text.
+import { isTabLine } from "./songs";
 
 const CHORD_RE = /^[A-G](#|b)?(maj|min|m|M|dim|aug|sus|add|°|\+)?\d{0,2}(sus\d?|add\d{1,2}|b5|#5|b9|#9|#11|b13)*(\/[A-G](#|b)?)?$/;
 const SECTION_WORDS = /^(intro|verse|pre-?chorus|chorus|bridge|outro|interlude|solo|instrumental|hook|refrain|coda|tag|ending|breakdown)(\s*\d+)?$/i;
@@ -51,9 +52,10 @@ export function toNativeFormat(raw: string): string {
       out.push(`{${h}}`);
       continue;
     }
+    if (isTabLine(line)) { out.push(line); continue; }
     if (isChordLine(line)) {
       const next = lines[i + 1];
-      if (next !== undefined && next.trim() && !isChordLine(next) && !heading(next)) {
+      if (next !== undefined && next.trim() && !isChordLine(next) && !heading(next) && !isTabLine(next)) {
         out.push(merge(line, next));
         i++;
       } else {
