@@ -132,7 +132,7 @@ export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
             <Textarea value={paste} onChange={(e) => setPaste(e.target.value)} rows={8} className="font-mono text-sm" placeholder={"[Verse]\nG        C\nWrite your words here"} />
           </Field>
           <Button type="button" className="h-11 rounded-full" disabled={!paste.trim()} onClick={() => { setText(toNativeFormat(paste)); toast.success("Converted — check the editor below"); }}>
-            Convert to editor
+            Convert &amp; Preview
           </Button>
         </div>
       )}

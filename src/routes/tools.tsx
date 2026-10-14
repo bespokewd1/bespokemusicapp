@@ -41,7 +41,7 @@ function Tools() {
         ))}
       </div>
       {tab === "tuner" ? (
-        <section aria-labelledby="tuner-h">
+        <section aria-label="Guitar tuner">
           
           <GuitarTuner />
         </section>
