@@ -13,3 +13,4 @@
 - Demo songs are songs rows with owner_id NULL; personal songs carry owner_id — one table keeps playlists/saves uniform.
 - Chord voicings live as structured data in src/lib/chords.ts (unit-tested), rendered by ChordDiagram.
 - Tuner pitch math/detection lives in pure src/lib/tuner.ts (unit-tested); mic/Web Audio wiring in src/hooks/use-tuner.ts, never routed to speakers.
+- Song-viewer display prefs (size, Nashville, per-song transpose) are device-local in src/lib/view-prefs.ts; scroll speed stays in user_preferences — avoids new tables for cosmetic settings.
