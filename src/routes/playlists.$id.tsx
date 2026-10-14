@@ -52,7 +52,7 @@ function PlaylistDetail() {
         <div className="relative mt-5 flex flex-wrap gap-2">
           {songs[0] && (
             <Button asChild variant="secondary" className="h-11 rounded-full">
-              <Link to="/song/$id" params={{ id: songs[0].id }}><Play className="mr-1 h-4 w-4 fill-current" /> Start playing</Link>
+              <Link to="/song/$id" params={{ id: songs[0].id }} search={{ pl: p.id }}><Play className="mr-1 h-4 w-4 fill-current" /> Start playing</Link>
             </Button>
           )}
           <DropdownMenu>
@@ -86,7 +86,7 @@ function PlaylistDetail() {
               <button aria-label="Move down" disabled={i === songs.length - 1} onClick={() => movePlaylistSong(p.id, s.id, 1)} className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground hover:bg-secondary disabled:opacity-30"><ArrowDown className="h-4 w-4" /></button>
             </div>
             <div className="min-w-0 flex-1">
-              <SongCard song={s} action={
+              <SongCard song={s} playlistId={p.id} action={
                 <button aria-label="Remove from playlist" onClick={() => removeFromPlaylist(p.id, s.id)} className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground hover:bg-secondary hover:text-destructive"><X className="h-4 w-4" /></button>
               } />
             </div>

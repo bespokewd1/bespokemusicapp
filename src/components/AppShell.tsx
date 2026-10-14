@@ -28,7 +28,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { signedIn, ready, setLoginOpen } = useStore();
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
+      <header data-chrome className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
         <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:gap-4 px-4 py-3 md:flex md:justify-between">
           <Logo />
           <nav className="hidden items-center gap-1 md:flex">
@@ -58,7 +58,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <main className="mx-auto max-w-6xl px-4 pb-28 pt-6 md:pb-16">{children}</main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+      <nav data-chrome className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
         <div className="grid grid-cols-4">
           {TABS.map((t) => (
             <Link
