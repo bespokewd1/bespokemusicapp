@@ -123,7 +123,7 @@ export function parseLine(line: string): Segment[] {
 
 export function uniqueChords(song: Song): string[] {
   const set = new Set<string>();
-  song.sections.forEach((sec) => sec.lines.forEach((l) => parseLine(l).forEach((x) => x.chord && /^[A-G]/.test(x.chord) && set.add(x.chord))));
+  song.sections.forEach((sec) => sec.lines.forEach((l) => parseLine(l).forEach((x) => x.chord && /^[A-G][#b]?[a-z0-9#+°ø()]*(\/[A-G][#b]?)?$/.test(x.chord) && !/^(Chorus|Bridge|Break)$/i.test(x.chord) && set.add(x.chord))));
   return [...set];
 }
 

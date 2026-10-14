@@ -44,7 +44,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Link>
             ))}
           </nav>
-          <HeaderActions />
+          {ready && signedIn ? <HeaderActions /> : <span />}
           {!ready ? (
             <span className="h-9 w-20" />
           ) : signedIn ? (
