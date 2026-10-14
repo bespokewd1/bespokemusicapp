@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,15 +11,22 @@ import { PageHeader } from "./PageHeader";
 import { useStore } from "@/lib/store";
 import { sectionsToText, textToSections, type Difficulty, type Song } from "@/lib/songs";
 import { isUltimateGuitarUrl, toNativeFormat, ultimateGuitarSearchUrl } from "@/lib/import";
-import { ClipboardPaste, ClipboardPen, ExternalLink, Globe, ImagePlus } from "lucide-react";
+import { ClipboardPaste, ClipboardPen, ExternalLink, Globe, ImagePlus, Plus, Undo2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { SongImages } from "./SongImages";
 import type { SongImage } from "@/lib/songs";
 
 const EXAMPLE = "{Verse}\n[G]Write your words and [C]put chords\n[G]in square brackets [D]like this\n\n{Chorus}\n[C]Sing it [G]loud";
 
-export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
-  const { upsertSong, requireAuth, uploadSongImage, removeSongImage, signedIn, allSongs, user } = useStore();
+const BLOCKS: [string, string][] = [
+  ["Chords & Lyrics", "[G]Lyrics with [C]chords"],
+  ["Guitar Tab", "e|-----------------|\nB|-----------------|\nG|-----------------|\nD|-----------------|\nA|-----------------|\nE|-----------------|"],
+  ["Section Heading", "{Chorus}"],
+  ["Notes", "> Your performance note"],
+];
+
+export function SongForm({ song, demo, playlistId }: { song?: Song; demo?: boolean; playlistId?: string | undefined }) {
+  const { addToPlaylist, playlists, upsertSong, requireAuth, uploadSongImage, removeSongImage, signedIn, allSongs, user } = useStore();
   const isDemo = !!demo || (!!song && !song.ownerId);
   const [images, setImages] = useState<SongImage[]>(song?.images ?? []);
   const [featured, setFeatured] = useState(song?.pickUp ?? false);
@@ -48,6 +56,18 @@ export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
   const [paste, setPaste] = useState("");
   const [ugQuery, setUgQuery] = useState("");
   const [ugUrl, setUgUrl] = useState("");
+  const [beforeConvert, setBeforeConvert] = useState<string | null>(null);
+  const editor = useRef<HTMLTextAreaElement>(null);
+  const insertBlock = (tpl: string) => {
+    const el = editor.current;
+    const at = el ? el.selectionEnd : text.length;
+    const before = text.slice(0, at);
+    const pre = before && !before.endsWith("\n\n") ? (before.endsWith("\n") ? "\n" : "\n\n") : "";
+    const next = before + pre + tpl + "\n" + text.slice(at);
+    setText(next);
+    requestAnimationFrame(() => { if (el) { el.focus(); const pos = (before + pre + tpl).length; el.setSelectionRange(pos, pos); } });
+  };
+  const playlist = playlistId ? playlists.find((x) => x.id === playlistId) : undefined;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,16 +89,17 @@ export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
       );
       setBusy(false);
       if (!id) return;
-      toast.success(song ? "Song updated" : demo ? "Demo song added (unpublished)" : "Song added to My Songs");
+      if (!song && playlist) await addToPlaylist(playlist.id, id);
+      toast.success(song ? "Song updated" : demo ? "Demo song added (unpublished)" : playlist ? `Song added to ${playlist.name}` : "Song added to My Songs");
       if (demo) navigate({ to: "/admin" });
-      else navigate({ to: "/song/$id", params: { id } });
+      else navigate({ to: "/song/$id", params: { id }, search: playlist ? { pl: playlist.id } : {} });
     });
   };
 
   if (!song && method === null) {
     return (
       <div>
-        <PageHeader eyebrow="New song" title="Add a song" />
+        <PageHeader eyebrow={playlist ? `New song · ${playlist.name}` : "New song"} title="Add a song" />
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {([
             ["paste", ClipboardPaste, "Copy & Paste", "Paste your chords and lyrics from your own source. We'll help format them into a readable song sheet.", ["Paste chords & lyrics", "Convert & Preview", "Add title & artist, then Save"], true],
@@ -131,13 +152,19 @@ export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
           <Field label="Paste chords & lyrics">
             <Textarea value={paste} onChange={(e) => setPaste(e.target.value)} rows={8} className="font-mono text-sm" placeholder={"[Verse]\nG        C\nWrite your words here"} />
           </Field>
-          <Button type="button" className="h-11 rounded-full" disabled={!paste.trim()} onClick={() => { setText(toNativeFormat(paste)); toast.success("Converted — check the editor below"); }}>
+          <Button type="button" className="h-11 rounded-full" disabled={!paste.trim()} onClick={() => { setBeforeConvert(text); setText(toNativeFormat(paste)); toast.success("Converted — check the editor below"); }}>
             Convert &amp; Preview
           </Button>
+          {beforeConvert !== null && (
+            <Button type="button" variant="ghost" className="ml-2 h-11 rounded-full" onClick={() => { setText(paste); setBeforeConvert(null); toast("Original pasted text restored"); }}>
+              <Undo2 className="mr-1 h-4 w-4" />Use original text
+            </Button>
+          )}
+          <p className="text-xs text-muted-foreground">Guitar and bass tabs (lines like e|--5--7--|) are kept exactly as pasted.</p>
         </div>
       )}
       <form onSubmit={submit} className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <Field label="Title"><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Song title" className="h-11" /></Field>
           <Field label="Artist"><Input value={artist} onChange={(e) => setArtist(e.target.value)} placeholder="Artist" className="h-11" /></Field>
           <div className="grid grid-cols-3 gap-3">
@@ -150,8 +177,18 @@ export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
             </Field>
           </div>
           <Field label="Chords & lyrics">
-            <Textarea value={text} onPaste={onPaste} onChange={(e) => setText(e.target.value)} rows={14} className="font-mono text-sm" />
-            <p className="mt-1 text-xs text-muted-foreground">Use {"{Verse}"} for section names and [C] before a word for chords.</p>
+            <div className="flex justify-end">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button type="button" variant="outline" size="sm" className="h-9 rounded-full"><Plus className="mr-1 h-4 w-4" />Insert</Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {BLOCKS.map(([label, tpl]) => <DropdownMenuItem key={label} onClick={() => insertBlock(tpl)}>{label}</DropdownMenuItem>)}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <Textarea ref={editor} wrap="off" spellCheck={false} value={text} onPaste={onPaste} onChange={(e) => setText(e.target.value)} rows={14} className="overflow-x-auto whitespace-pre font-mono text-sm" />
+            <p className="mt-1 text-xs text-muted-foreground">Use {"{Verse}"} or [Chorus] for sections, [C] before a word for chords, tab lines like e|--3--| for tabs, and "&gt; " for notes.</p>
           </Field>
           <Field label="Images (tabs, chord charts, screenshots)">
             <label onPaste={onPaste} tabIndex={0} className="flex min-h-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-border bg-card p-4 text-center text-sm text-muted-foreground hover:border-primary">
@@ -172,7 +209,7 @@ export function SongForm({ song, demo }: { song?: Song; demo?: boolean }) {
             <Button type="button" variant="outline" className="h-11 rounded-full" onClick={() => history.back()}>Cancel</Button>
           </div>
         </div>
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
+        <div className="min-w-0 rounded-2xl border border-border bg-card p-5 shadow-soft">
           <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Live preview</p>
           <SongSheet sections={sections} fontSize={16} />
           <SongImages images={images} />

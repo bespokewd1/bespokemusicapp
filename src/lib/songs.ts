@@ -142,6 +142,28 @@ export function transposeChord(chord: string, by: number): string {
     .join("/");
 }
 
+/* ---------- Content blocks ---------- */
+/** A tablature string line, e.g. "e|--5h7--|", "E|-----", "A ||-0-" (guitar, bass, alt tunings). */
+export function isTabLine(line: string): boolean {
+  return /^\s*[A-Ga-g][#b]?\s?[|:]/.test(line) && /[-–]{2,}/.test(line);
+}
+/** Free-text performance note line, written as "> text". */
+export function isNoteLine(line: string): boolean {
+  return /^\s*>\s?/.test(line);
+}
+
+const SECTION_HEAD = /^(intro|verse|pre-?chorus|chorus|refrain|bridge|outro|interlude|solo|guitar solo|instrumental|hook|coda|tag|ending|breakdown|riff|fill|lead)\b[\w\s\-–#.]*$/i;
+/** Recognise common section headings: "{Chorus}", "[Verse 1]", "Chorus:", "Refrain", "[Intro - Guitar Tab]". */
+export function sectionHeading(line: string): string | null {
+  const t = line.trim();
+  const curly = t.match(/^\{(.+)\}$/);
+  if (curly) return curly[1]!.trim();
+  const bracket = t.match(/^\[\s*([^\]]+?)\s*\]:?$/);
+  const inner = (bracket?.[1] ?? t.replace(/:$/, "")).trim();
+  if (inner.length > 40 || !SECTION_HEAD.test(inner)) return null;
+  return inner.charAt(0).toUpperCase() + inner.slice(1);
+}
+
 /* ---------- Text <-> sections (for Add/Edit form) ---------- */
 export function sectionsToText(sections: Section[]): string {
   return sections.map((sec) => `{${sec.name}}\n${sec.lines.join("\n")}`).join("\n\n");
@@ -149,11 +171,11 @@ export function sectionsToText(sections: Section[]): string {
 export function textToSections(text: string): Section[] {
   const sections: Section[] = [];
   let cur: Section | null = null;
-  text.split("\n").forEach((raw) => {
-    const line = raw.trimEnd();
-    const h = line.match(/^\{(.+)\}$/);
+  text.replace(/\r\n?/g, "\n").split("\n").forEach((raw) => {
+    const line = raw.replace(/\s+$/, "");
+    const h = isTabLine(line) ? null : sectionHeading(line);
     if (h) {
-      const sec: Section = { name: h[1] ?? "Section", lines: [] };
+      const sec: Section = { name: h, lines: [] };
       cur = sec;
       sections.push(sec);
     } else if (line.trim()) {
@@ -167,3 +189,4 @@ export function textToSections(text: string): Section[] {
   });
   return sections;
 }
+

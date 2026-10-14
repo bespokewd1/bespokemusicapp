@@ -1,6 +1,8 @@
 /* French (Canada-friendly) translations keyed by the English source text.
  * Missing keys fall back to English, so new UI text never breaks. */
 export const FR: Record<string, string> = {
+  "Guitar tab": "Tablature de guitare",
+  "Tabs show fret positions and are not transposed.": "Les tablatures indiquent les cases et ne sont pas transposées.",
   // Navigation & account
   Home: "Accueil",
   "My Songs": "Mes chansons",
