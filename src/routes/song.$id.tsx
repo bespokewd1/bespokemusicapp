@@ -441,3 +441,15 @@ function Stepper({ label, value, onMinus, onPlus }: { label: string; value: stri
     </div>
   );
 }
+
+type ToolBtnProps = { icon: React.ComponentType<{ className?: string }>; label: string; active?: boolean; title?: string; className?: string } & React.ButtonHTMLAttributes<HTMLButtonElement>;
+const ToolBtn = forwardRef<HTMLButtonElement, ToolBtnProps>(function ToolBtn({ icon: Icon, label, active, title, className, ...rest }, ref) {
+  return (
+    <button ref={ref} type="button" title={title ?? label} aria-label={title ?? label} aria-pressed={active} {...rest}
+      className={cn("flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[11px] font-medium transition-colors sm:flex-row sm:gap-1.5 sm:rounded-full sm:px-3 sm:text-sm",
+        active ? "bg-primary/10 text-primary" : "text-foreground hover:bg-secondary", className)}>
+      <Icon className={cn("h-5 w-5 shrink-0 sm:h-4 sm:w-4", active && label.startsWith("Save") && "fill-current")} />
+      <span className="truncate">{label}</span>
+    </button>
+  );
+});
