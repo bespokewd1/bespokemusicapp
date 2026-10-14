@@ -100,6 +100,19 @@ function SongPage() {
 
   useEffect(() => stop, [id, stop]);
 
+  // Keyboard: Space starts/pauses auto-scroll (ignored while typing or on focused buttons)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== "Space" && e.key !== " ") return;
+      const t = e.target as HTMLElement | null;
+      if (t?.closest("input,textarea,select,button,a,[contenteditable='true'],[role='dialog'],[role='menu'],[role='slider']")) return;
+      e.preventDefault();
+      toggle();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [toggle]);
+
   useEffect(() => {
     const el = controlsRef.current;
     if (!el) return;

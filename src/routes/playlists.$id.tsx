@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ArrowDown, ArrowLeft, ArrowUp, Pencil, Play, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { SongCard } from "@/components/SongCard";
 import { useStore } from "@/lib/store";
@@ -59,9 +59,13 @@ function PlaylistDetail() {
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" className="h-11 rounded-full"><Plus className="mr-1 h-4 w-4" /> Add songs</Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="max-h-72 overflow-y-auto">
+            <DropdownMenuContent className="max-h-72 w-72 max-w-[calc(100vw-2rem)] overflow-y-auto">
+              <DropdownMenuItem onClick={() => navigate({ to: "/songs/new", search: { pl: p.id } })} className="font-semibold text-primary">
+                <Plus className="mr-1 h-4 w-4" /> New song…
+              </DropdownMenuItem>
+              {available.length > 0 && <DropdownMenuSeparator />}
               {available.map((s) => (
-                <DropdownMenuItem key={s.id} onClick={() => addToPlaylist(p.id, s.id)}>{s.title} <span className="ml-2 text-xs text-muted-foreground">{s.artist}</span></DropdownMenuItem>
+                <DropdownMenuItem key={s.id} onClick={() => addToPlaylist(p.id, s.id)}><span className="truncate">{s.title}</span> <span className="ml-2 truncate text-xs text-muted-foreground">{s.artist}</span></DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
