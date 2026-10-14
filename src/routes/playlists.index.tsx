@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/PageHeader";
+import imgPractice from "@/assets/pl-practice.jpg";
+import imgAcoustic from "@/assets/pl-acoustic.jpg";
+import imgLearn from "@/assets/pl-learn.jpg";
+import imgLive from "@/assets/pl-live.jpg";
 import { PLAYLIST_TEMPLATES, useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/playlists/")({
@@ -20,6 +24,7 @@ export const Route = createFileRoute("/playlists/")({
 });
 
 const ICONS = { dumbbell: Dumbbell, guitar: Guitar, graduation: GraduationCap, mic: Mic } as const;
+const IMAGES = { dumbbell: imgPractice, guitar: imgAcoustic, graduation: imgLearn, mic: imgLive } as const;
 const PLAYLIST_REASON = "Sign in to create playlists, save your favourite songs, and keep your music organized.";
 
 function Playlists() {
@@ -47,16 +52,20 @@ function Playlists() {
       </PageHeader>
 
       <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">Starter playlists</h2>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-5">
         {PLAYLIST_TEMPLATES.map((t) => {
           const Icon = ICONS[t.icon];
           const mine = playlists.find((p) => p.template === t.id);
           return (
-            <button key={t.id} onClick={() => openTemplate(t)} className="group flex items-start gap-3 rounded-2xl border border-border bg-card p-4 text-left shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-secondary text-primary"><Icon className="h-5 w-5" /></span>
-              <span className="min-w-0">
-                <span className="block font-display text-lg font-semibold">{mine?.name ?? t.name}</span>
-                <span className="block text-sm text-muted-foreground">{mine ? `${mine.songIds.length} songs` : t.description}</span>
+            <button key={t.id} onClick={() => openTemplate(t)} className="group relative isolate flex min-h-36 items-end overflow-hidden rounded-2xl border border-border text-left shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift sm:min-h-44 lg:min-h-56">
+              <img src={IMAGES[t.icon]} alt="" width={1088} height={608} loading="lazy" className="absolute inset-0 -z-20 h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105" />
+              <span className="absolute inset-0 -z-10 bg-gradient-to-t from-foreground/90 via-foreground/55 to-foreground/10" />
+              <span className="flex w-full min-w-0 items-end gap-3 p-4 text-background md:p-6">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-background/90 text-primary"><Icon className="h-5 w-5" /></span>
+                <span className="min-w-0">
+                  <span className="block truncate font-display text-xl font-semibold md:text-2xl">{mine?.name ?? t.name}</span>
+                  <span className="block text-sm opacity-90">{mine ? `${mine.songIds.length} songs` : t.description}</span>
+                </span>
               </span>
             </button>
           );
