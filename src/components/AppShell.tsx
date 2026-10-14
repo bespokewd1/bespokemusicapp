@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { SiteFooter } from "@/components/SiteFooter";
 import { Compass, Library, ListMusic, Wrench, LayoutDashboard, LogOut, Download } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import logoH from "@/assets/bespoke-logo-horizontal.png.asset.json";
