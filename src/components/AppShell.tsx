@@ -1,5 +1,5 @@
-import { Link, useNavigate } from "@tanstack/react-router";
-import { Compass, Library, ListMusic, Wrench, LayoutDashboard, LogOut, Plus, Download, Upload } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Compass, Library, ListMusic, Wrench, LayoutDashboard, LogOut, Download } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import logoH from "@/assets/bespoke-logo-horizontal.png.asset.json";
 import type { ReactNode } from "react";
@@ -29,7 +29,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
-        <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 sm:gap-4 px-4 py-3 md:flex md:justify-between">
+        <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:gap-4 px-4 py-3 md:flex md:justify-between">
           <Logo />
           <nav className="hidden items-center gap-1 md:flex">
             {TABS.map((t) => (
@@ -44,7 +44,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Link>
             ))}
           </nav>
-          {ready && signedIn ? <HeaderActions /> : <span />}
           {!ready ? (
             <span className="h-9 w-20" />
           ) : signedIn ? (
@@ -76,38 +75,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </nav>
       <LoginDialog />
-    </div>
-  );
-}
-
-function HeaderActions() {
-  const { signedIn, requireAuth } = useStore();
-  const navigate = useNavigate();
-  const go = (to: string, reason: string) => {
-    if (signedIn) navigate({ to });
-    else requireAuth(reason, () => {});
-  };
-  return (
-    <div className="flex items-center gap-2">
-      <Button
-        size="sm"
-        className="h-10 rounded-full px-3 sm:px-4"
-        onClick={() => go("/songs/new", "Sign in to add your own songs.")}
-      >
-        <Plus className="h-4 w-4 sm:mr-1" />
-        <span className="hidden sm:inline">Add Song</span>
-        <span className="sr-only sm:hidden">Add Song</span>
-      </Button>
-      <Button
-        size="sm"
-        variant="outline"
-        className="h-10 rounded-full px-3 sm:px-4"
-        onClick={() => go("/playlists", "Sign in to create playlists, save your favourite songs, and keep your music organized.")}
-      >
-        <Plus className="h-4 w-4 sm:mr-1" />
-        <span className="hidden sm:inline">Create Playlist</span>
-        <span className="sr-only sm:hidden">Create Playlist</span>
-      </Button>
     </div>
   );
 }
