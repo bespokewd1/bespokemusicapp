@@ -212,7 +212,7 @@ function SongPage() {
 
       {/* Toolbar: Size | Transpose | Nashville | More */}
       {!perf && (
-        <div className="sticky top-[61px] z-20 -mx-4 mb-6 flex flex-wrap items-center gap-2 border-y border-border bg-background/90 px-4 py-2 backdrop-blur md:top-[73px]">
+        <div className="sticky top-[61px] z-20 -mx-4 mb-6 flex flex-wrap items-center gap-1.5 border-y border-border bg-background/90 px-4 py-2 sm:gap-2 backdrop-blur md:top-[73px]">
           <Stepper label="Size" value={`${size}`} onMinus={() => setSize((s) => Math.max(SIZE_MIN, s - 2))} onPlus={() => setSize((s) => Math.min(SIZE_MAX, s + 2))} />
           <Stepper label="Transpose" value={tr > 0 ? `+${tr}` : `${tr}`} onMinus={() => changeTr(tr - 1)} onPlus={() => changeTr(tr + 1)} />
           {tr !== 0 && <button onClick={() => changeTr(0)} className="min-h-9 shrink-0 rounded-full px-2 text-xs text-muted-foreground underline">Reset</button>}
@@ -416,10 +416,10 @@ function Chip({ children }: { children: React.ReactNode }) {
 function Stepper({ label, value, onMinus, onPlus }: { label: string; value: string; onMinus: () => void; onPlus: () => void }) {
   return (
     <div className="flex shrink-0 items-center gap-0.5 rounded-full bg-secondary p-1">
-      <span className="px-2 text-xs font-medium text-muted-foreground">{label}</span>
-      <button aria-label={`${label} down`} onClick={onMinus} className="grid h-9 w-9 place-items-center rounded-full bg-card shadow-soft"><Minus className="h-3.5 w-3.5" /></button>
-      <span className="w-7 text-center font-mono text-sm font-semibold">{value}</span>
-      <button aria-label={`${label} up`} onClick={onPlus} className="grid h-9 w-9 place-items-center rounded-full bg-card shadow-soft"><Plus className="h-3.5 w-3.5" /></button>
+      <span className="px-1.5 text-xs font-medium text-muted-foreground sm:px-2">{label}</span>
+      <button aria-label={`${label} down`} onClick={onMinus} className="grid h-8 w-8 place-items-center rounded-full bg-card shadow-soft sm:h-9 sm:w-9"><Minus className="h-3.5 w-3.5" /></button>
+      <span className="w-6 text-center font-mono text-sm font-semibold sm:w-7">{value}</span>
+      <button aria-label={`${label} up`} onClick={onPlus} className="grid h-8 w-8 place-items-center rounded-full bg-card shadow-soft sm:h-9 sm:w-9"><Plus className="h-3.5 w-3.5" /></button>
     </div>
   );
 }
