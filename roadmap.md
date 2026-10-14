@@ -7,3 +7,4 @@
 - [x] Add Song: three entry methods (Create Manually / Copy & Paste / From Ultimate Guitar) feeding the existing editor
 - [x] Admin demo songs: Pick Up & Play toggle; Explore = Pick Up & Play + All Songs
 - [x] Song notes, transpose, Nashville, images, annotate
+- [x] UI/UX brief: auto-scroll keeps going on manual scroll + tap to resume, headstock tuner, simplified song toolbar + More menu, Add Song cards, collapsible floating controls
