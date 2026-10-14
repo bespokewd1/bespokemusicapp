@@ -1,39 +1,103 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store";
 import pick from "@/assets/bespoke-pick.png.asset.json";
+
+type Mode = "choose" | "signin" | "signup" | "forgot" | "sent";
 
 export function LoginDialog() {
   const { loginOpen, setLoginOpen, loginReason, signInWithGoogle } = useStore();
   const [busy, setBusy] = useState(false);
+  const [mode, setMode] = useState<Mode>("choose");
+  const [email, setEmail] = useState("");
+  const [pw, setPw] = useState("");
+  const [sentMsg, setSentMsg] = useState("");
+
+  const close = (o: boolean) => { setLoginOpen(o); if (!o) { setMode("choose"); setPw(""); } };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      if (mode === "signin") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
+        if (error) throw error;
+        close(false);
+      } else if (mode === "signup") {
+        const { data, error } = await supabase.auth.signUp({ email, password: pw, options: { emailRedirectTo: window.location.origin } });
+        if (error) throw error;
+        if (data.session) close(false);
+        else { setSentMsg(`We sent a confirmation link to ${email}. Open it to finish creating your account.`); setMode("sent"); }
+      } else if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` });
+        if (error) throw error;
+        setSentMsg(`If an account exists for ${email}, a reset link is on its way.`); setMode("sent");
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const title = mode === "signup" ? "Create your account" : mode === "signin" ? "Sign in with email" : mode === "forgot" ? "Reset your password" : mode === "sent" ? "Check your email" : "Create Your Personal Songbook";
+
   return (
-    <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+    <Dialog open={loginOpen} onOpenChange={close}>
       <DialogContent className="max-w-sm rounded-2xl">
         <DialogHeader className="items-center text-center">
           <img src={pick.url} alt="" width={300} height={349} className="mb-2 h-14 w-auto dark:invert" />
-          <DialogTitle className="font-display text-2xl">Create Your Personal Songbook</DialogTitle>
+          <DialogTitle className="font-display text-2xl">{title}</DialogTitle>
           <DialogDescription>
-            {loginReason || "Sign in to create playlists, save your favourite songs, and keep your music organized."}
+            {mode === "sent" ? sentMsg : loginReason || "Sign in to create playlists, save your favourite songs, and keep your music organized."}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-2">
-          <Button
-            className="h-12 w-full rounded-full"
-            disabled={busy}
-            onClick={async () => {
-              setBusy(true);
-              await signInWithGoogle();
-              setBusy(false);
-            }}
-          >
-            <GoogleIcon /> {busy ? "Opening Google…" : "Continue with Google"}
-          </Button>
-          <Button variant="ghost" className="h-11 w-full rounded-full" onClick={() => setLoginOpen(false)}>
-            Cancel
-          </Button>
+
+        {mode === "choose" && (
+          <div className="space-y-2">
+            <Button className="h-12 w-full rounded-full" disabled={busy} onClick={async () => { setBusy(true); await signInWithGoogle(); setBusy(false); }}>
+              <GoogleIcon /> {busy ? "Opening Google…" : "Continue with Google"}
+            </Button>
+            <Button variant="outline" className="h-12 w-full rounded-full" onClick={() => setMode("signin")}>Continue with Email</Button>
+          </div>
+        )}
+
+        {(mode === "signin" || mode === "signup" || mode === "forgot") && (
+          <form onSubmit={submit} className="space-y-2">
+            <Input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" aria-label="Email" className="h-12" />
+            {mode !== "forgot" && (
+              <Input type="password" required minLength={mode === "signup" ? 8 : 1} autoComplete={mode === "signup" ? "new-password" : "current-password"} value={pw} onChange={(e) => setPw(e.target.value)} placeholder={mode === "signup" ? "Password (8+ characters)" : "Password"} aria-label="Password" className="h-12" />
+            )}
+            <Button type="submit" disabled={busy} className="h-12 w-full rounded-full">
+              {busy ? "Please wait…" : mode === "signup" ? "Create account" : mode === "signin" ? "Sign in" : "Send reset link"}
+            </Button>
+            <div className="flex justify-between text-sm">
+              {mode === "signin" ? (
+                <>
+                  <button type="button" className="text-primary hover:underline" onClick={() => setMode("signup")}>New here? Create account</button>
+                  <button type="button" className="text-muted-foreground hover:underline" onClick={() => setMode("forgot")}>Forgot password?</button>
+                </>
+              ) : (
+                <button type="button" className="text-primary hover:underline" onClick={() => setMode("signin")}>Have an account? Sign in</button>
+              )}
+            </div>
+            <button type="button" className="w-full pt-1 text-xs text-muted-foreground hover:underline" onClick={() => setMode("choose")}>← Other sign-in options</button>
+          </form>
+        )}
+
+        {mode === "sent" && <Button className="h-11 w-full rounded-full" onClick={() => setMode("signin")}>Back to sign in</Button>}
+
+        <div className="space-y-1">
+          {mode === "choose" && <Button variant="ghost" className="h-11 w-full rounded-full" onClick={() => close(false)}>Cancel</Button>}
           <p className="text-center text-xs text-muted-foreground">Free during Beta. No ads. No distractions.</p>
-          <p className="text-center text-xs text-muted-foreground/70">We're in Beta and continuously improving. Thanks for being part of our early community.</p>
+          <p className="text-center text-xs text-muted-foreground/70">
+            By continuing you agree to our <Link to="/terms" onClick={() => close(false)} className="underline">Terms</Link> and <Link to="/privacy" onClick={() => close(false)} className="underline">Privacy Policy</Link>.
+          </p>
         </div>
       </DialogContent>
     </Dialog>

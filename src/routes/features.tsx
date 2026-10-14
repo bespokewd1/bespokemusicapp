@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { PenLine, ClipboardPaste, Library, ListMusic, ScrollText, ArrowUpDown, Hash, Highlighter, StickyNote, FileDown, Mic, Grid3x3, DatabaseBackup } from "lucide-react";
+import { PenLine, ClipboardPaste, Library, ListMusic, ScrollText, ArrowUpDown, Hash, Highlighter, StickyNote, FileDown, Mic, Grid3x3, DatabaseBackup, Type } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 
 export const Route = createFileRoute("/features")({
@@ -18,11 +18,12 @@ export const Route = createFileRoute("/features")({
 
 const LIST = [
   { icon: PenLine, t: "Write songs", d: "Type chords and lyrics in a simple editor." },
-  { icon: ClipboardPaste, t: "Copy & paste", d: "Paste chords-over-lyrics sheets and they convert automatically." },
+  { icon: ClipboardPaste, t: "Chords, lyrics & tabs", d: "Paste chord sheets and tabs; chords-over-lyrics convert automatically." },
   { icon: Library, t: "My Songs", d: "A private, searchable collection only you can see." },
   { icon: ListMusic, t: "Playlists", d: "Practice lists, acoustic sets and performance setlists." },
   { icon: ScrollText, t: "Auto-scroll", d: "Hands-free scrolling with adjustable speed." },
-  { icon: ArrowUpDown, t: "Transpose", d: "Change the key up or down in one tap." },
+  { icon: ArrowUpDown, t: "Transpose & capo", d: "Change the key in one tap; capo position shown on every song." },
+  { icon: Type, t: "Adjustable font size", d: "Make chords and lyrics bigger or smaller." },
   { icon: Hash, t: "Nashville numbers", d: "Show chords as numbers for any key." },
   { icon: Highlighter, t: "Annotate", d: "Draw on your song sheets with pens and an eraser." },
   { icon: StickyNote, t: "Private notes", d: "Keep practice notes on every song." },
@@ -44,7 +45,8 @@ function Features() {
           </div>
         ))}
       </div>
-      <Link to="/" className="mt-8 inline-block text-sm text-muted-foreground hover:text-foreground">← Back to Home</Link>
+      <p className="mt-6 text-sm text-muted-foreground">Coming later: themes and offline access. Bespoke Music currently needs an internet connection.</p>
+      <Link to="/" className="mt-4 inline-block text-sm text-muted-foreground hover:text-foreground">← Back to Home</Link>
     </div>
   );
 }
