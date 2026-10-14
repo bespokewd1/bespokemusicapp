@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as MySongsRouteImport } from './routes/my-songs'
 import { Route as ToolsRouteImport } from './routes/tools'
 import { Route as PlaylistsIndexRouteImport } from './routes/playlists.index'
@@ -28,6 +29,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MySongsRoute = MySongsRouteImport.update({
@@ -74,6 +80,7 @@ const SongIdEditRoute = SongIdEditRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/features': typeof FeaturesRoute
   '/my-songs': typeof MySongsRoute
   '/tools': typeof ToolsRoute
   '/playlists/$id': typeof PlaylistsIdRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/features': typeof FeaturesRoute
   '/my-songs': typeof MySongsRoute
   '/tools': typeof ToolsRoute
   '/playlists/$id': typeof PlaylistsIdRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/features': typeof FeaturesRoute
   '/my-songs': typeof MySongsRoute
   '/tools': typeof ToolsRoute
   '/playlists/$id': typeof PlaylistsIdRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/features'
     | '/my-songs'
     | '/tools'
     | '/playlists/$id'
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/features'
     | '/my-songs'
     | '/tools'
     | '/playlists/$id'
@@ -137,6 +148,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/features'
     | '/my-songs'
     | '/tools'
     | '/playlists/$id'
@@ -150,6 +162,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  FeaturesRoute: typeof FeaturesRoute
   MySongsRoute: typeof MySongsRoute
   ToolsRoute: typeof ToolsRoute
   PlaylistsIdRoute: typeof PlaylistsIdRoute
@@ -174,6 +187,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/my-songs': {
@@ -238,6 +258,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  FeaturesRoute: FeaturesRoute,
   MySongsRoute: MySongsRoute,
   ToolsRoute: ToolsRoute,
   PlaylistsIdRoute: PlaylistsIdRoute,
