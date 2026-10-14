@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n";
 import { Link } from "@tanstack/react-router";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Compass, Library, ListMusic, Wrench, LayoutDashboard, LogOut, Download } from "lucide-react";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { LoginDialog } from "./LoginDialog";
 import { BackupDialog } from "./BackupDialog";
 import { useState } from "react";
+import { LanguageToggle } from "@/lib/i18n";
 
 const TABS = [
   { to: "/", label: "Home", icon: Compass },
@@ -19,7 +21,7 @@ const TABS = [
 
 export function Logo() {
   return (
-    <Link to="/" aria-label="Bespoke Music — home" className="flex shrink-0 items-center py-1">
+    <Link to="/" aria-label="Bespoke Music" className="flex shrink-0 items-center py-1">
       <img src={logoH.url} alt="Bespoke Music" width={1398} height={349} className="h-8 w-auto dark:invert sm:h-9 md:h-10" />
     </Link>
   );
@@ -27,6 +29,7 @@ export function Logo() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { signedIn, ready, setLoginOpen } = useStore();
+  const { t: tr } = useT();
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header data-chrome className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
@@ -41,19 +44,22 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                 activeProps={{ className: "bg-secondary text-foreground" }}
               >
-                {t.label}
+                {tr(t.label)}
               </Link>
             ))}
           </nav>
+          <div className="flex items-center gap-2">
+          <LanguageToggle />
           {!ready ? (
             <span className="h-9 w-20" />
           ) : signedIn ? (
             <AccountMenu />
           ) : (
             <Button size="sm" variant="outline" className="h-10 rounded-full px-4" onClick={() => setLoginOpen(true)}>
-              Sign in
+              {tr("Sign in")}
             </Button>
           )}
+          </div>
         </div>
       </header>
 
@@ -70,7 +76,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               activeProps={{ className: "text-primary" }}
             >
               <t.icon className="h-5 w-5" />
-              {t.label}
+              {tr(t.label)}
             </Link>
           ))}
         </div>
@@ -82,13 +88,14 @@ export function AppShell({ children }: { children: ReactNode }) {
 
 function AccountMenu() {
   const { user, isAdmin, signOut } = useStore();
+  const { t: tr } = useT();
   const [backupOpen, setBackupOpen] = useState(false);
-  const name = (user?.user_metadata?.["full_name"] as string) || user?.email || "Account";
+  const name = (user?.user_metadata?.["full_name"] as string) || user?.email || tr("Account");
   const avatar = user?.user_metadata?.["avatar_url"] as string | undefined;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button aria-label="Account menu" className="grid h-10 w-10 place-items-center overflow-hidden rounded-full bg-accent font-display font-semibold text-accent-foreground ring-offset-background focus-visible:ring-2 focus-visible:ring-ring">
+        <button aria-label={tr("Account menu")} className="grid h-10 w-10 place-items-center overflow-hidden rounded-full bg-accent font-display font-semibold text-accent-foreground ring-offset-background focus-visible:ring-2 focus-visible:ring-ring">
           {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : name.charAt(0).toUpperCase()}
         </button>
       </DropdownMenuTrigger>
@@ -100,11 +107,11 @@ function AccountMenu() {
         <DropdownMenuSeparator />
         {isAdmin && (
           <DropdownMenuItem asChild>
-            <Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard</Link>
+            <Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /> {tr("Admin Dashboard")}</Link>
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem onClick={() => setBackupOpen(true)}><Download className="mr-2 h-4 w-4" /> Backup My Library</DropdownMenuItem>
-        <DropdownMenuItem onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> Sign out</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setBackupOpen(true)}><Download className="mr-2 h-4 w-4" /> {tr("Backup My Library")}</DropdownMenuItem>
+        <DropdownMenuItem onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> {tr("Sign out")}</DropdownMenuItem>
       </DropdownMenuContent>
       <BackupDialog open={backupOpen} onOpenChange={setBackupOpen} />
     </DropdownMenu>

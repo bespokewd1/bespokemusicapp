@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { forwardRef } from "react";
@@ -48,6 +49,7 @@ function SongPage() {
   const { user, signedIn, songsLoaded, getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, deleteSong, scrollSpeed, setScrollSpeed, loadSongData, saveSongData } = useStore();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { t: tx } = useT();
   const song = getSong(id);
   const [size, setSize] = useState(18);
   const [tr, setTr] = useState(0);
@@ -135,8 +137,8 @@ function SongPage() {
   if (!song) {
     return (
       <div className="py-20 text-center">
-        <h1 className="font-display text-3xl">Song not found</h1>
-        <Link to="/" className="mt-4 inline-block text-primary underline">Back to Home</Link>
+        <h1 className="font-display text-3xl">{tx("Song not found")}</h1>
+        <Link to="/" className="mt-4 inline-block text-primary underline">{tx("Back to Home")}</Link>
       </div>
     );
   }
@@ -152,9 +154,9 @@ function SongPage() {
 
   const close = () => setMoreOpen(false);
   const items: MenuItem[] = [
-    { key: "fs", label: "Full screen", icon: Maximize, onSelect: () => { setAnnotate(false); setPerf(true); } },
-    { key: "pdf", label: "Export PDF", icon: FileDown, onSelect: () => exportSongPdf(song, { transpose: tr }) },
-    ...(signedIn && savedNotes.trim() ? [{ key: "pdfn", label: "Export PDF with notes", icon: FileDown, onSelect: () => exportSongPdf(song, { transpose: tr, notes: savedNotes }) }] : []),
+    { key: "fs", label: tx("Full screen"), icon: Maximize, onSelect: () => { setAnnotate(false); setPerf(true); } },
+    { key: "pdf", label: tx("Export PDF"), icon: FileDown, onSelect: () => exportSongPdf(song, { transpose: tr }) },
+    ...(signedIn && savedNotes.trim() ? [{ key: "pdfn", label: tx("Export PDF with notes"), icon: FileDown, onSelect: () => exportSongPdf(song, { transpose: tr, notes: savedNotes }) }] : []),
   ];
   const jump = (i: number) => { stop(); document.getElementById(`sec-${i}`)?.scrollIntoView({ behavior: "smooth", block: "start" }); };
 
@@ -164,16 +166,16 @@ function SongPage() {
   const moreBody = (
     <div className="grid gap-3">
       <div>
-        <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Song settings</p>
+        <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Song settings")}</p>
         <div className="grid gap-2">
-          <Stepper label="Size" value={`${size}`} onMinus={() => setSize((s) => Math.max(SIZE_MIN, s - 2))} onPlus={() => setSize((s) => Math.min(SIZE_MAX, s + 2))} />
+          <Stepper label={tx("Size")} value={`${size}`} onMinus={() => setSize((s) => Math.max(SIZE_MIN, s - 2))} onPlus={() => setSize((s) => Math.min(SIZE_MAX, s + 2))} />
           <div className="flex items-center gap-2">
-            <Stepper label="Transpose" value={tr > 0 ? `+${tr}` : `${tr}`} onMinus={() => changeTr(tr - 1)} onPlus={() => changeTr(tr + 1)} />
-            {tr !== 0 && <button onClick={() => changeTr(0)} className="min-h-9 rounded-full px-2 text-xs text-muted-foreground underline">Reset</button>}
+            <Stepper label={tx("Transpose")} value={tr > 0 ? `+${tr}` : `${tr}`} onMinus={() => changeTr(tr - 1)} onPlus={() => changeTr(tr + 1)} />
+            {tr !== 0 && <button onClick={() => changeTr(0)} className="min-h-9 rounded-full px-2 text-xs text-muted-foreground underline">{tx("Reset")}</button>}
           </div>
           <button aria-pressed={nash} onClick={() => setNash((v) => !v)} className={cn("flex min-h-11 items-center justify-between rounded-xl px-3 text-sm font-medium", nash ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground")}>
-            <span className="flex items-center gap-2"><Hash className="h-4 w-4" /> Nashville Numbers</span>
-            <span className="text-xs">{nash ? "On" : "Off"}</span>
+            <span className="flex items-center gap-2"><Hash className="h-4 w-4" /> {tx("Nashville Numbers")}</span>
+            <span className="text-xs">{tx(nash ? "On" : "Off")}</span>
           </button>
         </div>
       </div>
@@ -186,7 +188,7 @@ function SongPage() {
       </div>
       {sections.length > 0 && (
         <div className="border-t border-border pt-2">
-          <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Jump to section</p>
+          <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Jump to section")}</p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {sections.map((s) => <button key={s.i} onClick={() => { close(); setTimeout(() => jump(s.i), 250); }} className="min-h-9 rounded-full bg-secondary px-3 text-sm">{s.name}</button>)}
           </div>
@@ -195,7 +197,7 @@ function SongPage() {
       {isMine && (
         <div className="border-t border-border pt-2">
           <button onClick={() => { close(); setDelOpen(true); }} className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-destructive hover:bg-destructive/10">
-            <Trash2 className="h-4 w-4" />Delete Song
+            <Trash2 className="h-4 w-4" />{tx("Delete Song")}
           </button>
         </div>
       )}
@@ -206,7 +208,7 @@ function SongPage() {
     <div className="mx-auto max-w-3xl">
       {!perf && (
         <button onClick={() => history.back()} className="mb-2 flex min-h-11 items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Back
+          <ArrowLeft className="h-4 w-4" /> {tx("Back")}
         </button>
       )}
 
@@ -214,12 +216,12 @@ function SongPage() {
         <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-2xl border border-border bg-card px-3 py-2 shadow-soft">
           <Link to="/playlists/$id" params={{ id: playlist.id }} className="min-w-0 truncate text-sm">
             <span className="font-semibold">{playlist.name}</span>
-            <span className="text-muted-foreground"> · Song {nb.index + 1} of {nb.total}</span>
+            <span className="text-muted-foreground"> · {tx("Song {n} of {total}", { n: nb.index + 1, total: nb.total })}</span>
           </Link>
           <div className="flex shrink-0 items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-11 w-11 rounded-full" aria-label="Previous song" disabled={!nb.prev} onClick={() => nb.prev && goTo(nb.prev)}><SkipBack className="h-5 w-5" /></Button>
-            <Button variant="secondary" size="icon" className="h-11 w-11 rounded-full" aria-label={playing ? "Pause" : "Play"} onClick={toggle}>{playing ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}</Button>
-            <Button variant="ghost" size="icon" className="h-11 w-11 rounded-full" aria-label="Next song" disabled={!nb.next} onClick={() => nb.next && goTo(nb.next)}><SkipForward className="h-5 w-5" /></Button>
+            <Button variant="ghost" size="icon" className="h-11 w-11 rounded-full" aria-label={tx("Previous song")} disabled={!nb.prev} onClick={() => nb.prev && goTo(nb.prev)}><SkipBack className="h-5 w-5" /></Button>
+            <Button variant="secondary" size="icon" className="h-11 w-11 rounded-full" aria-label={tx(playing ? "Pause" : "Play")} onClick={toggle}>{playing ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}</Button>
+            <Button variant="ghost" size="icon" className="h-11 w-11 rounded-full" aria-label={tx("Next song")} disabled={!nb.next} onClick={() => nb.next && goTo(nb.next)}><SkipForward className="h-5 w-5" /></Button>
           </div>
         </div>
       )}
@@ -230,10 +232,10 @@ function SongPage() {
           <p className="mt-0.5 text-base text-muted-foreground md:text-lg">{song.artist}</p>
         </div>
         <div className="mt-2 flex flex-wrap gap-1.5 text-xs md:text-sm">
-          <Chip>Key {keyNow}</Chip>
-          <Chip>{song.capo ? `Capo ${song.capo}` : "No capo"}</Chip>
+          <Chip>{tx("Key")} {keyNow}</Chip>
+          <Chip>{song.capo ? `${tx("Capo")} ${song.capo}` : tx("No capo")}</Chip>
           <Chip>{song.tempo} BPM</Chip>
-          <Chip>{song.difficulty}</Chip>
+          <Chip>{tx(song.difficulty)}</Chip>
         </div>
       </header>
 
@@ -241,9 +243,9 @@ function SongPage() {
       {!perf && (
         <div ref={controlsRef} className="mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 rounded-3xl border border-border bg-card p-3 shadow-soft md:p-4">
           <Button size="lg" onClick={toggle} aria-pressed={playing} className="h-12 rounded-full px-5 text-base shadow-lift md:h-14 md:px-6">
-            {playing ? <><Pause className="mr-2 h-5 w-5 fill-current" /> Pause</> : <><Play className="mr-2 h-5 w-5 fill-current" /> Play</>}
+            {playing ? <><Pause className="mr-2 h-5 w-5 fill-current" /> {tx("Pause")}</> : <><Play className="mr-2 h-5 w-5 fill-current" /> {tx("Play")}</>}
           </Button>
-          <SpeedSlider speed={scrollSpeed} onChange={setScrollSpeed} status={!playing && everPlayed.current ? "Paused · tap song to resume" : speedLabel} active={playing} />
+          <SpeedSlider speed={scrollSpeed} onChange={setScrollSpeed} status={!playing && everPlayed.current ? tx("Paused · tap song to resume") : speedLabel} active={playing} />
         </div>
       )}
 
@@ -252,20 +254,20 @@ function SongPage() {
         <div className="sticky top-[61px] z-20 -mx-4 mb-6 border-y border-border bg-background/90 px-2 py-1.5 backdrop-blur md:top-[73px] md:px-4">
           <div className="grid grid-cols-5 gap-1 sm:flex sm:items-center sm:gap-2">
             {isMine ? (
-              <ToolBtn icon={Pencil} label="Edit" onClick={() => navigate({ to: "/song/$id/edit", params: { id: song.id } })} />
+              <ToolBtn icon={Pencil} label={tx("Edit")} onClick={() => navigate({ to: "/song/$id/edit", params: { id: song.id } })} />
             ) : (
-              <ToolBtn icon={Heart} label={isSaved ? "Saved" : "Save"} active={isSaved} title={isSaved ? "Remove from My Songs" : "Save to My Songs"}
-                onClick={() => requireAuth("Sign in to save songs to your songbook.", async () => { await toggleSaved(song.id); toast(isSaved ? "Removed from My Songs" : "Saved to My Songs"); })} />
+              <ToolBtn icon={Heart} label={tx(isSaved ? "Saved" : "Save")} active={isSaved} title={tx(isSaved ? "Remove from My Songs" : "Save to My Songs")}
+                onClick={() => requireAuth("Sign in to save songs to your songbook.", async () => { await toggleSaved(song.id); toast(tx(isSaved ? "Removed from My Songs" : "Saved to My Songs")); })} />
             )}
-            <ToolBtn icon={PenLine} label="Annotate" active={annotate} onClick={() => requireAuth("Sign in to annotate songs.", () => setAnnotate((v) => !v))} />
-            <ToolBtn icon={ListPlus} label="Playlist" title="Add to Playlist" onClick={() => requireAuth("Sign in to add songs to playlists.", () => setPlOpen(true))} />
-            <ToolBtn icon={StickyNote} label="Notes" active={!!savedNotes.trim()} title={savedNotes ? "Song notes (saved)" : "Add notes"} onClick={() => requireAuth("Sign in to keep private notes.", () => setNotesOpen(true))} />
+            <ToolBtn icon={PenLine} label={tx("Annotate")} active={annotate} onClick={() => requireAuth("Sign in to annotate songs.", () => setAnnotate((v) => !v))} />
+            <ToolBtn icon={ListPlus} label={tx("Playlist")} title={tx("Add to Playlist")} onClick={() => requireAuth("Sign in to add songs to playlists.", () => setPlOpen(true))} />
+            <ToolBtn icon={StickyNote} label={tx("Notes")} active={!!savedNotes.trim()} title={tx(savedNotes ? "Song notes (saved)" : "Add notes")} onClick={() => requireAuth("Sign in to keep private notes.", () => setNotesOpen(true))} />
             {isMobile ? (
-              <ToolBtn icon={MoreHorizontal} label="More" onClick={() => setMoreOpen(true)} className="sm:ml-auto" />
+              <ToolBtn icon={MoreHorizontal} label={tx("More")} onClick={() => setMoreOpen(true)} className="sm:ml-auto" />
             ) : (
               <Popover open={moreOpen} onOpenChange={setMoreOpen}>
                 <PopoverTrigger asChild>
-                  <ToolBtn icon={MoreHorizontal} label="More" className="sm:ml-auto" />
+                  <ToolBtn icon={MoreHorizontal} label={tx("More")} className="sm:ml-auto" />
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-80 max-h-[70vh] overflow-y-auto p-3">{moreBody}</PopoverContent>
               </Popover>
@@ -273,9 +275,9 @@ function SongPage() {
           </div>
           {nash && !isValidKey(song.key) && (
             <div className="mt-1.5 flex items-center gap-2 px-1 text-xs">
-              <span className="text-muted-foreground">Nashville needs a key:</span>
-              <select aria-label="Song key for Nashville" value={nashKey} onChange={(e) => setNashKey(e.target.value)} className="min-h-9 rounded-full border border-border bg-card px-2 text-xs">
-                <option value="">Pick key</option>
+              <span className="text-muted-foreground">{tx("Nashville needs a key:")}</span>
+              <select aria-label={tx("Song key for Nashville")} value={nashKey} onChange={(e) => setNashKey(e.target.value)} className="min-h-9 rounded-full border border-border bg-card px-2 text-xs">
+                <option value="">{tx("Pick key")}</option>
                 {KEY_OPTIONS.map((k) => <option key={k}>{k}</option>)}
               </select>
             </div>
@@ -286,7 +288,7 @@ function SongPage() {
       {/* Mobile bottom sheet */}
       <Sheet open={isMobile && moreOpen} onOpenChange={setMoreOpen}>
         <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-3xl pb-[calc(1rem+env(safe-area-inset-bottom))]">
-          <SheetHeader><SheetTitle className="text-left">More</SheetTitle></SheetHeader>
+          <SheetHeader><SheetTitle className="text-left">{tx("More")}</SheetTitle></SheetHeader>
           <div className="mt-2">{moreBody}</div>
         </SheetContent>
       </Sheet>
@@ -294,29 +296,29 @@ function SongPage() {
       {/* Add to playlist */}
       <Dialog open={plOpen} onOpenChange={setPlOpen}>
         <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>Add to playlist</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{tx("Add to playlist")}</DialogTitle></DialogHeader>
           <div className="grid max-h-72 gap-1 overflow-y-auto">
             {playlists.map((p) => {
               const has = p.songIds.includes(song.id);
               return (
-                <button key={p.id} disabled={has} onClick={async () => { await addToPlaylist(p.id, song.id); toast(`Added to ${p.name}`); }} className="flex min-h-11 items-center justify-between rounded-xl px-3 text-left text-sm hover:bg-secondary disabled:opacity-60">
-                  <span className="truncate">{p.name}</span>{has && <span className="text-xs text-muted-foreground">Added</span>}
+                <button key={p.id} disabled={has} onClick={async () => { await addToPlaylist(p.id, song.id); toast(tx("Added to {name}", { name: p.name })); }} className="flex min-h-11 items-center justify-between rounded-xl px-3 text-left text-sm hover:bg-secondary disabled:opacity-60">
+                  <span className="truncate">{p.name}</span>{has && <span className="text-xs text-muted-foreground">{tx("Added")}</span>}
                 </button>
               );
             })}
           </div>
-          <Button variant="secondary" className="rounded-full" onClick={() => { setPlOpen(false); navigate({ to: "/playlists" }); }}><Plus className="mr-1 h-4 w-4" />Create a playlist</Button>
+          <Button variant="secondary" className="rounded-full" onClick={() => { setPlOpen(false); navigate({ to: "/playlists" }); }}><Plus className="mr-1 h-4 w-4" />{tx("Create a playlist")}</Button>
         </DialogContent>
       </Dialog>
 
       {/* Notes */}
       <Dialog open={notesOpen} onOpenChange={setNotesOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Song notes</DialogTitle></DialogHeader>
-          <p className="text-xs text-muted-foreground">Private — only you can see these.</p>
-          <Textarea value={notes} maxLength={5000} onChange={(e) => setNotes(e.target.value)} placeholder="Strumming patterns, vocal reminders, ideas…" className="min-h-40" />
+          <DialogHeader><DialogTitle>{tx("Song notes")}</DialogTitle></DialogHeader>
+          <p className="text-xs text-muted-foreground">{tx("Private — only you can see these.")}</p>
+          <Textarea value={notes} maxLength={5000} onChange={(e) => setNotes(e.target.value)} placeholder={tx("Strumming patterns, vocal reminders, ideas…")} className="min-h-40" />
           <div className="flex justify-end">
-            <Button className="rounded-full" disabled={notes === savedNotes} onClick={async () => { if (await saveSongData(song.id, { notes })) { setSavedNotes(notes); toast("Notes saved"); } }}>Save notes</Button>
+            <Button className="rounded-full" disabled={notes === savedNotes} onClick={async () => { if (await saveSongData(song.id, { notes })) { setSavedNotes(notes); toast(tx("Notes saved")); } }}>{tx("Save notes")}</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -324,8 +326,8 @@ function SongPage() {
       {/* Delete */}
       <AlertDialog open={delOpen} onOpenChange={setDelOpen}>
         <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>Delete “{song.title}”?</AlertDialogTitle><AlertDialogDescription>This permanently removes the song from your library and playlists.</AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={async () => { await deleteSong(song.id); navigate({ to: "/my-songs" }); }}>Delete</AlertDialogAction></AlertDialogFooter>
+          <AlertDialogHeader><AlertDialogTitle>{tx("Delete “{title}”?", { title: song.title })}</AlertDialogTitle><AlertDialogDescription>{tx("This permanently removes the song from your library and playlists.")}</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogFooter><AlertDialogCancel>{tx("Cancel")}</AlertDialogCancel><AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={async () => { await deleteSong(song.id); navigate({ to: "/my-songs" }); }}>{tx("Delete")}</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
@@ -335,10 +337,10 @@ function SongPage() {
           <DialogHeader><DialogTitle className="font-mono">{chord}</DialogTitle></DialogHeader>
           {chordInfo ? (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              {chordInfo.voicings.map((v, i) => <ChordDiagram key={i} name={i === 0 ? chordInfo.name : `Alt ${i}`} voicing={v} size="sm" />)}
+              {chordInfo.voicings.map((v, i) => <ChordDiagram key={i} name={v.label === "Triad" ? tx("Triad") : i === 0 ? chordInfo.name : tx("Shape {n}", { n: i + 1 })} voicing={v} size="sm" />)}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">No verified diagram for {chord} yet. Check the Chord Library in Tools for similar shapes.</p>
+            <p className="text-sm text-muted-foreground">{tx("No verified diagram for {chord} yet. Check the Chord Library in Tools for similar shapes.", { chord: chord ?? "" })}</p>
           )}
         </DialogContent>
       </Dialog>
@@ -346,20 +348,20 @@ function SongPage() {
       {annotate && !perf && (
         <div className="mb-4 flex flex-wrap items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-soft">
           {([["Red", "#dc2626"], ["Yellow", "#facc15"], ["Black", "#111827"]] as const).map(([n, c]) => (
-            <button key={c} aria-label={`${n} pen`} aria-pressed={tool.kind === "pen" && tool.color === c} onClick={() => setTool({ kind: "pen", color: c })}
+            <button key={c} aria-label={tx(`${n} pen`)} aria-pressed={tool.kind === "pen" && tool.color === c} onClick={() => setTool({ kind: "pen", color: c })}
               className={cn("h-8 w-8 rounded-full border-2", tool.kind === "pen" && tool.color === c ? "border-primary ring-2 ring-primary/30" : "border-border")} style={{ background: c }} />
           ))}
-          <button aria-label="Eraser" aria-pressed={tool.kind === "eraser"} onClick={() => setTool({ kind: "eraser" })} className={cn("grid h-9 w-9 place-items-center rounded-full", tool.kind === "eraser" ? "bg-primary text-primary-foreground" : "bg-secondary")}>
+          <button aria-label={tx("Eraser")} aria-pressed={tool.kind === "eraser"} onClick={() => setTool({ kind: "eraser" })} className={cn("grid h-9 w-9 place-items-center rounded-full", tool.kind === "eraser" ? "bg-primary text-primary-foreground" : "bg-secondary")}>
             <Eraser className="h-4 w-4" />
           </button>
           <AlertDialog>
-            <AlertDialogTrigger asChild><Button variant="ghost" size="sm" className="rounded-full" disabled={!strokes.length}>Clear all</Button></AlertDialogTrigger>
+            <AlertDialogTrigger asChild><Button variant="ghost" size="sm" className="rounded-full" disabled={!strokes.length}>{tx("Clear all")}</Button></AlertDialogTrigger>
             <AlertDialogContent>
-              <AlertDialogHeader><AlertDialogTitle>Clear all drawings?</AlertDialogTitle><AlertDialogDescription>This removes every mark on this song. Chords and lyrics stay untouched.</AlertDialogDescription></AlertDialogHeader>
-              <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => changeStrokes([])}>Clear all</AlertDialogAction></AlertDialogFooter>
+              <AlertDialogHeader><AlertDialogTitle>{tx("Clear all drawings?")}</AlertDialogTitle><AlertDialogDescription>{tx("This removes every mark on this song. Chords and lyrics stay untouched.")}</AlertDialogDescription></AlertDialogHeader>
+              <AlertDialogFooter><AlertDialogCancel>{tx("Cancel")}</AlertDialogCancel><AlertDialogAction onClick={() => changeStrokes([])}>{tx("Clear all")}</AlertDialogAction></AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          <Button size="sm" className="ml-auto rounded-full" onClick={() => setAnnotate(false)}>Done</Button>
+          <Button size="sm" className="ml-auto rounded-full" onClick={() => setAnnotate(false)}>{tx("Done")}</Button>
         </div>
       )}
 
@@ -380,12 +382,12 @@ function SongPage() {
       {perf && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
           <div className="mx-auto grid max-w-3xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-            <Button size="icon" onClick={toggle} aria-label={playing ? "Pause" : "Play"} className="h-12 w-12 rounded-full shadow-lift">
+            <Button size="icon" onClick={toggle} aria-label={tx(playing ? "Pause" : "Play")} className="h-12 w-12 rounded-full shadow-lift">
               {playing ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}
             </Button>
             <SpeedSlider speed={scrollSpeed} onChange={setScrollSpeed} status={speedLabel} active={playing} />
-            <Button variant="secondary" className="h-11 rounded-full px-3" onClick={() => setPerf(false)} aria-label="Exit full screen">
-              <Minimize className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Exit</span>
+            <Button variant="secondary" className="h-11 rounded-full px-3" onClick={() => setPerf(false)} aria-label={tx("Exit full screen")}>
+              <Minimize className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{tx("Exit")}</span>
             </Button>
           </div>
         </div>
@@ -395,16 +397,16 @@ function SongPage() {
       {!perf && !controlsVisible && (
         <div className="fixed right-3 z-30 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] md:bottom-6 md:right-6">
           <div className="flex items-center gap-2 rounded-full border border-border bg-card/95 p-1.5 shadow-lift backdrop-blur">
-            <Button size="icon" onClick={toggle} aria-label={playing ? "Pause auto-scroll" : "Play auto-scroll"} className="h-12 w-12 shrink-0 rounded-full">
+            <Button size="icon" onClick={toggle} aria-label={tx(playing ? "Pause auto-scroll" : "Play auto-scroll")} className="h-12 w-12 shrink-0 rounded-full">
               {playing ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}
             </Button>
             {!barCollapsed && (
               <div className="w-36 px-1 sm:w-48">
-                <div className="flex justify-between text-[11px] text-muted-foreground"><span>Speed</span><span className="font-mono font-semibold text-foreground">{speedLabel}</span></div>
-                <Slider className="mt-1.5" min={0.3} max={3} step={0.1} value={[scrollSpeed]} onValueChange={([v]) => setScrollSpeed(v ?? 1)} aria-label="Auto-scroll speed" />
+                <div className="flex justify-between text-[11px] text-muted-foreground"><span>{tx("Speed")}</span><span className="font-mono font-semibold text-foreground">{speedLabel}</span></div>
+                <Slider className="mt-1.5" min={0.3} max={3} step={0.1} value={[scrollSpeed]} onValueChange={([v]) => setScrollSpeed(v ?? 1)} aria-label={tx("Auto-scroll speed")} />
               </div>
             )}
-            <button onClick={() => setBarCollapsed((v) => !v)} aria-label={barCollapsed ? "Show speed control" : "Hide speed control"} className="grid h-10 w-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:text-foreground">
+            <button onClick={() => setBarCollapsed((v) => !v)} aria-label={tx(barCollapsed ? "Show speed control" : "Hide speed control")} className="grid h-10 w-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:text-foreground">
               {barCollapsed ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </button>
           </div>
@@ -415,14 +417,15 @@ function SongPage() {
 }
 
 function SpeedSlider({ speed, onChange, status, active }: { speed: number; onChange: (v: number) => void; status: string; active: boolean }) {
+  const { t } = useT();
   return (
     <div className="min-w-0">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>Scroll speed</span>
+        <span>{t("Scroll speed")}</span>
         <span className={cn("font-mono font-semibold", active && "text-primary")} aria-live="polite">{status}</span>
       </div>
-      <Slider className="mt-2" min={0.3} max={3} step={0.1} value={[speed]} onValueChange={([v]) => onChange(v ?? 1)} aria-label="Auto-scroll speed" />
-      <div className="mt-1 flex justify-between text-[11px] text-muted-foreground"><span>Slow</span><span>Fast</span></div>
+      <Slider className="mt-2" min={0.3} max={3} step={0.1} value={[speed]} onValueChange={([v]) => onChange(v ?? 1)} aria-label={t("Auto-scroll speed")} />
+      <div className="mt-1 flex justify-between text-[11px] text-muted-foreground"><span>{t("Slow")}</span><span>{t("Fast")}</span></div>
     </div>
   );
 }
@@ -435,9 +438,9 @@ function Stepper({ label, value, onMinus, onPlus }: { label: string; value: stri
   return (
     <div className="flex shrink-0 items-center gap-0.5 rounded-full bg-secondary p-1">
       <span className="px-1.5 text-xs font-medium text-muted-foreground sm:px-2">{label}</span>
-      <button aria-label={`${label} down`} onClick={onMinus} className="grid h-8 w-8 place-items-center rounded-full bg-card shadow-soft sm:h-9 sm:w-9"><Minus className="h-3.5 w-3.5" /></button>
+      <button aria-label={`${label} −`} onClick={onMinus} className="grid h-8 w-8 place-items-center rounded-full bg-card shadow-soft sm:h-9 sm:w-9"><Minus className="h-3.5 w-3.5" /></button>
       <span className="w-6 text-center font-mono text-sm font-semibold sm:w-7">{value}</span>
-      <button aria-label={`${label} up`} onClick={onPlus} className="grid h-8 w-8 place-items-center rounded-full bg-card shadow-soft sm:h-9 sm:w-9"><Plus className="h-3.5 w-3.5" /></button>
+      <button aria-label={`${label} +`} onClick={onPlus} className="grid h-8 w-8 place-items-center rounded-full bg-card shadow-soft sm:h-9 sm:w-9"><Plus className="h-3.5 w-3.5" /></button>
     </div>
   );
 }
@@ -448,7 +451,7 @@ const ToolBtn = forwardRef<HTMLButtonElement, ToolBtnProps>(function ToolBtn({ i
     <button ref={ref} type="button" title={title ?? label} aria-label={title ?? label} aria-pressed={active} {...rest}
       className={cn("flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[11px] font-medium transition-colors sm:flex-row sm:gap-1.5 sm:rounded-full sm:px-3 sm:text-sm",
         active ? "bg-primary/10 text-primary" : "text-foreground hover:bg-secondary", className)}>
-      <Icon className={cn("h-5 w-5 shrink-0 sm:h-4 sm:w-4", active && label.startsWith("Save") && "fill-current")} />
+      <Icon className={cn("h-5 w-5 shrink-0 sm:h-4 sm:w-4", active && Icon === Heart && "fill-current")} />
       <span className="truncate">{label}</span>
     </button>
   );

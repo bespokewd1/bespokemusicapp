@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n";
 import { useState } from "react";
 import { Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ export function GuitarTuner() {
   const { status, freq, error, start, stop } = useTuner();
   const [mode, setMode] = useState<"auto" | "manual">("auto");
   const [manual, setManual] = useState(0);
+  const { t } = useT();
   const listening = status === "listening";
 
   const idx = freq ? (mode === "auto" ? nearestString(freq, preset.strings) : manual) : mode === "manual" ? manual : -1;
@@ -26,18 +28,18 @@ export function GuitarTuner() {
   const right = [5, 4, 3];
 
   return (
-    <section className="mx-auto w-full max-w-2xl" aria-label="Guitar tuner">
+    <section className="mx-auto w-full max-w-2xl" aria-label={t("Guitar Tuner")}>
       <div className="text-center">
-        <h2 className="font-display text-3xl font-semibold md:text-4xl">Tune Your Guitar</h2>
-        <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">Tune your guitar quickly and accurately. Free, online, and no downloads required.</p>
+        <h2 className="font-display text-3xl font-semibold md:text-4xl">{t("Tune Your Guitar")}</h2>
+        <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">{t("Tune your guitar quickly and accurately. Free, online, and no downloads required.")}</p>
       </div>
 
       <div className="tuner-panel mt-5 rounded-3xl p-4 shadow-lift sm:p-6">
-        <div className="grid grid-cols-3 gap-1.5" role="radiogroup" aria-label="Tuning">
+        <div className="grid grid-cols-3 gap-1.5" role="radiogroup" aria-label={t("Tuning")}>
           {PRESETS.map((p) => (
             <button key={p.id} role="radio" aria-checked={p.id === preset.id} onClick={() => { playClick(); setPresetId(p.id); }}
               className={cn("min-h-10 rounded-full border px-2 text-xs font-semibold", p.id === preset.id ? "border-tuner-fg bg-tuner-fg text-tuner-bg" : "border-tuner-off text-tuner-dim hover:text-tuner-fg")}>
-              {p.name.replace(" Tuning", "")}
+              {t(p.name.replace(" Tuning", ""))}
             </button>
           ))}
         </div>
@@ -52,13 +54,13 @@ export function GuitarTuner() {
             </g>
             <circle cx="100" cy="100" r="6" className="fill-tuner-fg" />
           </svg>
-          <span className="absolute bottom-0 left-0 text-[10px] font-semibold uppercase tracking-widest text-tuner-dim">♭ Flat</span>
-          <span className="absolute bottom-0 right-0 text-[10px] font-semibold uppercase tracking-widest text-tuner-dim">Sharp ♯</span>
+          <span className="absolute bottom-0 left-0 text-[10px] font-semibold uppercase tracking-widest text-tuner-dim">♭ {t("Flat")}</span>
+          <span className="absolute bottom-0 right-0 text-[10px] font-semibold uppercase tracking-widest text-tuner-dim">{t("Sharp")} ♯</span>
         </div>
         <p className={cn("mt-1 text-center text-lg font-bold uppercase tracking-[0.15em]", state === "in-tune" ? "text-tuner-ok" : freq ? "text-tuner-warn" : "text-tuner-dim")} aria-live="polite">
-          {!listening ? "Tap Start Tuning" : !freq ? "Pluck a string" : state === "in-tune" ? "In tune ✓" : `${state === "flat" ? "Flat · tune up" : "Sharp · tune down"} (${cents > 0 ? "+" : ""}${Math.round(cents)}¢)`}
+          {!listening ? t("Tap Start Tuning") : !freq ? t("Pluck a string") : state === "in-tune" ? t("In tune ✓") : `${t(state === "flat" ? "Flat · tune up" : "Sharp · tune down")} (${cents > 0 ? "+" : ""}${Math.round(cents)}¢)`}
         </p>
-        <p className="text-center font-mono text-xs text-tuner-dim">{freq ? `${freq.toFixed(1)} Hz` : "--- Hz"} · target {target ? target.freq.toFixed(1) : "---"} Hz</p>
+        <p className="text-center font-mono text-xs text-tuner-dim">{freq ? `${freq.toFixed(1)} Hz` : "--- Hz"} · {t("target")} {target ? target.freq.toFixed(1) : "---"} Hz</p>
 
         {/* Headstock */}
         <div className="mx-auto mt-5 grid max-w-sm grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
@@ -87,22 +89,22 @@ export function GuitarTuner() {
         <div className="mt-5 grid grid-cols-[auto_minmax(0,1fr)] gap-2">
           <div className="flex rounded-full border border-tuner-off p-1 text-xs font-semibold">
             {(["auto", "manual"] as const).map((m) => (
-              <button key={m} onClick={() => setMode(m)} className={cn("min-h-10 rounded-full px-3 capitalize", mode === m ? "bg-tuner-fg text-tuner-bg" : "text-tuner-dim")}>{m}</button>
+              <button key={m} onClick={() => setMode(m)} className={cn("min-h-10 rounded-full px-3 capitalize", mode === m ? "bg-tuner-fg text-tuner-bg" : "text-tuner-dim")}>{t(m === "auto" ? "Auto" : "Manual")}</button>
             ))}
           </div>
           {listening ? (
             <Button variant="outline" onClick={stop} className="h-12 rounded-full border-tuner-off bg-transparent text-tuner-fg hover:bg-tuner-fg/10 hover:text-tuner-fg">
-              <MicOff className="mr-2 h-4 w-4" /> Stop
+              <MicOff className="mr-2 h-4 w-4" /> {t("Stop")}
             </Button>
           ) : (
             <Button onClick={start} disabled={status === "starting"} className="h-12 rounded-full">
-              <Mic className="mr-2 h-4 w-4" /> {status === "starting" ? "Starting…" : "Start Tuning"}
+              <Mic className="mr-2 h-4 w-4" /> {t(status === "starting" ? "Starting…" : "Start Tuning")}
             </Button>
           )}
         </div>
         {error && <p className="mt-3 text-center text-sm text-tuner-warn">{error}</p>}
         <p className="mt-3 text-center text-xs text-tuner-dim">
-          {mode === "auto" ? "Auto finds the closest string." : "Manual: tap a peg to tune just that string."} In tune within ±{IN_TUNE_CENTS}¢.
+          {t(mode === "auto" ? "Auto finds the closest string." : "Manual: tap a peg to tune just that string.")} {t("In tune within ±{n}¢.", { n: IN_TUNE_CENTS })}
         </p>
       </div>
     </section>
@@ -115,7 +117,7 @@ export function GuitarTuner() {
           const s = preset.strings[i]!;
           const on = idx === i;
           return (
-            <button key={i} onClick={() => pick(i)} aria-pressed={on} aria-label={`String ${s.name}, ${s.label}`}
+            <button key={i} onClick={() => pick(i)} aria-pressed={on} aria-label={t("String {name}", { name: s.name })}
               className={cn("grid h-14 w-14 place-items-center rounded-full border-2 text-xl font-bold transition sm:h-16 sm:w-16",
                 on ? (state === "in-tune" ? "border-tuner-ok bg-tuner-ok text-tuner-bg" : "border-tuner-warn bg-tuner-warn/20 text-tuner-fg") : "border-tuner-off text-tuner-fg hover:border-tuner-fg")}>
               {s.note}
