@@ -74,13 +74,13 @@ function MarketingHero() {
       </ul>
       <div className="mt-7 flex flex-col gap-3 sm:flex-row">
         <Button size="lg" variant="secondary" className="h-12 rounded-full px-6 text-base" onClick={() => requireAuth("Sign in to start your songbook.", () => navigate({ to: "/my-songs" }))}>
-          Start Your Songbook
+          Start Your Free Songbook
         </Button>
         <Button size="lg" variant="outline" className="h-12 rounded-full border-primary-foreground/50 bg-transparent px-6 text-base text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground" onClick={() => scrollTo("demo-songs")}>
           Try Demo Songs
         </Button>
       </div>
-      <p className="mt-4 text-sm opacity-80">Free during Beta. Start building your collection today.</p>
+      <p className="mt-4 text-sm opacity-80">Free during Beta. Your personal songs and playlists stay private.</p>
     </section>
   );
 }
