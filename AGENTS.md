@@ -17,3 +17,5 @@
 - UI text is translated via useT() from src/lib/i18n.tsx with French strings keyed by the English source in src/lib/i18n-fr.ts (missing keys fall back to English); language is device-local — avoids a translation library and keeps English as the single source.
 - Extra chord shapes (CAGED barre shapes, top-string triads) are generated from templates in src/lib/chords.ts and unit-tested against chord tones — avoids hand-typing hundreds of voicings.
 - Offline mode uses vite-plugin-pwa (generateSW, /sw.js) registered only from src/lib/pwa.ts, never in dev/preview/iframes; pages and data reads are NetworkFirst — keeps the live app fresh while letting opened songs load offline.
+- Theme is a `.dark` class set before paint by THEME_INIT_SCRIPT in src/lib/theme.tsx (saved choice, else device preference) — avoids a flash and a theme library.
+- Feedback goes into public.feedback (anyone may insert, only admins read via has_role) and is read in the admin Feedback tab — no email service needed.
