@@ -50,3 +50,27 @@ export function playlistNeighbours(order: string[], id: string) {
   if (i < 0) return null;
   return { index: i, total: order.length, prev: i > 0 ? order[i - 1] : null, next: i < order.length - 1 ? order[i + 1] : null };
 }
+
+/** Per-song playback preferences: scroll speed (null = account default) and intro delay. */
+export const INTRO_DELAYS = [0, 3, 5, 10] as const;
+export interface PlaybackPrefs { speed: number | null; delay: number }
+const PB_KEY = (id: string) => `bm-pb-${id}`;
+export function parsePlaybackPrefs(raw: string | null): PlaybackPrefs {
+  const d: PlaybackPrefs = { speed: null, delay: 0 };
+  if (!raw) return d;
+  try {
+    const p = JSON.parse(raw);
+    const s = Number(p?.speed);
+    const delay = Number(p?.delay);
+    return {
+      speed: p?.speed != null && Number.isFinite(s) ? Math.min(3, Math.max(0.3, Math.round(s * 10) / 10)) : null,
+      delay: (INTRO_DELAYS as readonly number[]).includes(delay) ? delay : 0,
+    };
+  } catch { return d; }
+}
+export function loadPlaybackPrefs(id: string): PlaybackPrefs {
+  try { return parsePlaybackPrefs(localStorage.getItem(PB_KEY(id))); } catch { return parsePlaybackPrefs(null); }
+}
+export function savePlaybackPrefs(id: string, p: PlaybackPrefs) {
+  try { localStorage.setItem(PB_KEY(id), JSON.stringify(p)); } catch { /* ignore */ }
+}

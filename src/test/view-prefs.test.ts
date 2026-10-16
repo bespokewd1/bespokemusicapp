@@ -27,3 +27,15 @@ describe("playlist navigation", () => {
     expect(playlistNeighbours(order, "z")).toBeNull();
   });
 });
+
+import { parsePlaybackPrefs } from "@/lib/view-prefs";
+describe("per-song playback prefs", () => {
+  it("only allows intro delays Off, 3s, 5s, 10s", () => {
+    expect(parsePlaybackPrefs('{"delay":5}').delay).toBe(5);
+    expect(parsePlaybackPrefs('{"delay":7}').delay).toBe(0);
+  });
+  it("clamps saved speed to 0.3–3 and defaults to account speed", () => {
+    expect(parsePlaybackPrefs('{"speed":9}').speed).toBe(3);
+    expect(parsePlaybackPrefs(null).speed).toBeNull();
+  });
+});
