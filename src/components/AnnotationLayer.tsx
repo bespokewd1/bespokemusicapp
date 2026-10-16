@@ -90,7 +90,7 @@ export function AnnotationLayer({ strokes, onChange, active, tool, fontSize, chi
           const k = scaleOf(s);
           return (
             <path key={i} d={pathD(s.pts)} fill="none" stroke={s.color} strokeWidth={s.w} strokeLinecap="round" strokeLinejoin="round"
-              opacity={s.w > 8 ? 0.45 : 1} transform={k !== 1 ? `scale(${k})` : undefined} vectorEffect="non-scaling-stroke"
+              opacity={s.w > 8 ? 0.45 : 1} transform={k !== 1 ? `scale(${k})` : undefined}
               style={s.color === INK ? { stroke: "var(--color-foreground)" } : undefined} />
           );
         })}

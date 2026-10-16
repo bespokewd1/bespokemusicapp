@@ -8,7 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { AnnotationLayer, type Tool } from "@/components/AnnotationLayer";
+import { AnnotationLayer, INK, type Tool } from "@/components/AnnotationLayer";
 import { SongImages } from "@/components/SongImages";
 import { ChordDiagram } from "@/components/ChordDiagram";
 import { isValidKey, KEY_OPTIONS } from "@/lib/nashville";
@@ -96,6 +96,30 @@ function SongPage() {
     loadSongData(id).then((d) => { setStrokes(d.annotations); setNotes(d.notes); setSavedNotes(d.notes); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, signedIn]);
+
+  // Two-finger pinch on the song sheet changes the same Size setting (only the sheet grows).
+  const sheetRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = sheetRef.current;
+    if (!el) return;
+    let start = 0, base = 0, cur = 0;
+    const dist = (t: TouchList) => Math.hypot(t[0]!.clientX - t[1]!.clientX, t[0]!.clientY - t[1]!.clientY);
+    const onStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) { start = dist(e.touches); setSize((s) => { base = s; cur = s; return s; }); }
+    };
+    const onMove = (e: TouchEvent) => {
+      if (e.touches.length !== 2 || !start) return;
+      e.preventDefault();
+      const next = Math.round(Math.min(SIZE_MAX, Math.max(SIZE_MIN, base * (dist(e.touches) / start))));
+      if (next !== cur) { cur = next; setSize(next); }
+    };
+    const onEnd = (e: TouchEvent) => { if (e.touches.length < 2) start = 0; };
+    el.addEventListener("touchstart", onStart, { passive: true });
+    el.addEventListener("touchmove", onMove, { passive: false });
+    el.addEventListener("touchend", onEnd);
+    el.addEventListener("touchcancel", onEnd);
+    return () => { el.removeEventListener("touchstart", onStart); el.removeEventListener("touchmove", onMove); el.removeEventListener("touchend", onEnd); el.removeEventListener("touchcancel", onEnd); };
+  }, [song?.id]);
 
   const changeStrokes = (s: Stroke[]) => { setStrokes(s); saveSongData(id, { annotations: s }); };
 
@@ -387,7 +411,7 @@ function SongPage() {
 
       {annotate && !perf && (
         <div className="mb-4 flex flex-wrap items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-soft">
-          {([["Red", "#dc2626"], ["Yellow", "#facc15"], ["Black", "#111827"]] as const).map(([n, c]) => (
+          {([["Red", "#dc2626"], ["Yellow", "#facc15"], ["Black", INK]] as const).map(([n, c]) => (
             <button key={c} aria-label={tx(`${n} pen`)} aria-pressed={tool.kind === "pen" && tool.color === c} onClick={() => setTool({ kind: "pen", color: c })}
               className={cn("h-8 w-8 rounded-full border-2", tool.kind === "pen" && tool.color === c ? "border-primary ring-2 ring-primary/30" : "border-border")} style={{ background: c }} />
           ))}
@@ -406,12 +430,13 @@ function SongPage() {
       )}
 
       <div
+        ref={sheetRef}
         onClick={(e) => {
           // Tap anywhere in the song to resume a paused auto-scroll
           if (!playing && everPlayed.current && !annotate && !(e.target as HTMLElement).closest("button,a,input,select,textarea")) play();
         }}
       >
-        <AnnotationLayer strokes={strokes} onChange={changeStrokes} active={annotate && !perf} tool={tool}>
+        <AnnotationLayer strokes={strokes} onChange={changeStrokes} active={annotate && !perf} tool={tool} fontSize={size}>
           <SongSheet sections={song.sections} fontSize={size} transpose={tr} nashvilleKey={nashvilleKey} onChord={annotate ? undefined : setChord} />
           <SongImages images={song.images ?? []} />
         </AnnotationLayer>
