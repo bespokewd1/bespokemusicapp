@@ -52,7 +52,7 @@ function AdminPage() {
           <TabsTrigger value="content" className="flex-1 rounded-full px-4">Demo songs</TabsTrigger>
           <TabsTrigger value="feedback" className="flex-1 rounded-full px-4">Feedback</TabsTrigger>
         </TabsList>
-        <TabsContent value="overview"><Overview /></TabsContent>
+        <TabsContent value="overview"><Overview /><Usage /></TabsContent>
         <TabsContent value="users"><Users /></TabsContent>
         <TabsContent value="content"><Content /></TabsContent>
         <TabsContent value="feedback"><Feedback /></TabsContent>
@@ -271,5 +271,38 @@ function Feedback() {
         </div>
       ))}
     </div>
+  );
+}
+
+const EVENTS = [
+  ["first_song", "First songs added"],
+  ["return_visit", "Return visits"],
+  ["song_opened", "Songs opened"],
+  ["playlist_created", "Playlists created"],
+  ["player_used", "Auto-scroll used 20s+"],
+] as const;
+
+function Usage() {
+  const [rows, setRows] = useState<{ event: string; user_id: string }[] | null>(null);
+  useEffect(() => {
+    const since = new Date(Date.now() - 30 * 864e5).toISOString();
+    supabase.from("app_events").select("event,user_id").gte("created_at", since).limit(10000).then(({ data }) => setRows(data ?? []));
+  }, []);
+  return (
+    <section className="mt-8">
+      <h2 className="font-display text-xl font-semibold">Usage · last 30 days</h2>
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        {EVENTS.map(([k, label]) => {
+          const r = (rows ?? []).filter((x) => x.event === k);
+          return (
+            <div key={k} className="rounded-2xl border border-border bg-card p-4">
+              <p className="text-xs text-muted-foreground">{label}</p>
+              <p className="mt-1 font-display text-2xl font-semibold">{rows ? r.length : "…"}</p>
+              <p className="text-xs text-muted-foreground">{rows ? `${new Set(r.map((x) => x.user_id)).size} people` : ""}</p>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
