@@ -8,16 +8,16 @@ import { useStore } from "@/lib/store";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Bespoke Music — Your Personal Guitar Songbook" },
-      { name: "description", content: "Add your favourite songs, save chords and lyrics, create playlists, and build your personal guitar collection. No Ads. No Distractions." },
+      { title: "Personal Guitar Songbook & Chord Library | Bespoke Music" },
+      { name: "description", content: "Build your personal guitar songbook. Add chords, lyrics and tabs, create playlists, and play with auto-scroll. No ads. No distractions. Try it free." },
       { property: "og:title", content: "Bespoke Music — Your Personal Guitar Songbook" },
-      { property: "og:description", content: "Add your favourite songs, save chords and lyrics, create playlists, and build your personal guitar collection. No Ads. No Distractions." },
+      { property: "og:description", content: "Add your songs, save chords and lyrics, create playlists, and build your own music library. Enjoy auto-scroll and distraction-free playing. Free to try, with no ads." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://bespokemusicapp.lovable.app/" },
       { property: "og:image", content: "https://bespokemusicapp.lovable.app/og-image.png" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Your Music. Your Songs. Your Way." },
-      { name: "twitter:description", content: "One place for all your guitar chords, lyrics, and playlists. Save, organize, and play anytime." },
+      { name: "twitter:title", content: "Bespoke Music — Your Personal Guitar Songbook" },
+      { name: "twitter:description", content: "Add your songs, save chords and lyrics, create playlists, and build your own music library. Enjoy auto-scroll and distraction-free playing. Free to try, with no ads." },
       { name: "twitter:image", content: "https://bespokemusicapp.lovable.app/og-image.png" },
     ],
     links: [{ rel: "canonical", href: "https://bespokemusicapp.lovable.app/" }],

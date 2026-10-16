@@ -11,6 +11,9 @@ import { LoginDialog } from "./LoginDialog";
 import { BackupDialog } from "./BackupDialog";
 import { useState } from "react";
 import { LanguageToggle } from "@/lib/i18n";
+import { ThemeToggle } from "@/lib/theme";
+import { FeedbackDialog, shareLink, APP_URL, APP_TITLE } from "./AccountExtras";
+import { MessageSquare, Share2 } from "lucide-react";
 
 const TABS = [
   { to: "/", label: "Home", icon: Compass },
@@ -49,7 +52,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-          <LanguageToggle />
+          <ThemeToggle />
           {!ready ? (
             <span className="h-9 w-20" />
           ) : signedIn ? (
@@ -90,6 +93,7 @@ function AccountMenu() {
   const { user, isAdmin, signOut } = useStore();
   const { t: tr } = useT();
   const [backupOpen, setBackupOpen] = useState(false);
+  const [fbOpen, setFbOpen] = useState(false);
   const name = (user?.user_metadata?.["full_name"] as string) || user?.email || tr("Account");
   const avatar = user?.user_metadata?.["avatar_url"] as string | undefined;
   return (
@@ -99,7 +103,7 @@ function AccountMenu() {
           {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : name.charAt(0).toUpperCase()}
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-72">
         <DropdownMenuLabel className="truncate font-normal">
           <span className="block truncate font-semibold">{name}</span>
           <span className="block truncate text-xs text-muted-foreground">{user?.email}</span>
@@ -110,10 +114,26 @@ function AccountMenu() {
             <Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /> {tr("Admin Dashboard")}</Link>
           </DropdownMenuItem>
         )}
+        <div className="px-2 py-1.5">
+          <p className="text-sm font-medium">{tr("Language")}</p>
+          <p className="mb-1.5 text-xs text-muted-foreground">{tr("Choose your preferred language.")}</p>
+          <LanguageToggle />
+        </div>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => setBackupOpen(true)}><Download className="mr-2 h-4 w-4" /> {tr("Backup My Library")}</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setFbOpen(true)} className="items-start">
+          <MessageSquare className="mr-2 mt-0.5 h-4 w-4" />
+          <span><span className="block">{tr("Send Feedback")}</span><span className="block text-xs text-muted-foreground">{tr("Have a suggestion or found a bug? We'd love to hear from you.")}</span></span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => shareLink(APP_URL, APP_TITLE, tr("Link copied"))} className="items-start">
+          <Share2 className="mr-2 mt-0.5 h-4 w-4" />
+          <span><span className="block">{tr("Share Bespoke Music")}</span><span className="block text-xs text-muted-foreground">{tr("Know a fellow musician? Share Bespoke Music with them.")}</span></span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={signOut}><LogOut className="mr-2 h-4 w-4" /> {tr("Sign out")}</DropdownMenuItem>
       </DropdownMenuContent>
       <BackupDialog open={backupOpen} onOpenChange={setBackupOpen} />
+      <FeedbackDialog open={fbOpen} onOpenChange={setFbOpen} />
     </DropdownMenu>
   );
 }
