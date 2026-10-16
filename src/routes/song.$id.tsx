@@ -47,7 +47,7 @@ type MenuItem = { key: string; label: string; icon: React.ComponentType<{ classN
 function SongPage() {
   const { id } = Route.useParams();
   const { pl } = Route.useSearch();
-  const { user, signedIn, songsLoaded, getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, deleteSong, scrollSpeed, setScrollSpeed, loadSongData, saveSongData } = useStore();
+  const { user, signedIn, songsLoaded, getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, deleteSong, scrollSpeed, loadSongData, saveSongData } = useStore();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { t: tx } = useT();
