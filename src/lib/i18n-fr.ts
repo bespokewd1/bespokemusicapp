@@ -307,4 +307,6 @@ export const FR: Record<string, string> = {
   "Copy to Clipboard": "Copier dans le presse-papiers",
   "This song is private to your songbook, so a link wouldn't open for anyone else. Use Download PDF or Print to share a copy instead.": "Cette chanson est privée : un lien ne s'ouvrirait pour personne d'autre. Utilisez Télécharger le PDF ou Imprimer pour en partager une copie.",
   "Back to Song": "Retour à la chanson",
+  "In-tune sound on": "Son « accordé » activé",
+  "In-tune sound off": "Son « accordé » désactivé",
 };

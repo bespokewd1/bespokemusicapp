@@ -31,7 +31,7 @@ export function GuitarTuner() {
     const fire = gate.current(freq && target ? cents : null, target ? `${preset.id}-${idx}` : null, performance.now());
     if (fire && chimeOn) playChime();
   }, [freq, cents, target, idx, preset.id, listening, chimeOn]);
-  const toggleChime = () => { const v = !chimeOn; setChimeOn(v); localStorage.setItem(CHIME_KEY, v ? "on" : "off"); if (v) playChime(); };
+  const toggleChime = () => { const v = !chimeOn; setChimeOn(v); localStorage.setItem(CHIME_KEY, v ? "on" : "off"); if (v) { unlockAudio(); setTimeout(playChime, 30); } };
 
   const pick = (i: number) => { playClick(); setMode("manual"); setManual(i); };
   // Strings low (6th) -> high (1st); headstock 3+3: left pegs = strings 6,5,4 (top→bottom reversed for realism)
@@ -102,6 +102,10 @@ export function GuitarTuner() {
             {(["auto", "manual"] as const).map((m) => (
               <button key={m} onClick={() => setMode(m)} className={cn("min-h-10 rounded-full px-3 capitalize", mode === m ? "bg-tuner-fg text-tuner-bg" : "text-tuner-dim")}>{t(m === "auto" ? "Auto" : "Manual")}</button>
             ))}
+            <button onClick={toggleChime} aria-pressed={chimeOn} aria-label={t(chimeOn ? "In-tune sound on" : "In-tune sound off")} title={t(chimeOn ? "In-tune sound on" : "In-tune sound off")}
+              className={cn("grid min-h-10 w-10 place-items-center rounded-full", chimeOn ? "text-tuner-fg" : "text-tuner-dim")}>
+              {chimeOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            </button>
           </div>
           {listening ? (
             <Button variant="outline" onClick={stop} className="h-12 rounded-full border-tuner-off bg-transparent text-tuner-fg hover:bg-tuner-fg/10 hover:text-tuner-fg">
