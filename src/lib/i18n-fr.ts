@@ -280,7 +280,6 @@ export const FR: Record<string, string> = {
   // Offline
   "You're offline. Songs you've opened before still work.": "Vous êtes hors ligne. Les chansons déjà ouvertes restent accessibles.",
   // Pass 1
-  "Language": "Langue",
   "Switch to light mode": "Passer au mode clair",
   "Switch to dark mode": "Passer au mode sombre",
   "Choose your preferred language.": "Choisissez votre langue.",
@@ -303,7 +302,6 @@ export const FR: Record<string, string> = {
   "Print": "Imprimer",
   "Share": "Partager",
   "Share song": "Partager la chanson",
-  "Email": "Courriel",
   "Copy to Clipboard": "Copier dans le presse-papiers",
   "This song is private to your songbook, so a link wouldn't open for anyone else. Use Download PDF or Print to share a copy instead.": "Cette chanson est privée : un lien ne s'ouvrirait pour personne d'autre. Utilisez Télécharger le PDF ou Imprimer pour en partager une copie.",
   "Back to Song": "Retour à la chanson",
