@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { parseTranspose, parseViewPrefs, playlistNeighbours } from "@/lib/view-prefs";
 
 describe("view prefs", () => {
-  it("clamps font size to 14–30", () => {
-    expect(parseViewPrefs('{"size":50}').size).toBe(30);
+  it("clamps font size to 14–36 (pinch up to 200%)", () => {
+    expect(parseViewPrefs('{"size":50}').size).toBe(36);
     expect(parseViewPrefs('{"size":2}').size).toBe(14);
   });
   it("defaults on bad data", () => {

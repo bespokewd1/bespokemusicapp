@@ -139,3 +139,28 @@ export function median(values: number[]) {
   const m = Math.floor(s.length / 2);
   return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2;
 }
+
+/**
+ * Decides when to play the in-tune chime. Fires once after the pitch stays
+ * within tolerance for `holdMs`; re-arms only after it stays clearly out of
+ * tune (beyond `releaseCents`) or silent for `releaseMs`, or the string changes.
+ */
+export function createInTuneGate({ holdMs = 400, releaseMs = 300, tolerance = IN_TUNE_CENTS, releaseCents = IN_TUNE_CENTS * 2.5 } = {}) {
+  let armed = true, inSince = -1, outSince = -1, key: string | null = null;
+  return (cents: number | null, stringKey: string | null, now: number): boolean => {
+    if (stringKey !== key) { key = stringKey; armed = true; inSince = -1; outSince = -1; }
+    const abs = cents == null ? Infinity : Math.abs(cents);
+    if (abs <= tolerance) {
+      outSince = -1;
+      if (inSince < 0) inSince = now;
+      if (armed && now - inSince >= holdMs) { armed = false; return true; }
+      return false;
+    }
+    inSince = -1;
+    if (!armed && abs > releaseCents) {
+      if (outSince < 0) outSince = now;
+      if (now - outSince >= releaseMs) armed = true;
+    } else if (abs <= releaseCents) outSince = -1;
+    return false;
+  };
+}

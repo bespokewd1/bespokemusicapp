@@ -1,9 +1,9 @@
 import { useT } from "@/lib/i18n";
-import { useState } from "react";
-import { Mic, MicOff } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTuner } from "@/hooks/use-tuner";
-import { centsToTarget, IN_TUNE_CENTS, nearestString, PRESETS, tuningState } from "@/lib/tuner";
+import { centsToTarget, createInTuneGate, IN_TUNE_CENTS, nearestString, PRESETS, tuningState } from "@/lib/tuner";
 import { cn } from "@/lib/utils";
 
 export function GuitarTuner() {
@@ -21,6 +21,17 @@ export function GuitarTuner() {
   const state = freq ? tuningState(cents) : null;
   const clamped = Math.max(-50, Math.min(50, cents));
   const needle = freq ? clamped * 1.4 : 0; // degrees, ±70°
+
+  // In-tune chime: device-local on/off, gated so it plays once per stable tuning
+  const [chimeOn, setChimeOn] = useState(true);
+  useEffect(() => { setChimeOn(localStorage.getItem(CHIME_KEY) !== "off"); }, []);
+  const gate = useRef(createInTuneGate());
+  useEffect(() => {
+    if (!listening) return;
+    const fire = gate.current(freq && target ? cents : null, target ? `${preset.id}-${idx}` : null, performance.now());
+    if (fire && chimeOn) playChime();
+  }, [freq, cents, target, idx, preset.id, listening, chimeOn]);
+  const toggleChime = () => { const v = !chimeOn; setChimeOn(v); localStorage.setItem(CHIME_KEY, v ? "on" : "off"); if (v) { unlockAudio(); setTimeout(playChime, 30); } };
 
   const pick = (i: number) => { playClick(); setMode("manual"); setManual(i); };
   // Strings low (6th) -> high (1st); headstock 3+3: left pegs = strings 6,5,4 (top→bottom reversed for realism)
@@ -91,13 +102,17 @@ export function GuitarTuner() {
             {(["auto", "manual"] as const).map((m) => (
               <button key={m} onClick={() => setMode(m)} className={cn("min-h-10 rounded-full px-3 capitalize", mode === m ? "bg-tuner-fg text-tuner-bg" : "text-tuner-dim")}>{t(m === "auto" ? "Auto" : "Manual")}</button>
             ))}
+            <button onClick={toggleChime} aria-pressed={chimeOn} aria-label={t(chimeOn ? "In-tune sound on" : "In-tune sound off")} title={t(chimeOn ? "In-tune sound on" : "In-tune sound off")}
+              className={cn("grid min-h-10 w-10 place-items-center rounded-full", chimeOn ? "text-tuner-fg" : "text-tuner-dim")}>
+              {chimeOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            </button>
           </div>
           {listening ? (
             <Button variant="outline" onClick={stop} className="h-12 rounded-full border-tuner-off bg-transparent text-tuner-fg hover:bg-tuner-fg/10 hover:text-tuner-fg">
               <MicOff className="mr-2 h-4 w-4" /> {t("Stop")}
             </Button>
           ) : (
-            <Button onClick={start} disabled={status === "starting"} className="h-12 rounded-full">
+            <Button onClick={() => { unlockAudio(); start(); }} disabled={status === "starting"} className="h-12 rounded-full">
               <Mic className="mr-2 h-4 w-4" /> {t(status === "starting" ? "Starting…" : "Start Tuning")}
             </Button>
           )}
@@ -130,6 +145,23 @@ export function GuitarTuner() {
 }
 
 let clickCtx: AudioContext | null = null;
+const CHIME_KEY = "bm-tuner-chime";
+function unlockAudio() { try { clickCtx ??= new AudioContext(); void clickCtx.resume(); } catch { /* unsupported */ } }
+/** Soft two-note chime (~300ms), generated with Web Audio; never routed through the mic. */
+function playChime() {
+  try {
+    if (!clickCtx || clickCtx.state !== "running") return;
+    const ctx = clickCtx, t0 = ctx.currentTime;
+    [[1046.5, 0], [1568, 0.07]].forEach(([f, d]) => {
+      const o = ctx.createOscillator(), g = ctx.createGain(), t = t0 + d!;
+      o.type = "sine"; o.frequency.setValueAtTime(f!, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.06, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+      o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + 0.27);
+    });
+  } catch { /* audio unavailable */ }
+}
 /** Short UI click so users hear the tap. Plays through its own context (not the mic). */
 function playClick() {
   try {
