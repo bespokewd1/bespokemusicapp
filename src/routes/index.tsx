@@ -1,9 +1,11 @@
 import { useT } from "@/lib/i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { PenLine, ListMusic, Play, ArrowRight, Plus, Library, ScrollText, ClipboardPaste, Wrench, Check, SlidersHorizontal } from "lucide-react";
+import { PenLine, ListMusic, Play, ArrowRight, Plus, Library, ScrollText, ClipboardPaste, Wrench, Check, SlidersHorizontal, Music, FileText, ArrowUpDown, PlayCircle, Mic, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SongCard } from "@/components/SongCard";
 import { useStore } from "@/lib/store";
+import { uniqueChords } from "@/lib/songs";
+import { useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -36,13 +38,110 @@ const FEATURES = [
 function Explore() {
   const { signedIn, ready, user, allSongs } = useStore();
   const signed = ready && signedIn;
-  const experienced = signed && allSongs.some((s) => s.ownerId === user?.id);
+  if (!signed) return <Landing />;
+  const experienced = allSongs.some((s) => s.ownerId === user?.id);
   return (
     <div>
-      {signed ? <Welcome /> : <MarketingHero />}
-      {!signed && <QuickFeatures />}
-      <DemoSongs compact={signed} quiet={experienced} />
+      <Welcome />
+      <DemoSongs compact quiet={experienced} />
       {!experienced && <HowItWorks />}
+    </div>
+  );
+}
+
+/** Signed-out landing: hero → Try It Yourself → 3 steps → features → final CTA. */
+function Landing() {
+  const { requireAuth, allSongs, songsLoaded } = useStore();
+  const { t } = useT();
+  const navigate = useNavigate();
+  const [all, setAll] = useState(false);
+  const signUp = () => requireAuth("Create your free Beta account.", () => navigate({ to: "/my-songs" }));
+  const demos = allSongs.filter((s) => !s.ownerId && s.published !== false && s.pickUp).sort((a, b) => (a.featuredOrder ?? 99) - (b.featuredOrder ?? 99));
+  const shown = all ? demos : demos.slice(0, 1);
+  const steps = [
+    ["Add Your Songs", "Copy and paste your chords and lyrics, or write your own."],
+    ["Organize Your Music", "Save favourites and build playlists for practice or performances."],
+    ["Play Without Distractions", "Transpose, adjust text size, and use auto-scroll."],
+  ];
+  const feats = [
+    [FileText, "Chords & Lyrics"], [ListMusic, "Playlists"], [ArrowUpDown, "Transpose"],
+    [PlayCircle, "Auto-Scroll"], [Music, "Chord Library"], [Mic, "Guitar Tuner"],
+  ] as const;
+  return (
+    <div className="mx-auto max-w-3xl">
+      <section className="pt-2 text-left md:pt-8 md:text-center">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent-foreground">{t("Your music. Your songbook.")}</p>
+        <h1 className="mt-2 font-display text-[2.1rem] font-semibold leading-[1.08] sm:text-5xl md:text-6xl">{t("Your personal guitar songbook.")}</h1>
+        <p className="mt-3 text-muted-foreground md:mx-auto md:max-w-xl md:text-lg">{t("Save your chords and lyrics, create playlists, and play your favourite songs in one place.")}</p>
+        <div className="mt-5 grid gap-2.5 sm:flex sm:justify-center">
+          <Button size="lg" className="h-12 rounded-full px-7 text-base" onClick={signUp}>{t("Start Your Songbook — Free")}</Button>
+          <Button size="lg" variant="outline" className="h-12 rounded-full px-7 text-base" onClick={() => scrollTo("demo-songs")}>{t("Try Demo Songs")}</Button>
+        </div>
+        <p className="mt-4 text-center text-sm text-muted-foreground">{t("Free during Beta · No credit card required")}</p>
+        <p className="mt-1 flex justify-center gap-4 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1"><Check className="h-3.5 w-3.5 text-primary" />{t("No ads")}</span>
+          <span className="inline-flex items-center gap-1"><Check className="h-3.5 w-3.5 text-primary" />{t("No distractions")}</span>
+        </p>
+      </section>
+
+      <section id="demo-songs" className="mt-10 scroll-mt-24">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="font-display text-xl font-semibold sm:text-2xl">{t("Try It Yourself")}</h2>
+            <p className="text-sm text-muted-foreground">{t("No account needed")}</p>
+          </div>
+          {demos.length > 1 && <button onClick={() => setAll((v) => !v)} className="shrink-0 text-sm text-muted-foreground hover:text-foreground">{t(all ? "Show less" : "View all →")}</button>}
+        </div>
+        {!songsLoaded ? <div className="h-24 animate-pulse rounded-2xl bg-secondary" /> : shown.length ? (
+          <div className="grid gap-2.5">
+            {shown.map((s) => (
+              <Link key={s.id} to="/song/$id" params={{ id: s.id }} className="flex min-w-0 items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary"><Music className="h-5 w-5" /></span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-display text-lg font-semibold">{s.title}</span>
+                  <span className="block truncate text-sm text-muted-foreground">{s.artist} · {t(s.difficulty)}</span>
+                  <span className="mt-1 block truncate font-mono text-xs font-semibold text-primary">{uniqueChords(s).slice(0, 5).join(" · ")}</span>
+                </span>
+                <PlayCircle className="h-7 w-7 shrink-0 text-primary" />
+              </Link>
+            ))}
+          </div>
+        ) : <Empty text="Demo songs are coming soon." />}
+        <p className="mt-2.5 text-sm text-muted-foreground">{t("Test auto-scroll, transpose chords, and adjust your reading size.")}</p>
+      </section>
+
+      <section id="how-it-works" className="mt-10 scroll-mt-24 border-t border-border pt-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent-foreground">{t("How It Works")}</p>
+        <h2 className="mt-1 font-display text-xl font-semibold sm:text-2xl">{t("From chords to your songbook in 3 steps.")}</h2>
+        <ol className="mt-4 grid gap-4 md:grid-cols-3">
+          {steps.map(([title, text], i) => (
+            <li key={title} className="flex min-w-0 gap-3">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-secondary font-display font-semibold text-primary">{i + 1}</span>
+              <span className="min-w-0">
+                <span className="block font-semibold">{t(title!)}</span>
+                <span className="block text-sm text-muted-foreground">{t(text!)}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="mt-8 rounded-2xl border border-border bg-card p-4 sm:p-5">
+        <h2 className="flex items-center gap-2 font-display text-lg font-semibold"><Music className="h-4 w-4 text-primary" />{t("Made for musicians")}</h2>
+        <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
+          {feats.map(([Icon, label]) => (
+            <li key={label} className="flex min-w-0 items-center gap-2 text-sm"><Icon className="h-4 w-4 shrink-0 text-primary" /><span className="truncate">{t(label)}</span></li>
+          ))}
+        </ul>
+        <Link to="/features" className="mt-3 inline-flex items-center gap-0.5 text-xs text-muted-foreground hover:text-foreground">{t("Explore All Features")}<ChevronRight className="h-3.5 w-3.5" /></Link>
+      </section>
+
+      <section className="mt-10 text-center">
+        <h2 className="font-display text-2xl font-semibold">{t("Build a songbook that's yours.")}</h2>
+        <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">{t("Keep your songs, chords, and playlists organized and ready to play.")}</p>
+        <Button size="lg" className="mt-4 h-12 w-full rounded-full px-7 text-base sm:w-auto" onClick={signUp}>{t("Create Your Free Account")}</Button>
+        <p className="mt-2 text-xs text-muted-foreground">{t("No credit card required during Beta.")}</p>
+      </section>
     </div>
   );
 }
