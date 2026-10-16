@@ -1,10 +1,11 @@
-import { parseLine, transposeChord, uniqueChords, type Song } from "./songs";
+import { isTabLine, parseLine, transposeChord, uniqueChords, type Song } from "./songs";
 
 function esc(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function lineHtml(line: string, transpose: number) {
+  if (isTabLine(line)) return `<pre class="tab">${esc(line)}</pre>`;
   const segs = parseLine(line);
   const cells = segs
     .map((seg) => {
@@ -20,7 +21,7 @@ export function exportSongPdf(song: Song, opts: { transpose?: number; notes?: st
   const tr = opts.transpose ?? 0;
   const chords = uniqueChords(song).map((c) => transposeChord(c, tr));
   const sections = song.sections
-    .map((sec) => `<h2>${esc(sec.name)}</h2>${sec.lines.map((l) => lineHtml(l, tr)).join("")}`)
+    .map((sec) => `<section>${sec.name ? `<h2>${esc(sec.name)}</h2>` : ""}${sec.lines.map((l) => lineHtml(l, tr)).join("")}</section>`)
     .join("");
   const notes = opts.notes?.trim()
     ? `<h2>Notes</h2><p class="notes">${esc(opts.notes).replace(/\n/g, "<br>")}</p>`
@@ -40,6 +41,9 @@ export function exportSongPdf(song: Song, opts: { transpose?: number; notes?: st
   .seg { display: inline-block; vertical-align: bottom; }
   .ch { display: block; font-weight: 700; color: #9a3412; min-height: 1em; }
   .tx { display: block; white-space: pre; }
+  .tab { font-family: ui-monospace, 'Courier New', monospace; font-size: 12px; margin: 0; white-space: pre; }
+  h2 { break-after: avoid; page-break-after: avoid; }
+  body { background: #fff; }
   .notes { font-size: 13px; white-space: pre-wrap; }
   .brand { margin-top: 28px; font-size: 10px; color: #a8a29e; text-align: center; }
 </style></head><body>

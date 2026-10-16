@@ -2,7 +2,7 @@ import { useT } from "@/lib/i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { forwardRef } from "react";
-import { ArrowLeft, Heart, Minus, Pencil, Play, Plus, ListPlus, Pause, Trash2, Hash, PenLine, Eraser, StickyNote, FileDown, MoreHorizontal, Maximize, Minimize, SkipBack, SkipForward, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Heart, Minus, Pencil, Play, Plus, ListPlus, Pause, Trash2, Hash, PenLine, Eraser, StickyNote, FileDown, MoreHorizontal, Maximize, Minimize, SkipBack, SkipForward, ChevronLeft, ChevronRight, Printer, Share2, Mail, Copy, Gauge } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -21,6 +21,7 @@ import { useStore } from "@/lib/store";
 import { transposeChord } from "@/lib/songs";
 import { findChord } from "@/lib/chords";
 import { exportSongPdf } from "@/lib/pdf";
+import { APP_URL } from "@/components/AccountExtras";
 import { useAutoScroll } from "@/hooks/use-auto-scroll";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { loadTranspose, loadViewPrefs, playlistNeighbours, saveTranspose, saveViewPrefs, SIZE_MAX, SIZE_MIN } from "@/lib/view-prefs";
@@ -69,6 +70,11 @@ function SongPage() {
   const [savedNotes, setSavedNotes] = useState("");
   const [moreOpen, setMoreOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  useEffect(() => {
+    const k = `bm-pos-${id}`; const y = sessionStorage.getItem(k);
+    if (y && songsLoaded) { sessionStorage.removeItem(k); setTimeout(() => window.scrollTo(0, Number(y)), 100); }
+  }, [id, songsLoaded]);
   const [plOpen, setPlOpen] = useState(false);
   const [delOpen, setDelOpen] = useState(false);
   const [chord, setChord] = useState<string | null>(null);
@@ -168,8 +174,11 @@ function SongPage() {
   const close = () => setMoreOpen(false);
   const items: MenuItem[] = [
     { key: "fs", label: tx("Full screen"), icon: Maximize, onSelect: () => { setAnnotate(false); setPerf(true); } },
-    { key: "pdf", label: tx("Export PDF"), icon: FileDown, onSelect: () => exportSongPdf(song, { transpose: tr }) },
-    ...(signedIn && savedNotes.trim() ? [{ key: "pdfn", label: tx("Export PDF with notes"), icon: FileDown, onSelect: () => exportSongPdf(song, { transpose: tr, notes: savedNotes }) }] : []),
+    { key: "tuner", label: tx("Tuner"), icon: Gauge, onSelect: () => { stop(); sessionStorage.setItem(`bm-pos-${song.id}`, String(window.scrollY)); navigate({ to: "/tools", search: { from: song.id } }); } },
+    { key: "pdf", label: tx("Download PDF"), icon: FileDown, onSelect: () => exportSongPdf(song, { transpose: tr }) },
+    { key: "print", label: tx("Print"), icon: Printer, onSelect: () => exportSongPdf(song, { transpose: tr }) },
+    { key: "share", label: tx("Share"), icon: Share2, onSelect: () => setShareOpen(true) },
+    ...(signedIn && savedNotes.trim() ? [{ key: "pdfn", label: tx("Download PDF with notes"), icon: FileDown, onSelect: () => exportSongPdf(song, { transpose: tr, notes: savedNotes }) }] : []),
   ];
   const jump = (i: number) => { stop(); document.getElementById(`sec-${i}`)?.scrollIntoView({ behavior: "smooth", block: "start" }); };
 
@@ -321,6 +330,24 @@ function SongPage() {
             })}
           </div>
           <Button variant="secondary" className="rounded-full" onClick={() => { setPlOpen(false); navigate({ to: "/playlists" }); }}><Plus className="mr-1 h-4 w-4" />{tx("Create a playlist")}</Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Share */}
+      <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+        <DialogContent className="rounded-3xl">
+          <DialogHeader><DialogTitle>{tx("Share song")}</DialogTitle></DialogHeader>
+          {!song.ownerId && song.published !== false ? (() => {
+            const url = `${APP_URL}song/${song.id}`;
+            return (
+              <div className="grid gap-2">
+                <a href={`mailto:?subject=${encodeURIComponent(`${song.title} — Bespoke Music`)}&body=${encodeURIComponent(url)}`} className="flex min-h-11 items-center gap-3 rounded-xl bg-secondary px-3 text-sm font-medium"><Mail className="h-4 w-4" />{tx("Email")}</a>
+                <button onClick={async () => { try { await navigator.clipboard.writeText(url); toast(tx("Link copied")); } catch { toast(url); } setShareOpen(false); }} className="flex min-h-11 items-center gap-3 rounded-xl bg-secondary px-3 text-left text-sm font-medium"><Copy className="h-4 w-4" />{tx("Copy to Clipboard")}</button>
+              </div>
+            );
+          })() : (
+            <p className="text-sm text-muted-foreground">{tx("This song is private to your songbook, so a link wouldn't open for anyone else. Use Download PDF or Print to share a copy instead.")}</p>
+          )}
         </DialogContent>
       </Dialog>
 
