@@ -34,7 +34,7 @@ export function SiteFooter() {
         </nav>
       </div>
       <div className="mt-8 flex flex-col gap-1 border-t border-border pt-4 text-xs text-muted-foreground sm:flex-row sm:justify-between">
-        <p>© 2026 Bespoke Music.</p>
+        <p>© 2026 Bespoke Music. <a href="https://bespokewebdesign.ca" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">{t("Built by Bespoke Web Design")}</a></p>
         <p>{t("Independently built in Canada 🇨🇦 · Currently in Beta")}</p>
       </div>
     </footer>

@@ -52,7 +52,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-          <ThemeToggle />
+          <span className={signedIn ? "" : "hidden md:block"}><ThemeToggle /></span>
           {!ready ? (
             <span className="h-9 w-20" />
           ) : signedIn ? (
