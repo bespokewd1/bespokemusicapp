@@ -2,7 +2,7 @@ import { useT } from "@/lib/i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { forwardRef } from "react";
-import { ArrowLeft, Heart, Minus, Pencil, Play, Plus, ListPlus, Pause, Trash2, Hash, PenLine, Eraser, StickyNote, FileDown, MoreHorizontal, Maximize, Minimize, SkipBack, SkipForward, ChevronLeft, ChevronRight, Printer, Share2, Mail, Copy, Gauge } from "lucide-react";
+import { ArrowLeft, Heart, Minus, Pencil, Play, Plus, ListPlus, Pause, Trash2, Hash, PenLine, Eraser, StickyNote, FileDown, MoreHorizontal, Maximize, Minimize, SkipBack, SkipForward, ChevronLeft, ChevronRight, Printer, Share2, Mail, Copy, Gauge, SlidersHorizontal, X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -24,7 +24,7 @@ import { exportSongPdf } from "@/lib/pdf";
 import { APP_URL } from "@/components/AccountExtras";
 import { useAutoScroll } from "@/hooks/use-auto-scroll";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { loadTranspose, loadViewPrefs, playlistNeighbours, saveTranspose, saveViewPrefs, SIZE_MAX, SIZE_MIN } from "@/lib/view-prefs";
+import { INTRO_DELAYS, loadPlaybackPrefs, savePlaybackPrefs, loadTranspose, loadViewPrefs, playlistNeighbours, saveTranspose, saveViewPrefs, SIZE_MAX, SIZE_MIN } from "@/lib/view-prefs";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/song/$id")({
@@ -47,7 +47,7 @@ type MenuItem = { key: string; label: string; icon: React.ComponentType<{ classN
 function SongPage() {
   const { id } = Route.useParams();
   const { pl } = Route.useSearch();
-  const { user, signedIn, songsLoaded, getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, deleteSong, scrollSpeed, setScrollSpeed, loadSongData, saveSongData } = useStore();
+  const { user, signedIn, songsLoaded, getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, deleteSong, scrollSpeed, loadSongData, saveSongData } = useStore();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { t: tx } = useT();
@@ -56,7 +56,30 @@ function SongPage() {
   const [tr, setTr] = useState(0);
   const [nash, setNash] = useState(false);
   const [prefsLoaded, setPrefsLoaded] = useState(false);
-  const { playing, toggle, play, stop } = useAutoScroll(scrollSpeed);
+  const [pb, setPb] = useState<{ speed: number | null; delay: number }>({ speed: null, delay: 0 });
+  useEffect(() => { setPb(loadPlaybackPrefs(id)); }, [id]);
+  const speed = pb.speed ?? scrollSpeed;
+  const setSpeed = (v: number) => { const n = { ...pb, speed: v }; setPb(n); savePlaybackPrefs(id, n); };
+  const setDelay = (d: number) => { const n = { ...pb, delay: d }; setPb(n); savePlaybackPrefs(id, n); };
+  const { playing, toggle: rawToggle, play: rawPlay, stop: rawStop } = useAutoScroll(speed);
+  const [countdown, setCountdown] = useState(0);
+  const cdTimer = useRef<number | undefined>(undefined);
+  const cancelCd = () => { window.clearInterval(cdTimer.current); setCountdown(0); };
+  const stop = rawStop;
+  const play = rawPlay;
+  // Intro delay applies only when starting from a stopped state (never on resume after pause).
+  const toggle = () => {
+    if (countdown) { cancelCd(); return; }
+    if (playing) { rawToggle(); return; }
+    const atEnd = window.scrollY >= document.documentElement.scrollHeight - window.innerHeight - 2;
+    if (pb.delay > 0 && (!everPlayed.current || atEnd)) {
+      let n = pb.delay; setCountdown(n);
+      cdTimer.current = window.setInterval(() => { n -= 1; if (n <= 0) { cancelCd(); rawPlay(); } else setCountdown(n); }, 1000);
+      return;
+    }
+    rawPlay();
+  };
+  useEffect(() => () => window.clearInterval(cdTimer.current), [id]);
   const everPlayed = useRef(false);
   if (playing) everPlayed.current = true;
   const [barCollapsed, setBarCollapsed] = useState(false);
@@ -208,7 +231,25 @@ function SongPage() {
   ];
   const jump = (i: number) => { stop(); document.getElementById(`sec-${i}`)?.scrollIntoView({ behavior: "smooth", block: "start" }); };
 
-  const speedLabel = `${scrollSpeed.toFixed(1)}×`;
+  const speedLabel = countdown ? tx("Starting in {n}s", { n: countdown }) : `${speed.toFixed(1)}×`;
+  const playIcon = countdown ? <span className="font-mono text-base font-bold">{countdown}</span> : playing ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />;
+  const settingsPop = (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="secondary" size="icon" className="h-11 w-11 shrink-0 rounded-full" aria-label={tx("Playback settings")}><SlidersHorizontal className="h-5 w-5" /></Button>
+      </PopoverTrigger>
+      <PopoverContent side="top" align="center" className="w-72 p-4" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <SpeedSlider speed={speed} onChange={setSpeed} status={`${speed.toFixed(1)}×`} active={playing} />
+        <p className="mt-4 text-xs text-muted-foreground">{tx("Intro delay")}</p>
+        <div className="mt-1.5 grid grid-cols-4 gap-1.5">
+          {INTRO_DELAYS.map((d) => (
+            <button key={d} aria-pressed={pb.delay === d} onClick={() => setDelay(d)} className={cn("min-h-10 rounded-full text-sm font-medium", pb.delay === d ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground")}>{d ? `${d}s` : tx("Off")}</button>
+          ))}
+        </div>
+        <p className="mt-2 text-[11px] text-muted-foreground">{tx("Saved for this song on this device.")}</p>
+      </PopoverContent>
+    </Popover>
+  );
   const chordInfo = chord ? findChord(chord) : undefined;
 
   const moreBody = (
@@ -289,11 +330,14 @@ function SongPage() {
 
       {/* Playback */}
       {!perf && (
-        <div ref={controlsRef} className="mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 rounded-3xl border border-border bg-card p-3 shadow-soft md:p-4">
+        <div ref={controlsRef} className="mb-3 hidden md:grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 rounded-3xl border border-border bg-card p-3 shadow-soft md:p-4">
           <Button size="lg" onClick={toggle} aria-pressed={playing} className="h-12 rounded-full px-5 text-base shadow-lift md:h-14 md:px-6">
-            {playing ? <><Pause className="mr-2 h-5 w-5 fill-current" /> {tx("Pause")}</> : <><Play className="mr-2 h-5 w-5 fill-current" /> {tx("Play")}</>}
+            {countdown ? <span className="font-mono">{countdown}</span> : playing ? <><Pause className="mr-2 h-5 w-5 fill-current" /> {tx("Pause")}</> : <><Play className="mr-2 h-5 w-5 fill-current" /> {tx("Play")}</>}
           </Button>
-          <SpeedSlider speed={scrollSpeed} onChange={setScrollSpeed} status={!playing && everPlayed.current ? tx("Paused · tap song to resume") : speedLabel} active={playing} />
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+            <SpeedSlider speed={speed} onChange={setSpeed} status={!playing && !countdown && everPlayed.current ? tx("Paused · tap song to resume") : speedLabel} active={playing} />
+            {settingsPop}
+          </div>
         </div>
       )}
 
@@ -443,34 +487,52 @@ function SongPage() {
           <SongImages images={song.images ?? []} />
         </AnnotationLayer>
       </div>
-      <div className="h-[40vh]" aria-hidden />
+      <div className="h-[40vh] md:h-[40vh]" aria-hidden />
+      <div className="h-16 md:hidden" aria-hidden />
 
       {/* Performance mode bar */}
       {perf && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
-          <div className="mx-auto grid max-w-3xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-            <Button size="icon" onClick={toggle} aria-label={tx(playing ? "Pause" : "Play")} className="h-12 w-12 rounded-full shadow-lift">
-              {playing ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}
-            </Button>
-            <SpeedSlider speed={scrollSpeed} onChange={setScrollSpeed} status={speedLabel} active={playing} />
-            <Button variant="secondary" className="h-11 rounded-full px-3" onClick={() => setPerf(false)} aria-label={tx("Exit full screen")}>
-              <Minimize className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{tx("Exit")}</span>
+          <div className="mx-auto grid max-w-3xl grid-cols-[auto_minmax(0,1fr)_auto] justify-items-start items-center gap-3">
+            <Button size="icon" onClick={toggle} aria-label={tx(playing ? "Pause" : "Play")} className="h-12 w-12 rounded-full shadow-lift">{playIcon}</Button>
+            <div className="flex min-w-0 items-center gap-2">
+              <span className={cn("truncate font-mono text-sm font-semibold", playing && "text-primary")} aria-live="polite">{speedLabel}</span>
+              {settingsPop}
+            </div>
+            <Button variant="secondary" className="h-11 rounded-full px-3" onClick={() => setPerf(false)} aria-label={tx("Exit Focus")}>
+              <X className="mr-1 h-4 w-4" />{tx("Exit Focus")}
             </Button>
           </div>
         </div>
       )}
 
       {/* Floating Play/Pause | Speed bar when main controls are off-screen (never alongside performance bar) */}
+      {/* Mobile upper row: Play | Settings | Focus, sitting just above the tab bar */}
+      {!perf && (
+        <div data-mobile-player className="fixed inset-x-0 z-30 border-t border-border bg-card/95 px-4 py-1.5 backdrop-blur md:hidden" style={{ bottom: "calc(var(--tabbar-h, 62px) + env(safe-area-inset-bottom))" }}>
+          <div className="mx-auto grid max-w-3xl grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2">
+            <Button size="icon" onClick={toggle} aria-label={tx(playing ? "Pause auto-scroll" : "Play auto-scroll")} className="h-11 w-11 rounded-full">{playIcon}</Button>
+            <span className={cn("truncate text-xs text-muted-foreground", playing && "text-primary")} aria-live="polite">
+              {tx("Auto-scroll")} · <span className="font-mono font-semibold">{!playing && !countdown && everPlayed.current ? tx("Paused") : speedLabel}</span>
+            </span>
+            {settingsPop}
+            <Button variant="secondary" className="h-11 rounded-full px-3" onClick={() => { setAnnotate(false); setPerf(true); }} aria-label={tx("Focus")}>
+              <Maximize className="mr-1 h-4 w-4" />{tx("Focus")}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {!perf && !controlsVisible && (
-        <div className="fixed right-3 z-30 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] md:bottom-6 md:right-6">
+        <div className="fixed z-30 hidden md:bottom-6 md:right-6 md:block">
           <div className="flex items-center gap-2 rounded-full border border-border bg-card/95 p-1.5 shadow-lift backdrop-blur">
             <Button size="icon" onClick={toggle} aria-label={tx(playing ? "Pause auto-scroll" : "Play auto-scroll")} className="h-12 w-12 shrink-0 rounded-full">
-              {playing ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}
+              {playIcon}
             </Button>
             {!barCollapsed && (
               <div className="w-36 px-1 sm:w-48">
                 <div className="flex justify-between text-[11px] text-muted-foreground"><span>{tx("Speed")}</span><span className="font-mono font-semibold text-foreground">{speedLabel}</span></div>
-                <Slider className="mt-1.5" min={0.3} max={3} step={0.1} value={[scrollSpeed]} onValueChange={([v]) => setScrollSpeed(v ?? 1)} aria-label={tx("Auto-scroll speed")} />
+                <Slider className="mt-1.5" min={0.3} max={3} step={0.1} value={[speed]} onValueChange={([v]) => setSpeed(v ?? 1)} aria-label={tx("Auto-scroll speed")} />
               </div>
             )}
             <button onClick={() => setBarCollapsed((v) => !v)} aria-label={tx(barCollapsed ? "Show speed control" : "Hide speed control")} className="grid h-10 w-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:text-foreground">

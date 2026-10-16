@@ -309,4 +309,12 @@ export const FR: Record<string, string> = {
   "Back to Song": "Retour à la chanson",
   "In-tune sound on": "Son « accordé » activé",
   "In-tune sound off": "Son « accordé » désactivé",
+  "Starting in {n}s": "Départ dans {n} s",
+  "Playback settings": "Réglages de lecture",
+  "Intro delay": "Délai d'intro",
+  "Saved for this song on this device.": "Enregistré pour cette chanson sur cet appareil.",
+  "Exit Focus": "Quitter Focus",
+  "Focus": "Focus",
+  "Auto-scroll": "Défilement auto",
+  "Paused": "En pause",
 };
