@@ -50,10 +50,12 @@ function AdminPage() {
           <TabsTrigger value="overview" className="flex-1 rounded-full px-4">Overview</TabsTrigger>
           <TabsTrigger value="users" className="flex-1 rounded-full px-4">Users</TabsTrigger>
           <TabsTrigger value="content" className="flex-1 rounded-full px-4">Demo songs</TabsTrigger>
+          <TabsTrigger value="feedback" className="flex-1 rounded-full px-4">Feedback</TabsTrigger>
         </TabsList>
         <TabsContent value="overview"><Overview /></TabsContent>
         <TabsContent value="users"><Users /></TabsContent>
         <TabsContent value="content"><Content /></TabsContent>
+        <TabsContent value="feedback"><Feedback /></TabsContent>
       </Tabs>
     </div>
   );
@@ -243,6 +245,31 @@ function Content() {
           ))}
         </ul>
       </section>
+    </div>
+  );
+}
+
+function Feedback() {
+  const [rows, setRows] = useState<{ id: string; email: string | null; message: string; created_at: string }[] | null>(null);
+  const load = useCallback(async () => {
+    const { data, error } = await supabase.from("feedback").select("id,email,message,created_at").order("created_at", { ascending: false }).limit(200);
+    if (error) toast.error("Couldn't load feedback"); setRows(data ?? []);
+  }, []);
+  useEffect(() => { load(); }, [load]);
+  if (!rows) return <p className="text-muted-foreground">Loading…</p>;
+  if (!rows.length) return <p className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">No feedback yet.</p>;
+  return (
+    <div className="grid gap-3">
+      {rows.map((r) => (
+        <div key={r.id} className="rounded-2xl border border-border bg-card p-4">
+          <div className="mb-1 flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
+            <span>{r.email ? <a className="underline" href={`mailto:${r.email}`}>{r.email}</a> : "No email"}</span>
+            <span>{new Date(r.created_at).toLocaleString()}</span>
+          </div>
+          <p className="whitespace-pre-wrap break-words text-sm">{r.message}</p>
+          <button className="mt-2 text-xs text-destructive" onClick={async () => { await supabase.from("feedback").delete().eq("id", r.id); load(); }}>Delete</button>
+        </div>
+      ))}
     </div>
   );
 }
