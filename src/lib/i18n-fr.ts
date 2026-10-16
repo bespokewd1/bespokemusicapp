@@ -280,6 +280,7 @@ export const FR: Record<string, string> = {
   // Offline
   "You're offline. Songs you've opened before still work.": "Vous êtes hors ligne. Les chansons déjà ouvertes restent accessibles.",
   // Pass 1
+  "Language": "Langue",
   "Switch to light mode": "Passer au mode clair",
   "Switch to dark mode": "Passer au mode sombre",
   "Choose your preferred language.": "Choisissez votre langue.",
