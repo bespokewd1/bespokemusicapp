@@ -34,13 +34,15 @@ const FEATURES = [
 ];
 
 function Explore() {
-  const { signedIn, ready } = useStore();
+  const { signedIn, ready, user, allSongs } = useStore();
+  const signed = ready && signedIn;
+  const experienced = signed && allSongs.some((s) => s.ownerId === user?.id);
   return (
     <div>
-      {ready && signedIn ? <Welcome /> : <MarketingHero />}
-      {!(ready && signedIn) && <QuickFeatures />}
-      <DemoSongs compact={ready && signedIn} />
-      <HowItWorks />
+      {signed ? <Welcome /> : <MarketingHero />}
+      {!signed && <QuickFeatures />}
+      <DemoSongs compact={signed} quiet={experienced} />
+      {!experienced && <HowItWorks />}
     </div>
   );
 }
@@ -84,38 +86,54 @@ function Welcome() {
   const navigate = useNavigate();
   const first = ((user?.user_metadata?.["full_name"] as string) || user?.email || "").split(/[\s@._]/)[0];
   const firstName = first ? first.charAt(0).toUpperCase() + first.slice(1) : "";
-  const mine = allSongs.filter((s) => s.ownerId === user?.id).slice(-6).reverse();
-  const played = recent.map((id) => getSong(id)).filter(Boolean).slice(0, 3) as NonNullable<ReturnType<typeof getSong>>[];
-  const isNew = !mine.length && !playlists.length;
+  const mine = allSongs.filter((s) => s.ownerId === user?.id).slice(-3).reverse();
+  const played = recent.map((id) => getSong(id)).filter(Boolean) as NonNullable<ReturnType<typeof getSong>>[];
+  const last = played[0];
+  const isNew = !mine.length;
+  // "Recently used" = playlists holding the most recently played songs, then newest
+  const rank = (ids: string[]) => { const i = recent.findIndex((r) => ids.includes(r)); return i < 0 ? 999 : i; };
+  const pls = [...playlists].map((p, i) => ({ p, i })).sort((a, b) => rank(a.p.songIds) - rank(b.p.songIds) || b.i - a.i).slice(0, 2).map((x) => x.p);
   return (
     <>
-      <section className="mb-10 grid gap-6 rounded-3xl border border-border bg-card p-6 shadow-soft md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-10">
+      <section className="mb-6 grid grid-cols-1 items-center gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">{t("Your songbook")}</p>
-          <h1 className="mt-2 font-display text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl">{firstName ? t("Welcome back, {name}!", { name: firstName }) : t("Welcome back!")}</h1>
-          <p className="mt-3 max-w-xl text-muted-foreground md:text-lg">
-            {t(isNew ? "Let's start your collection. Add your first song or create a playlist." : "Your songbook is ready. Add songs, create playlists, and keep your music collection growing.")}
-          </p>
+          <h1 className="truncate font-display text-2xl font-semibold leading-tight sm:text-3xl">
+            {isNew ? t("Let's start your songbook") : firstName ? t("Welcome back, {name}!", { name: firstName }) : t("Welcome back!")}
+          </h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">{t(isNew ? "Add your first song — paste chords and lyrics or write from scratch." : "Pick up where you left off.")}</p>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row md:flex-col">
-          <Button size="lg" className="h-12 rounded-full px-6" onClick={() => navigate({ to: "/songs/new" })}><Plus className="mr-1 h-4 w-4" /> {t("Add Song")}</Button>
-          <Button size="lg" variant="outline" className="h-12 rounded-full px-6" onClick={() => navigate({ to: "/playlists" })}><Plus className="mr-1 h-4 w-4" /> {t("Create Playlist")}</Button>
+        <div className="grid grid-cols-2 gap-2 sm:flex">
+          <Button className="h-11 rounded-full px-5" onClick={() => navigate({ to: "/songs/new" })}><Plus className="mr-1 h-4 w-4" /> {t("Add Song")}</Button>
+          <Button variant="outline" className="h-11 rounded-full px-5" onClick={() => navigate({ to: "/playlists" })}><Plus className="mr-1 h-4 w-4" /> {t("Create Playlist")}</Button>
         </div>
       </section>
 
-      <SectionHead title="Recently Added Songs" to="/my-songs" />
-      {mine.length ? (
-        <div className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{mine.map((s) => <SongCard key={s.id} song={s} />)}</div>
-      ) : (
+      {last && (
+        <Link to="/song/$id" params={{ id: last.id }} className="mb-8 flex min-w-0 items-center gap-4 rounded-2xl bg-hero p-4 text-primary-foreground shadow-lift transition hover:-translate-y-0.5 sm:p-5">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-primary-foreground/15"><Play className="h-5 w-5 fill-current" /></span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.2em] opacity-80">{t("Continue Playing")}</span>
+            <span className="block truncate font-display text-xl font-semibold">{last.title}</span>
+            <span className="block truncate text-sm opacity-80">{last.artist} · {t("Key")} {last.key}</span>
+          </span>
+        </Link>
+      )}
+
+      {isNew ? (
         <Empty text="No songs yet. Add your first song to start your collection." />
+      ) : (
+        <>
+          <SectionHead title="Recent Songs" to="/my-songs" />
+          <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{mine.map((s) => <SongCard key={s.id} song={s} compact />)}</div>
+        </>
       )}
 
       <SectionHead title="My Playlists" to="/playlists" />
-      {playlists.length ? (
-        <div className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {playlists.slice(0, 6).map((p) => (
-            <Link key={p.id} to="/playlists/$id" params={{ id: p.id }} className="flex min-w-0 items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-secondary text-primary"><ListMusic className="h-5 w-5" /></span>
+      {pls.length ? (
+        <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {pls.map((p) => (
+            <Link key={p.id} to="/playlists/$id" params={{ id: p.id }} className="flex min-w-0 items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary"><ListMusic className="h-5 w-5" /></span>
               <span className="min-w-0">
                 <span className="block truncate font-display text-lg font-semibold">{p.name}</span>
                 <span className="block text-sm text-muted-foreground">{t(p.songIds.length === 1 ? "{n} song" : "{n} songs", { n: p.songIds.length })}</span>
@@ -125,13 +143,6 @@ function Welcome() {
         </div>
       ) : (
         <Empty text="No playlists yet. Create one for practice, acoustic sets, or performances." />
-      )}
-
-      {played.length > 0 && (
-        <>
-          <SectionHead title="Recently Played" />
-          <div className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{played.map((s) => <SongCard key={s.id} song={s} />)}</div>
-        </>
       )}
     </>
   );
@@ -149,7 +160,7 @@ function SectionHead({ title, to }: { title: string; to?: "/my-songs" | "/playli
 
 function Empty({ text }: { text: string }) {
   const { t } = useT();
-  return <p className="mb-10 rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">{t(text)}</p>;
+  return <p className="mb-8 rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">{t(text)}</p>;
 }
 
 function QuickFeatures() {
@@ -172,12 +183,22 @@ function QuickFeatures() {
   );
 }
 
-function DemoSongs({ compact }: { compact: boolean }) {
+function DemoSongs({ compact, quiet }: { compact: boolean; quiet?: boolean }) {
   const { allSongs, songsLoaded } = useStore();
   const { t } = useT();
   const list = allSongs
     .filter((s) => !s.ownerId && s.published !== false && s.pickUp)
     .sort((a, b) => (a.featuredOrder ?? 99) - (b.featuredOrder ?? 99));
+  if (quiet) {
+    return (
+      <section id="demo-songs" className="mt-4 scroll-mt-24 rounded-2xl border border-border p-4">
+        <p className="text-sm text-muted-foreground">{t("Demo songs")}:{" "}
+          {list.map((s, i) => <span key={s.id}>{i > 0 && " · "}<Link to="/song/$id" params={{ id: s.id }} className="font-medium text-foreground hover:text-primary">{s.title}</Link></span>)}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">{t("New here?")} <Link to="/help" className="text-primary hover:underline">{t("See how Bespoke Music works")}</Link></p>
+      </section>
+    );
+  }
   return (
     <section id="demo-songs" className="scroll-mt-24">
       {compact && <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">{t("Pick Up & Play")}</p>}
@@ -188,7 +209,7 @@ function DemoSongs({ compact }: { compact: boolean }) {
       {!songsLoaded ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl bg-secondary" />)}</div>
       ) : list.length ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{list.map((s) => <SongCard key={s.id} song={s} />)}</div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{list.map((s) => <SongCard key={s.id} song={s} compact={compact} />)}</div>
       ) : (
         <Empty text="Demo songs are coming soon." />
       )}

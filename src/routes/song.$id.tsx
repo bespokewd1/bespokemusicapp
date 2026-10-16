@@ -26,6 +26,7 @@ import { useAutoScroll } from "@/hooks/use-auto-scroll";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { INTRO_DELAYS, loadPlaybackPrefs, savePlaybackPrefs, loadTranspose, loadViewPrefs, playlistNeighbours, saveTranspose, saveViewPrefs, SIZE_MAX, SIZE_MIN } from "@/lib/view-prefs";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/track";
 
 export const Route = createFileRoute("/song/$id")({
   validateSearch: (s: Record<string, unknown>): { pl?: string } => (typeof s["pl"] === "string" && s["pl"] ? { pl: s["pl"] as string } : {}),
@@ -149,11 +150,18 @@ function SongPage() {
   const changeStrokes = (s: Stroke[]) => { setStrokes(s); saveSongData(id, { annotations: s }); };
 
   useEffect(() => {
-    if (song && signedIn) markPlayed(song.id);
+    if (song && signedIn) { markPlayed(song.id); track(user?.id, "song_opened", song.id); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [song?.id, signedIn]);
 
   useEffect(() => stop, [id, stop]);
+  // Meaningful player usage: auto-scroll ran 20s+ (once per song visit)
+  const usedRef = useRef("");
+  useEffect(() => {
+    if (!playing || usedRef.current === id) return;
+    const t = window.setTimeout(() => { usedRef.current = id; track(user?.id, "player_used", id); }, 20000);
+    return () => window.clearTimeout(t);
+  }, [playing, id, user?.id]);
 
   // Keyboard: Space starts/pauses auto-scroll (ignored while typing or on focused buttons)
   useEffect(() => {

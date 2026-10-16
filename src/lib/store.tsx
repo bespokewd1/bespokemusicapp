@@ -1,3 +1,4 @@
+import { track, trackReturnVisit } from "@/lib/track";
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import type React from "react";
 import type { User } from "@supabase/supabase-js";
@@ -97,6 +98,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [scrollSpeed, setSpeedState] = useState(1);
 
   const uid = user?.id ?? null;
+  useEffect(() => { if (uid) trackReturnVisit(uid); }, [uid]);
 
   const reloadSongs = useCallback(async () => {
     const { data, error } = await supabase.from("songs").select("*").order("sort_order").order("created_at", { ascending: false });
@@ -204,6 +206,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     added: songs.filter((s) => uid && s.ownerId === uid),
     upsertSong: async (song, opts) => {
       if (!uid) return null;
+      const isFirst = !song.id && !opts?.demo && !songs.some((s) => s.ownerId === uid);
       const row = {
         title: song.title, artist: song.artist, key: song.key, capo: song.capo, difficulty: song.difficulty,
         tempo: song.tempo, sections: song.sections as unknown as never, images: (song.images ?? []) as unknown as never,
@@ -215,6 +218,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         : supabase.from("songs").insert({ ...row, owner_id: opts?.demo ? null : uid, published: !opts?.demo }).select("id").single();
       const { data, error } = await q;
       if (fail("Couldn't save the song")(error)) return null;
+      if (isFirst) track(uid, "first_song", data!.id);
       await reloadSongs();
       return data!.id;
     },
@@ -268,6 +272,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.from("playlists").insert({ user_id: uid, name, description, template }).select("id").single();
       if (fail("Couldn't create the playlist")(error)) return null;
       setPlaylists((p) => [...p, { id: data!.id, name, description, template, songIds: [] }]);
+      track(uid, "playlist_created");
       return data!.id;
     },
     renamePlaylist: async (id, name, description) => {

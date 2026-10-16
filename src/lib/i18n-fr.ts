@@ -317,4 +317,12 @@ export const FR: Record<string, string> = {
   "Focus": "Focus",
   "Auto-scroll": "Défilement auto",
   "Paused": "En pause",
+  "Let's start your songbook": "Commençons votre carnet de chansons",
+  "Add your first song — paste chords and lyrics or write from scratch.": "Ajoutez votre première chanson — collez accords et paroles ou écrivez-la vous-même.",
+  "Pick up where you left off.": "Reprenez là où vous en étiez.",
+  "Continue Playing": "Continuer à jouer",
+  "Recent Songs": "Chansons récentes",
+  "Demo songs": "Chansons de démo",
+  "New here?": "Nouveau ici ?",
+  "See how Bespoke Music works": "Découvrez comment fonctionne Bespoke Music",
 };
