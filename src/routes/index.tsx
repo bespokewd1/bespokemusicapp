@@ -99,7 +99,7 @@ function Landing() {
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary"><Music className="h-5 w-5" /></span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-display text-lg font-semibold">{s.title}</span>
-                  <span className="block truncate text-sm text-muted-foreground">{s.artist} · {t(s.difficulty)}</span>
+                  <span className="flex min-w-0 gap-1 text-sm text-muted-foreground"><span className="truncate">{s.artist}</span><span className="shrink-0">· {t(s.difficulty)}</span></span>
                   <span className="mt-1 block truncate font-mono text-xs font-semibold text-primary">{uniqueChords(s).slice(0, 5).join(" · ")}</span>
                 </span>
                 <PlayCircle className="h-7 w-7 shrink-0 text-primary" />
