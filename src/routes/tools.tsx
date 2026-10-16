@@ -1,5 +1,6 @@
 import { useT } from "@/lib/i18n";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import { CHORD_LIBRARY, findChord, QUICK_CHART, searchChords, type Chord, type C
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tools")({
+  validateSearch: (s: Record<string, unknown>): { from?: string } => (typeof s["from"] === "string" && s["from"] ? { from: s["from"] as string } : {}),
   head: () => ({
     meta: [
       { title: "Guitar Tools — Chord Library & Tuner | Bespoke Music" },
@@ -26,8 +28,14 @@ const CATS: ("All" | ChordCategory)[] = ["All", "Major", "Minor", "7th", "Maj7",
 function Tools() {
   const [tab, setTab] = useState<"tuner" | "chords">("tuner");
   const { t } = useT();
+  const { from } = Route.useSearch();
   return (
     <div className="space-y-6">
+      {from && (
+        <Link to="/song/$id" params={{ id: from }} className="inline-flex min-h-11 items-center gap-1 rounded-full bg-secondary px-4 text-sm font-medium">
+          <ArrowLeft className="h-4 w-4" /> {t("Back to Song")}
+        </Link>
+      )}
       <PageHeader eyebrow={t("Toolbox")} title={t("Tools")} />
       <div className="grid grid-cols-2 gap-1 rounded-full bg-secondary p-1 sm:max-w-md" role="tablist" aria-label={t("Tools")}>
         {([["tuner", "Guitar Tuner"], ["chords", "Chord Library"]] as const).map(([id, label]) => (
