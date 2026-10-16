@@ -174,6 +174,8 @@ export const FR: Record<string, string> = {
   Standard: "Standard",
   "Shape {n}": "Position {n}",
   Triad: "Triade",
+  "Play {name}, {shape}": "Jouer {name}, {shape}",
+  "Audio unavailable. Please try again.": "Audio indisponible. Veuillez réessayer.",
   "Numbers show fingers: 1 index · 2 middle · 3 ring · 4 pinky. O = open, × = don't play.": "Les chiffres indiquent les doigts : 1 index · 2 majeur · 3 annulaire · 4 auriculaire. O = corde à vide, × = ne pas jouer.",
   "Triads use only the top three strings.": "Les triades n'utilisent que les trois cordes aiguës.",
   "Tune Your Guitar": "Accordez votre guitare",

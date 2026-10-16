@@ -22,6 +22,9 @@ export const Route = createFileRoute("/about")({
       <p>
         Say hello at <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> · <Link to="/whats-new">See what's new</Link>
       </p>
+      <p className="text-xs text-muted-foreground">
+        Credits: chord audio uses steel-string acoustic guitar samples from the FluidR3 GM SoundFont by Frank Wen, rendered by Benjamin Gleitzman (<a href="https://github.com/gleitz/midi-js-soundfonts">midi-js-soundfonts</a>), licensed <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.
+      </p>
     </InfoPage>
   ),
 });

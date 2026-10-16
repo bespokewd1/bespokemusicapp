@@ -1,13 +1,13 @@
 import { useT } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowLeft, Loader2, Play, Volume2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/PageHeader";
 import { GuitarTuner } from "@/components/GuitarTuner";
 import { ChordDiagram } from "@/components/ChordDiagram";
-import { CHORD_LIBRARY, findChord, QUICK_CHART, searchChords, type Chord, type ChordCategory } from "@/lib/chords";
+import { CHORD_LIBRARY, findChord, QUICK_CHART, searchChords, type Chord, type ChordCategory, type Voicing } from "@/lib/chords";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tools")({
@@ -128,17 +128,48 @@ function ChordLibrary() {
               <button onClick={() => setOpen(null)} className="min-h-11 rounded-full px-4 text-sm text-muted-foreground hover:bg-secondary">{tr("Close")}</button>
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              {open.voicings.map((vc, i) => (
-                <div key={i} className="rounded-2xl border border-border p-3">
-                  <ChordDiagram name={vc.label === "Triad" ? tr("Triad") : i === 0 ? tr("Standard") : tr("Shape {n}", { n: i + 1 })} voicing={vc} size="sm" />
-                </div>
-              ))}
+              {open.voicings.map((vc, i) => {
+                const label = vc.label === "Triad" ? tr("Triad") : i === 0 ? tr("Standard") : tr("Shape {n}", { n: i + 1 });
+                return (
+                  <div key={i} className="relative rounded-2xl border border-border p-3">
+                    <PlayChord voicing={vc} label={tr("Play {name}, {shape}", { name: open.name, shape: label })} />
+                    <ChordDiagram name={label} voicing={vc} size="sm" />
+                  </div>
+                );
+              })}
             </div>
             <p className="mt-4 text-xs text-muted-foreground">{tr("Numbers show fingers: 1 index · 2 middle · 3 ring · 4 pinky. O = open, × = don't play.")} {tr("Triads use only the top three strings.")}</p>
           </div>
         </div>
       )}
     </section>
+  );
+}
+
+function PlayChord({ voicing, label }: { voicing: Voicing; label: string }) {
+  const [state, setState] = useState<"idle" | "loading" | "playing" | "error">("idle");
+  const { t: tr } = useT();
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const play = async () => {
+    setState("loading");
+    try {
+      const { playVoicing } = await import("@/lib/chord-audio");
+      await playVoicing(voicing);
+      setState("playing");
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => setState("idle"), 1800);
+    } catch {
+      setState("error");
+    }
+  };
+  return (
+    <>
+      <button onClick={play} aria-label={label} title={label} className={cn("absolute left-1.5 top-1.5 grid h-11 w-11 place-items-center rounded-full text-primary transition hover:bg-secondary", state === "playing" && "bg-secondary")}>
+        {state === "loading" ? <Loader2 className="h-4 w-4 animate-spin" /> : state === "playing" ? <Volume2 className="h-4 w-4" /> : <Play className="h-4 w-4 fill-current" />}
+      </button>
+      {state === "error" && <p role="alert" className="mt-1 text-center text-[11px] text-destructive">{tr("Audio unavailable. Please try again.")}</p>}
+    </>
   );
 }
 
