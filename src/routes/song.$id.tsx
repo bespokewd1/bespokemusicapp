@@ -99,13 +99,15 @@ function SongPage() {
 
   // Two-finger pinch on the song sheet changes the same Size setting (only the sheet grows).
   const sheetRef = useRef<HTMLDivElement>(null);
+  const sizeRef = useRef(size);
+  sizeRef.current = size;
   useEffect(() => {
     const el = sheetRef.current;
     if (!el) return;
     let start = 0, base = 0, cur = 0;
     const dist = (t: TouchList) => Math.hypot(t[0]!.clientX - t[1]!.clientX, t[0]!.clientY - t[1]!.clientY);
     const onStart = (e: TouchEvent) => {
-      if (e.touches.length === 2) { start = dist(e.touches); setSize((s) => { base = s; cur = s; return s; }); }
+      if (e.touches.length === 2) { start = dist(e.touches); base = sizeRef.current; cur = base; }
     };
     const onMove = (e: TouchEvent) => {
       if (e.touches.length !== 2 || !start) return;
@@ -413,7 +415,7 @@ function SongPage() {
         <div className="mb-4 flex flex-wrap items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-soft">
           {([["Red", "#dc2626"], ["Yellow", "#facc15"], ["Black", INK]] as const).map(([n, c]) => (
             <button key={c} aria-label={tx(`${n} pen`)} aria-pressed={tool.kind === "pen" && tool.color === c} onClick={() => setTool({ kind: "pen", color: c })}
-              className={cn("h-8 w-8 rounded-full border-2", tool.kind === "pen" && tool.color === c ? "border-primary ring-2 ring-primary/30" : "border-border")} style={{ background: c }} />
+              className={cn("h-8 w-8 rounded-full border-2", tool.kind === "pen" && tool.color === c ? "border-primary ring-2 ring-primary/30" : "border-border")} style={{ background: c === INK ? "var(--color-foreground)" : c }} />
           ))}
           <button aria-label={tx("Eraser")} aria-pressed={tool.kind === "eraser"} onClick={() => setTool({ kind: "eraser" })} className={cn("grid h-9 w-9 place-items-center rounded-full", tool.kind === "eraser" ? "bg-primary text-primary-foreground" : "bg-secondary")}>
             <Eraser className="h-4 w-4" />
