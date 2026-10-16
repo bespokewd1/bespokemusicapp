@@ -5,7 +5,7 @@ import { uniqueChords, type Song } from "@/lib/songs";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-export function SongCard({ song, action, playlistId }: { song: Song; action?: React.ReactNode; playlistId?: string }) {
+export function SongCard({ song, action, playlistId, compact }: { song: Song; action?: React.ReactNode; playlistId?: string; compact?: boolean }) {
   const { saved, toggleSaved, requireAuth, signedIn } = useStore();
   const { t } = useT();
   const isSaved = signedIn && saved.includes(song.id);
@@ -18,7 +18,7 @@ export function SongCard({ song, action, playlistId }: { song: Song; action?: Re
       <Link to="/song/$id" params={{ id: song.id }} search={playlistId ? { pl: playlistId } : {}} className="min-w-0 flex-1 after:absolute after:inset-0">
         <h3 className="truncate font-display text-lg font-semibold leading-tight">{song.title}</h3>
         <p className="truncate text-sm text-muted-foreground">{song.artist}</p>
-        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        {!compact && <div className="mt-2 flex flex-wrap items-center gap-1.5">
           {chords.slice(0, 5).map((c) => (
             <span key={c} className="rounded-md bg-secondary px-1.5 py-0.5 font-mono text-xs font-semibold text-secondary-foreground">
               {c}
@@ -29,7 +29,7 @@ export function SongCard({ song, action, playlistId }: { song: Song; action?: Re
             {song.difficulty}
             {song.capo ? ` · Capo ${song.capo}` : ""}
           </span>
-        </div>
+        </div>}
       </Link>
       <div className="relative z-10 flex shrink-0 flex-col items-center gap-1">
         <button
