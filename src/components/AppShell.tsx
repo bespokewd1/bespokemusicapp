@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { LoginDialog } from "./LoginDialog";
 import { BackupDialog } from "./BackupDialog";
 import { useState } from "react";
-import { LanguageToggle } from "@/lib/i18n";
+import { LanguageToggle, SHOW_LANGUAGE } from "@/lib/i18n";
 import { ThemeToggle } from "@/lib/theme";
 import { FeedbackDialog, shareLink, APP_URL, APP_TITLE } from "./AccountExtras";
 import { MessageSquare, Share2 } from "lucide-react";
@@ -114,12 +114,12 @@ function AccountMenu() {
             <Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /> {tr("Admin Dashboard")}</Link>
           </DropdownMenuItem>
         )}
-        <div className="px-2 py-1.5">
+        {SHOW_LANGUAGE && <><div className="px-2 py-1.5">
           <p className="text-sm font-medium">{tr("Language")}</p>
           <p className="mb-1.5 text-xs text-muted-foreground">{tr("Choose your preferred language.")}</p>
           <LanguageToggle />
         </div>
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator /></>}
         <DropdownMenuItem onClick={() => setBackupOpen(true)}><Download className="mr-2 h-4 w-4" /> {tr("Backup My Library")}</DropdownMenuItem>
         <DropdownMenuItem onClick={() => setFbOpen(true)} className="items-start">
           <MessageSquare className="mr-2 mt-0.5 h-4 w-4" />

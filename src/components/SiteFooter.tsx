@@ -1,4 +1,4 @@
-import { useT, LanguageToggle } from "@/lib/i18n";
+import { useT, LanguageToggle, SHOW_LANGUAGE } from "@/lib/i18n";
 import { Link } from "@tanstack/react-router";
 import { mailto, SUPPORT_EMAIL } from "@/components/InfoPage";
 
@@ -12,7 +12,7 @@ export function SiteFooter() {
         <div className="col-span-2 sm:col-span-1">
           <p className="font-display text-lg font-semibold">Bespoke Music</p>
           <p className="mt-1 text-muted-foreground italic">{t("Your songs. Your chords. Your music library.")}</p>
-          <LanguageToggle className="mt-3 w-fit" />
+          {SHOW_LANGUAGE && <LanguageToggle className="mt-3 w-fit" />}
         </div>
         <nav aria-label={t("Product")} className="flex flex-col gap-2">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">{t("Product")}</p>

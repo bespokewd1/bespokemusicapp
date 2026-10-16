@@ -15,9 +15,13 @@ type Ctx = { lang: Lang; setLang: (l: Lang) => void; t: (s: string, vars?: Recor
 const g = globalThis as unknown as { __bmLangCtx?: React.Context<Ctx | null> };
 const LangContext = (g.__bmLangCtx ??= createContext<Ctx | null>(null));
 
+/** English-only beta: hides the EN/FR selector and keeps everyone in English. Flip to true to bring French back. */
+export const SHOW_LANGUAGE = false;
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
   useEffect(() => {
+    if (!SHOW_LANGUAGE) return;
     const saved = localStorage.getItem(KEY);
     if (saved === "en" || saved === "fr") setLangState(saved);
     else if (navigator.language?.toLowerCase().startsWith("fr")) setLangState("fr");
