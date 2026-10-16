@@ -36,6 +36,13 @@
       "when": 1792165512930,
       "tag": "0004_create_feedback",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792168667765,
+      "tag": "0005_app_events",
+      "breakpoints": true
     }
   ]
 }
