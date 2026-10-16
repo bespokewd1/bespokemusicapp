@@ -1,6 +1,6 @@
 /** Song-viewer display preferences kept on this device (never touch song content). */
 export const SIZE_MIN = 14;
-export const SIZE_MAX = 30;
+export const SIZE_MAX = 36;
 
 export interface ViewPrefs {
   size: number;

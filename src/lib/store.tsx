@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import type { Section, Song, Difficulty, SongImage } from "./songs";
 
-export type Stroke = { color: string; w: number; pts: [number, number][] };
+export type Stroke = { color: string; w: number; pts: [number, number][]; fs?: number };
 export interface SongUserData { notes: string; annotations: Stroke[] }
 export const IMAGE_BUCKET = "song-images";
 
