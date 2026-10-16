@@ -98,6 +98,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [scrollSpeed, setSpeedState] = useState(1);
 
   const uid = user?.id ?? null;
+  useEffect(() => { if (uid) trackReturnVisit(uid); }, [uid]);
 
   const reloadSongs = useCallback(async () => {
     const { data, error } = await supabase.from("songs").select("*").order("sort_order").order("created_at", { ascending: false });
@@ -217,6 +218,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         : supabase.from("songs").insert({ ...row, owner_id: opts?.demo ? null : uid, published: !opts?.demo }).select("id").single();
       const { data, error } = await q;
       if (fail("Couldn't save the song")(error)) return null;
+      if (isFirst) track(uid, "first_song", data!.id);
       await reloadSongs();
       return data!.id;
     },
