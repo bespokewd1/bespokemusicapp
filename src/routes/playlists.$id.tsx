@@ -15,6 +15,8 @@ export const Route = createFileRoute("/playlists/$id")({
       { name: "description", content: "A playlist of guitar songs ready to play." },
       { property: "og:title", content: "Playlist — Bespoke Music" },
       { property: "og:description", content: "A playlist of guitar songs ready to play." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex" },
     ],
   }),

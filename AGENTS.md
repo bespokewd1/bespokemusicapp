@@ -19,3 +19,4 @@
 - Offline mode uses vite-plugin-pwa (generateSW, /sw.js) registered only from src/lib/pwa.ts, never in dev/preview/iframes; pages and data reads are NetworkFirst — keeps the live app fresh while letting opened songs load offline.
 - Theme is a `.dark` class set before paint by THEME_INIT_SCRIPT in src/lib/theme.tsx (saved choice, else device preference) — avoids a flash and a theme library.
 - Feedback goes into public.feedback (anyone may insert, only admins read via has_role) and is read in the admin Feedback tab — no email service needed.
+- Clipboard image extraction lives in the tested src/lib/clipboard.ts helper; SongForm uses one text editor and the existing ordered image attachments, keeping images outside the chord parser and retaining saved-song compatibility.

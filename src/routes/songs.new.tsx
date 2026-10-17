@@ -9,6 +9,8 @@ export const Route = createFileRoute("/songs/new")({
       { name: "description", content: "Add your own song with chords and lyrics to your songbook." },
       { property: "og:title", content: "Add a Song — Bespoke Music" },
       { property: "og:description", content: "Add your own song with chords and lyrics." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: NewSong,
