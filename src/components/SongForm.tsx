@@ -41,7 +41,22 @@ export function SongForm({ song, demo, playlistId }: { song?: Song; demo?: boole
   });
   const onPaste = (e: React.ClipboardEvent) => {
     const files = [...e.clipboardData.files].filter((f) => f.type.startsWith("image/"));
-    if (files.length) { e.preventDefault(); addFiles(files); }
+    if (!files.length) return;
+    // A mixed copy (screenshot + text) carries both: keep the text paste working
+    // by inserting it manually at the cursor, and attach the image alongside.
+    e.preventDefault();
+    addFiles(files);
+    const el = e.currentTarget;
+    const pasted = e.clipboardData.getData("text/plain");
+    if (el instanceof HTMLTextAreaElement && pasted) {
+      const start = el.selectionStart ?? text.length;
+      const end = el.selectionEnd ?? start;
+      const next = text.slice(0, start) + pasted + text.slice(end);
+      setText(next);
+      requestAnimationFrame(() => {
+        el.selectionStart = el.selectionEnd = start + pasted.length;
+      });
+    }
   };
   const navigate = useNavigate();
   const [title, setTitle] = useState(song?.title ?? "");
