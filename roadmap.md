@@ -20,3 +20,4 @@
 - [x] Offline access (published app)
 - [x] Playlist "New song", tab blocks, section detection, chord hover, Space to play
 - [ ] Later: capo 0–12, themes, Delete Account button
+- [x] My Profile page (name/email/member since, collection stats, preferences, cloud+backup, support, sign out) — profile.tsx, account menu slimmed; EN-only beta keeps language selector hidden (reported)
