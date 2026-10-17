@@ -49,7 +49,7 @@ export function exportSongPdf(song: Song, opts: { transpose?: number; notes?: st
 </style></head><body>
 <h1>${esc(song.title)}</h1>
 <p class="artist">${esc(song.artist)}</p>
-<p class="meta">Key: ${esc(transposeChord(song.key, tr))} · Capo: ${song.capo ? `Fret ${song.capo}` : "None"} · Level: ${esc(song.difficulty)} · Tempo: ${song.tempo} bpm</p>
+<p class="meta">Key: ${esc(transposeChord(song.key, tr))} · Capo: ${song.capo ? `Fret ${song.capo}` : "None"}${song.tempo != null ? ` · Tempo: ${song.tempo} bpm` : ''}</p>
 <div class="chips">${chords.map((c) => `<span class="chip">${esc(c)}</span>`).join("")}</div>
 ${sections}
 ${notes}

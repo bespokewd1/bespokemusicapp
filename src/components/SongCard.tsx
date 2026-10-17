@@ -26,8 +26,7 @@ export function SongCard({ song, action, playlistId, compact }: { song: Song; ac
           ))}
           {chords.length > 5 && <span className="text-xs text-muted-foreground">+{chords.length - 5}</span>}
           <span className="ml-auto text-xs text-muted-foreground">
-            {song.difficulty}
-            {song.capo ? ` · Capo ${song.capo}` : ""}
+            {song.capo ? `Capo ${song.capo}` : ""}
           </span>
         </div>}
       </Link>

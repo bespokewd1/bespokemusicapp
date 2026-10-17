@@ -27,6 +27,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { INTRO_DELAYS, loadPlaybackPrefs, savePlaybackPrefs, loadTranspose, loadViewPrefs, playlistNeighbours, saveTranspose, saveViewPrefs, SIZE_MAX, SIZE_MIN } from "@/lib/view-prefs";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/track";
+import { Switch } from '@/components/ui/switch';
 
 export const Route = createFileRoute("/song/$id")({
   validateSearch: (s: Record<string, unknown>): { pl?: string } => (typeof s["pl"] === "string" && s["pl"] ? { pl: s["pl"] as string } : {}),
@@ -56,6 +57,7 @@ function SongPage() {
   const [size, setSize] = useState(18);
   const [tr, setTr] = useState(0);
   const [nash, setNash] = useState(false);
+  const [lyricsOnly, setLyricsOnly] = useState(false);
   const [prefsLoaded, setPrefsLoaded] = useState(false);
   const [pb, setPb] = useState<{ speed: number | null; delay: number }>({ speed: null, delay: 0 });
   useEffect(() => { setPb(loadPlaybackPrefs(id)); }, [id]);
@@ -266,6 +268,9 @@ function SongPage() {
         <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Song settings")}</p>
         <div className="grid gap-2">
           <Stepper label={tx("Size")} value={`${size}`} onMinus={() => setSize((s) => Math.max(SIZE_MIN, s - 2))} onPlus={() => setSize((s) => Math.min(SIZE_MAX, s + 2))} />
+          <label className="flex min-h-11 items-center justify-between gap-3 rounded-xl bg-secondary px-3 text-sm font-medium">
+            <span>{tx('Lyrics Only')}</span><Switch aria-label="Lyrics Only" checked={lyricsOnly} onCheckedChange={setLyricsOnly} />
+          </label>
           <div className="flex items-center gap-2">
             <Stepper label={tx("Transpose")} value={tr > 0 ? `+${tr}` : `${tr}`} onMinus={() => changeTr(tr - 1)} onPlus={() => changeTr(tr + 1)} />
             {tr !== 0 && <button onClick={() => changeTr(0)} className="min-h-9 rounded-full px-2 text-xs text-muted-foreground underline">{tx("Reset")}</button>}
@@ -331,8 +336,7 @@ function SongPage() {
         <div className="mt-2 flex flex-wrap gap-1.5 text-xs md:text-sm">
           <Chip>{tx("Key")} {keyNow}</Chip>
           <Chip>{song.capo ? `${tx("Capo")} ${song.capo}` : tx("No capo")}</Chip>
-          <Chip>{song.tempo} BPM</Chip>
-          <Chip>{tx(song.difficulty)}</Chip>
+          {song.tempo != null && song.tempo > 0 && <Chip>{song.tempo} BPM</Chip>}
         </div>
       </header>
 
@@ -491,7 +495,7 @@ function SongPage() {
         }}
       >
         <AnnotationLayer strokes={strokes} onChange={changeStrokes} active={annotate && !perf} tool={tool} fontSize={size}>
-          <SongSheet sections={song.sections} fontSize={size} transpose={tr} nashvilleKey={nashvilleKey} onChord={annotate ? undefined : setChord} />
+          <SongSheet sections={song.sections} fontSize={size} transpose={tr} nashvilleKey={nashvilleKey} lyricsOnly={lyricsOnly} onChord={annotate ? undefined : setChord} />
           <SongImages images={song.images ?? []} />
         </AnnotationLayer>
       </div>

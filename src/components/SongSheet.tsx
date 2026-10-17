@@ -6,6 +6,7 @@ import { findChord } from "@/lib/chords";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { ChordDiagram } from "./ChordDiagram";
 import { useT } from "@/lib/i18n";
+import { lyricLine } from '@/lib/song-controls';
 
 type Block = { kind: "lyrics" | "tab" | "note"; lines: string[] };
 
@@ -27,12 +28,14 @@ export function SongSheet({
   transpose = 0,
   nashvilleKey,
   onChord,
+  lyricsOnly = false,
 }: {
   sections: Section[];
   fontSize?: number;
   transpose?: number;
   nashvilleKey?: string | null;
   onChord?: ((chord: string) => void) | undefined;
+  lyricsOnly?: boolean;
 }) {
   const { t } = useT();
   return (
@@ -44,7 +47,7 @@ export function SongSheet({
             <span className="fret-line h-px flex-1" />
           </h3>
           <div className="space-y-3">
-            {toBlocks(sec.lines).map((block, j) =>
+            {toBlocks(lyricsOnly ? sec.lines.flatMap(line => { const lyric = lyricLine(line); return lyric === null ? [] : [lyric]; }) : sec.lines).map((block, j) =>
               block.kind === "tab" ? (
                 <div key={j}>
                   <TabScroll label={t("Guitar tab")}>{block.lines.join("\n")}</TabScroll>
@@ -54,9 +57,11 @@ export function SongSheet({
                 <p key={j} className="whitespace-pre-wrap break-words border-l-2 border-primary/40 pl-3 text-[0.8em] italic text-muted-foreground">
                   {block.lines.map((l) => l.replace(/^\s*>\s?/, "")).join("\n")}
                 </p>
+              ) : lyricsOnly ? (
+                <div key={j} className="whitespace-pre-wrap break-words leading-tight">{block.lines[0]}</div>
               ) : (
                 <div key={j} className="flex min-w-0 flex-wrap items-end leading-tight">
-                  {parseLine(block.lines[0]!).map((seg, k) => {
+                  {parseLine(block.lines[0] ?? '').map((seg, k) => {
                     const real = seg.chord ? transposeChord(seg.chord, transpose) : "";
                     const shown = real ? (nashvilleKey ? toNashville(real, nashvilleKey) : real) : "\u00a0";
                     return (

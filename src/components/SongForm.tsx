@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { SongSheet } from "./SongSheet";
 import { PageHeader } from "./PageHeader";
 import { useStore } from "@/lib/store";
-import { sectionsToText, textToSections, type Difficulty, type Song } from "@/lib/songs";
+import { sectionsToText, textToSections, type Song } from "@/lib/songs";
+import { parseBpm } from '@/lib/song-controls';
 import { isUltimateGuitarUrl, toNativeFormat, ultimateGuitarSearchUrl } from "@/lib/import";
 import { ClipboardPaste, ClipboardPen, ExternalLink, Globe, ImagePlus, Plus, Undo2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
@@ -72,7 +73,7 @@ export function SongForm({ song, demo, playlistId }: { song?: Song; demo?: boole
   const [artist, setArtist] = useState(song?.artist ?? "");
   const [key, setKey] = useState(song?.key ?? "G");
   const [capo, setCapo] = useState(song?.capo ?? 0);
-  const [difficulty, setDifficulty] = useState<Difficulty>(song?.difficulty ?? "Easy");
+  const [bpm, setBpm] = useState(song?.tempo?.toString() ?? '');
   const [text, setText] = useState(song ? sectionsToText(song.sections) : EXAMPLE);
   const sections = textToSections(text);
   const [busy, setBusy] = useState(false);
@@ -99,6 +100,8 @@ export function SongForm({ song, demo, playlistId }: { song?: Song; demo?: boole
       toast.error("Give your song a title");
       return;
     }
+    let tempo: number | null;
+    try { tempo = parseBpm(bpm); } catch (error) { toast.error(error instanceof Error ? error.message : 'Invalid BPM'); return; }
     requireAuth("Sign in to add songs to your songbook.", async () => {
       if (!song && user) {
         const dup = allSongs.some(
@@ -108,7 +111,7 @@ export function SongForm({ song, demo, playlistId }: { song?: Song; demo?: boole
       }
       setBusy(true);
       const id = await upsertSong(
-        { id: song?.id, title: title.trim().slice(0, 120), artist: artist.trim().slice(0, 120) || "Unknown artist", key, capo: Math.max(0, Math.min(12, capo || 0)), difficulty, tempo: song?.tempo ?? 90, sections, images },
+        { id: song?.id, title: title.trim().slice(0, 120), artist: artist.trim().slice(0, 120) || "Unknown artist", key, capo: Math.max(0, Math.min(12, capo || 0)), difficulty: song?.difficulty ?? 'Easy', tempo, sections, images },
         { demo, featured: isDemo ? featured : undefined },
       );
       setBusy(false);
@@ -182,11 +185,7 @@ export function SongForm({ song, demo, playlistId }: { song?: Song; demo?: boole
           <div className="grid grid-cols-3 gap-3">
             <Field label="Key"><Input value={key} onChange={(e) => setKey(e.target.value)} className="h-11" /></Field>
             <Field label="Capo"><Input type="number" min={0} max={12} value={capo} onChange={(e) => setCapo(+e.target.value)} className="h-11" /></Field>
-            <Field label="Level">
-              <select value={difficulty} onChange={(e) => setDifficulty(e.target.value as Difficulty)} className="h-11 w-full rounded-md border border-input bg-card px-2 text-sm">
-                <option>Beginner</option><option>Easy</option><option>Intermediate</option>
-              </select>
-            </Field>
+            <Field label="BPM (Tempo)"><Input aria-label="BPM (Tempo)" type="number" min={1} max={400} step={1} value={bpm} onChange={(e) => setBpm(e.target.value)} placeholder="Optional" className="h-11" /></Field>
           </div>
           <Field label="Song Composition">
             <p className="text-xs text-muted-foreground">Paste or type your lyrics, chords, guitar tabs, or images—all in one place.</p>

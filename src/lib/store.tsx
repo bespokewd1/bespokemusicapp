@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import type { Section, Song, Difficulty, SongImage } from "./songs";
+import { moveItem } from './song-controls';
 
 export type Stroke = { color: string; w: number; pts: [number, number][]; fs?: number };
 export interface SongUserData { notes: string; annotations: Stroke[] }
@@ -28,14 +29,14 @@ export const PLAYLIST_TEMPLATES = [
 
 type SongRow = {
   id: string; owner_id: string | null; title: string; artist: string; key: string; capo: number;
-  difficulty: string; tempo: number; sections: unknown; published: boolean; featured: boolean;
+  difficulty: string; tempo: number; bpm: number | null; sections: unknown; published: boolean; featured: boolean;
   featured_order: number | null; sort_order: number; images?: unknown;
 };
 
 export function rowToSong(r: SongRow): Song {
   return {
     id: r.id, title: r.title, artist: r.artist, key: r.key, capo: r.capo,
-    difficulty: r.difficulty as Difficulty, tempo: r.tempo, sections: (r.sections as Section[]) ?? [],
+    difficulty: r.difficulty as Difficulty, tempo: r.bpm, sections: (r.sections as Section[]) ?? [],
     pickUp: r.featured, ownerId: r.owner_id, published: r.published, featuredOrder: r.featured_order, sortOrder: r.sort_order, images: (r.images as SongImage[]) ?? [],
   };
 }
@@ -71,6 +72,7 @@ interface Store {
   recent: string[];
   markPlayed: (id: string) => void;
   playlists: Playlist[];
+  reorderPlaylists: (from: string, to: string) => Promise<void>;
   createPlaylist: (name: string, description: string, template?: string | null) => Promise<string | null>;
   renamePlaylist: (id: string, name: string, description: string) => Promise<void>;
   deletePlaylist: (id: string) => Promise<void>;
@@ -111,7 +113,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const [sv, rp, pl, pr, roles] = await Promise.all([
       supabase.from("saved_songs").select("song_id").order("created_at", { ascending: false }),
       supabase.from("recent_plays").select("song_id").order("played_at", { ascending: false }).limit(20),
-      supabase.from("playlists").select("id,name,description,template,playlist_songs(song_id,position)").order("created_at"),
+      supabase.from("playlists").select("id,name,description,template,playlist_songs(song_id,position)").order("sort_order").order("created_at"),
       supabase.from("user_preferences").select("scroll_speed").maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", id),
     ]);
@@ -209,7 +211,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const isFirst = !song.id && !opts?.demo && !songs.some((s) => s.ownerId === uid);
       const row = {
         title: song.title, artist: song.artist, key: song.key, capo: song.capo, difficulty: song.difficulty,
-        tempo: song.tempo, sections: song.sections as unknown as never, images: (song.images ?? []) as unknown as never,
+        bpm: song.tempo, sections: song.sections as unknown as never, images: (song.images ?? []) as unknown as never,
         updated_at: new Date().toISOString(),
         ...(opts?.featured !== undefined ? { featured: opts.featured } : {}),
       };
@@ -217,10 +219,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         ? supabase.from("songs").update(row).eq("id", song.id).select("id").single()
         : supabase.from("songs").insert({ ...row, owner_id: opts?.demo ? null : uid, published: !opts?.demo }).select("id").single();
       const { data, error } = await q;
-      if (fail("Couldn't save the song")(error)) return null;
-      if (isFirst) track(uid, "first_song", data!.id);
+      if (fail("Couldn't save the song")(error) || !data) return null;
+      if (isFirst) track(uid, "first_song", data.id);
       await reloadSongs();
-      return data!.id;
+      return data.id;
     },
     uploadSongImage: async (file, demo) => {
       if (!uid) return null;
@@ -263,17 +265,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       supabase.from("recent_plays").upsert({ user_id: uid, song_id: id, played_at: new Date().toISOString() }).then(() => {});
     },
     playlists,
+    reorderPlaylists: async (from, to) => {
+      if (!uid) return;
+      const next = moveItem(playlists, from, to);
+      if (next === playlists) return;
+      setPlaylists(next);
+      const { error } = await supabase.rpc('reorder_playlists', { playlist_ids: next.map(p => p.id) });
+      if (fail("Couldn't save playlist order")(error)) await loadUserData(uid);
+    },
     createPlaylist: async (name, description, template = null) => {
       if (!uid) return null;
       if (template) {
         const existing = playlists.find((p) => p.template === template);
         if (existing) return existing.id;
       }
-      const { data, error } = await supabase.from("playlists").insert({ user_id: uid, name, description, template }).select("id").single();
-      if (fail("Couldn't create the playlist")(error)) return null;
-      setPlaylists((p) => [...p, { id: data!.id, name, description, template, songIds: [] }]);
+      const { data, error } = await supabase.from("playlists").insert({ user_id: uid, name, description, template, sort_order: playlists.length }).select("id").single();
+      if (fail("Couldn't create the playlist")(error) || !data) return null;
+      setPlaylists((p) => [...p, { id: data.id, name, description, template, songIds: [] }]);
       track(uid, "playlist_created");
-      return data!.id;
+      return data.id;
     },
     renamePlaylist: async (id, name, description) => {
       const { error } = await supabase.from("playlists").update({ name, description }).eq("id", id);
