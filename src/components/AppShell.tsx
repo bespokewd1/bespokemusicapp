@@ -14,6 +14,8 @@ import { LanguageToggle, SHOW_LANGUAGE } from "@/lib/i18n";
 import { ThemeToggle } from "@/lib/theme";
 import { FeedbackDialog, shareLink, APP_URL, APP_TITLE } from "./AccountExtras";
 import { MessageSquare, Share2 } from "lucide-react";
+import { GlobalSearchProvider, SearchAction } from './GlobalSearch';
+import { useRouterState } from '@tanstack/react-router';
 
 const TABS = [
   { to: "/", label: "Home", icon: Compass },
@@ -33,7 +35,9 @@ export function Logo() {
 export function AppShell({ children }: { children: ReactNode }) {
   const { signedIn, ready, setLoginOpen } = useStore();
   const { t: tr } = useT();
+  const path = useRouterState({ select: state => state.location.pathname });
   return (
+    <GlobalSearchProvider>
     <div className="min-h-screen bg-background text-foreground">
       <header data-chrome className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
         <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:gap-4 px-4 py-3 md:flex md:justify-between">
@@ -52,6 +56,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <div className="flex items-center gap-2">
+          {signedIn && path !== '/' && <SearchAction compact />}
           <span className={signedIn ? "" : "hidden md:block"}><ThemeToggle /></span>
           {!ready ? (
             <span className="h-9 w-20" />
@@ -86,6 +91,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </nav>
       <LoginDialog />
     </div>
+    </GlobalSearchProvider>
   );
 }
 

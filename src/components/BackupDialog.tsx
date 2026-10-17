@@ -84,13 +84,13 @@ export function BackupDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       const newIds: (string | null)[] = [];
       let skipped = 0;
       for (const raw of preview.songs) {
-        const s = raw as { title?: string; artist?: string; key?: string; capo?: number; difficulty?: string; tempo?: number; sections?: unknown; images?: unknown };
+        const s = raw as { title?: string; artist?: string; key?: string; capo?: number; difficulty?: string; tempo?: number | null; sections?: unknown; images?: unknown };
         if (!s.title || !s.artist) { newIds.push(null); continue; }
         const sig = `${s.title.toLowerCase()}|${(s.artist ?? "").toLowerCase()}`;
         if (existing.has(sig)) { skipped++; newIds.push(null); continue; }
         const { data, error } = await supabase.from("songs").insert({
           owner_id: user.id, title: s.title, artist: s.artist, key: s.key ?? "G", capo: s.capo ?? 0,
-          difficulty: s.difficulty ?? "Easy", tempo: s.tempo ?? 90, sections: (s.sections ?? []) as never,
+          difficulty: s.difficulty ?? "Easy", bpm: s.tempo ?? null, sections: (s.sections ?? []) as never,
           images: (s.images ?? []) as never, published: true,
         }).select("id").single();
         if (error) { newIds.push(null); continue; }

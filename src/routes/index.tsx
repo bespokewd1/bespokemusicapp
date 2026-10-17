@@ -6,6 +6,7 @@ import { SongCard } from "@/components/SongCard";
 import { useStore } from "@/lib/store";
 import { uniqueChords } from "@/lib/songs";
 import { useState } from "react";
+import { SearchAction } from '@/components/GlobalSearch';
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -99,7 +100,7 @@ function Landing() {
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary"><Music className="h-5 w-5" /></span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-display text-lg font-semibold">{s.title}</span>
-                  <span className="flex min-w-0 gap-1 text-sm text-muted-foreground"><span className="truncate">{s.artist}</span><span className="shrink-0">· {t(s.difficulty)}</span></span>
+                  <span className="block truncate text-sm text-muted-foreground">{s.artist}</span>
                   <span className="mt-1 block truncate font-mono text-xs font-semibold text-primary">{uniqueChords(s).slice(0, 5).join(" · ")}</span>
                 </span>
                 <PlayCircle className="h-7 w-7 shrink-0 text-primary" />
@@ -201,9 +202,10 @@ function Welcome() {
           </h1>
           <p className="mt-0.5 text-sm text-muted-foreground">{t(isNew ? "Add your first song — paste chords and lyrics or write from scratch." : "Pick up where you left off.")}</p>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:flex">
+        <div className="flex flex-wrap gap-2">
           <Button className="h-11 rounded-full px-5" onClick={() => navigate({ to: "/songs/new" })}><Plus className="mr-1 h-4 w-4" /> {t("Add Song")}</Button>
           <Button variant="outline" className="h-11 rounded-full px-5" onClick={() => navigate({ to: "/playlists" })}><Plus className="mr-1 h-4 w-4" /> {t("Create Playlist")}</Button>
+          <SearchAction />
         </div>
       </section>
 

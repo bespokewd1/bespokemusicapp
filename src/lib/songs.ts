@@ -17,7 +17,7 @@ export interface Song {
   key: string;
   capo: number;
   difficulty: Difficulty;
-  tempo: number;
+  tempo: number | null;
   pickUp?: boolean;
   sections: Section[];
   ownerId?: string | null;
