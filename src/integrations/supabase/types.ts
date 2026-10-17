@@ -101,6 +101,7 @@ export type Database = {
           description: string
           id: string
           name: string
+          sort_order: number
           template: string | null
           user_id: string
         }
@@ -109,6 +110,7 @@ export type Database = {
           description?: string
           id?: string
           name: string
+          sort_order?: number
           template?: string | null
           user_id: string
         }
@@ -117,6 +119,7 @@ export type Database = {
           description?: string
           id?: string
           name?: string
+          sort_order?: number
           template?: string | null
           user_id?: string
         }
@@ -236,6 +239,7 @@ export type Database = {
       songs: {
         Row: {
           artist: string
+          bpm: number | null
           capo: number
           created_at: string
           difficulty: string
@@ -254,6 +258,7 @@ export type Database = {
         }
         Insert: {
           artist?: string
+          bpm?: number | null
           capo?: number
           created_at?: string
           difficulty?: string
@@ -272,6 +277,7 @@ export type Database = {
         }
         Update: {
           artist?: string
+          bpm?: number | null
           capo?: number
           created_at?: string
           difficulty?: string
@@ -338,6 +344,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      reorder_playlists: {
+        Args: { playlist_ids: string[] }
+        Returns: undefined
       }
     }
     Enums: {
