@@ -47,10 +47,7 @@ export function SongSheet({
             {toBlocks(sec.lines).map((block, j) =>
               block.kind === "tab" ? (
                 <div key={j}>
-                  <pre
-                    className="overflow-x-auto overscroll-x-contain rounded-xl border border-border bg-secondary/40 p-3 font-mono text-[0.72em] leading-snug [touch-action:pan-x_pan-y]"
-                    aria-label={t("Guitar tab")}
-                  >{block.lines.join("\n")}</pre>
+                  <TabScroll label={t("Guitar tab")}>{block.lines.join("\n")}</TabScroll>
                   {transpose !== 0 && <p className="mt-1 text-[0.65em] text-muted-foreground">{t("Tabs show fret positions and are not transposed.")}</p>}
                 </div>
               ) : block.kind === "note" ? (
