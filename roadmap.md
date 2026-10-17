@@ -1,4 +1,7 @@
 # Roadmap
+- [ ] Targeted song controls: hide difficulty, editable optional BPM, reversible Lyrics Only
+- [ ] Shared song search and playlist name filtering
+- [ ] Accessible desktop/mobile playlist reordering, persistent order and verification
 - [x] Sign-in branding: safe Bespoke Music UI update; managed authorization source identified; desktop/mobile, restored session, song access and sign-out verified (live provider/email flows need manual verification)
 - [ ] Optional custom Google authorization branding — blocked on explicit approval and an eligible owner-controlled Google OAuth application/domain; current working provider stays unchanged
 - [x] Unify Add Song composition; verify text/image paste, formatting, save/reopen/edit on desktop and mobile
