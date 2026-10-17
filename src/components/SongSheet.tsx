@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { isNoteLine, isTabLine, parseLine, transposeChord, type Section } from "@/lib/songs";
 import { toNashville } from "@/lib/nashville";
 import { findChord } from "@/lib/chords";
@@ -45,10 +47,7 @@ export function SongSheet({
             {toBlocks(sec.lines).map((block, j) =>
               block.kind === "tab" ? (
                 <div key={j}>
-                  <pre
-                    className="overflow-x-auto overscroll-x-contain rounded-xl border border-border bg-secondary/40 p-3 font-mono text-[0.72em] leading-snug [touch-action:pan-x_pan-y]"
-                    aria-label={t("Guitar tab")}
-                  >{block.lines.join("\n")}</pre>
+                  <TabScroll label={t("Guitar tab")}>{block.lines.join("\n")}</TabScroll>
                   {transpose !== 0 && <p className="mt-1 text-[0.65em] text-muted-foreground">{t("Tabs show fret positions and are not transposed.")}</p>}
                 </div>
               ) : block.kind === "note" ? (
@@ -77,6 +76,50 @@ export function SongSheet({
           </div>
         </section>
       ))}
+    </div>
+  );
+}
+
+function TabScroll({ label, children }: { label: string; children: string }) {
+  const ref = useRef<HTMLPreElement>(null);
+  const [edge, setEdge] = useState<"none" | "left" | "right" | "both">("none");
+  const update = () => {
+    const el = ref.current;
+    if (!el) return;
+    const overflows = el.scrollWidth - el.clientWidth > 1;
+    const atStart = el.scrollLeft <= 1;
+    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+    setEdge(!overflows ? "none" : atStart ? "right" : atEnd ? "left" : "both");
+  };
+  useEffect(() => {
+    update();
+    const el = ref.current;
+    if (!el) return;
+    el.addEventListener("scroll", update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener("scroll", update);
+      ro.disconnect();
+    };
+  }, [children]);
+  return (
+    <div className="relative">
+      <pre
+        ref={ref}
+        className="overflow-x-auto overscroll-x-contain rounded-xl border border-border bg-secondary/40 p-3 font-mono text-[0.72em] leading-snug [touch-action:pan-x_pan-y]"
+        aria-label={label}
+      >{children}</pre>
+      {(edge === "right" || edge === "both") && (
+        <span aria-hidden className="pointer-events-none absolute inset-y-1 right-1 flex w-8 items-center justify-end rounded-r-lg bg-gradient-to-l from-secondary to-transparent pr-1 text-muted-foreground">
+          <ChevronRight className="h-4 w-4" />
+        </span>
+      )}
+      {(edge === "left" || edge === "both") && (
+        <span aria-hidden className="pointer-events-none absolute inset-y-1 left-1 flex w-8 items-center justify-start rounded-l-lg bg-gradient-to-r from-secondary to-transparent pl-1 text-muted-foreground">
+          <ChevronLeft className="h-4 w-4" />
+        </span>
+      )}
     </div>
   );
 }
