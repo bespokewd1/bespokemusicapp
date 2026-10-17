@@ -2,7 +2,7 @@ import { useT } from "@/lib/i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { forwardRef } from "react";
-import { ArrowLeft, Heart, Minus, Pencil, Play, Plus, ListPlus, Pause, Trash2, Hash, PenLine, Eraser, StickyNote, FileDown, MoreHorizontal, Maximize, Minimize, SkipBack, SkipForward, ChevronLeft, ChevronRight, Printer, Share2, Mail, Copy, Gauge, SlidersHorizontal, X } from "lucide-react";
+import { ArrowLeft, Heart, Minus, Pencil, Play, Plus, ListPlus, Pause, Trash2, Hash, PenLine, Eraser, StickyNote, FileDown, MoreHorizontal, Maximize, Minimize, SkipBack, SkipForward, ChevronLeft, ChevronRight, Printer, Share2, Mail, Copy, Gauge, SlidersHorizontal, Type, Music2, X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -232,11 +232,11 @@ function SongPage() {
 
   const close = () => setMoreOpen(false);
   const items: MenuItem[] = [
-    { key: "fs", label: tx("Full screen"), icon: Maximize, onSelect: () => { setAnnotate(false); setPerf(true); } },
-    { key: "tuner", label: tx("Tuner"), icon: Gauge, onSelect: () => { stop(); sessionStorage.setItem(`bm-pos-${song.id}`, String(window.scrollY)); navigate({ to: "/tools", search: { from: song.id } }); } },
+    ...(!isMobile ? [{ key: "fs", label: tx("Full screen"), icon: Maximize, onSelect: () => { setAnnotate(false); setPerf(true); } }] : []),
+    { key: "tuner", label: tx(isMobile ? "Guitar Tuner" : "Tuner"), icon: Gauge, onSelect: () => { stop(); sessionStorage.setItem(`bm-pos-${song.id}`, String(window.scrollY)); navigate({ to: "/tools", search: { from: song.id } }); } },
     { key: "pdf", label: tx("Download PDF"), icon: FileDown, onSelect: () => exportSongPdf(song, { transpose: tr }) },
     { key: "print", label: tx("Print"), icon: Printer, onSelect: () => exportSongPdf(song, { transpose: tr }) },
-    { key: "share", label: tx("Share"), icon: Share2, onSelect: () => setShareOpen(true) },
+    { key: "share", label: tx(isMobile ? "Share Song" : "Share"), icon: Share2, onSelect: () => setShareOpen(true) },
     ...(signedIn && savedNotes.trim() ? [{ key: "pdfn", label: tx("Download PDF with notes"), icon: FileDown, onSelect: () => exportSongPdf(song, { transpose: tr, notes: savedNotes }) }] : []),
   ];
   const jump = (i: number) => { stop(); document.getElementById(`sec-${i}`)?.scrollIntoView({ behavior: "smooth", block: "start" }); };
@@ -262,31 +262,42 @@ function SongPage() {
   );
   const chordInfo = chord ? findChord(chord) : undefined;
 
+  const sizeControl = <Stepper label={tx("Size")} value={`${size}`} onMinus={() => setSize((s) => Math.max(SIZE_MIN, s - 2))} onPlus={() => setSize((s) => Math.min(SIZE_MAX, s + 2))} />;
+  const keyControl = <div className="flex flex-wrap items-center gap-2">
+    <Stepper label={tx("Transpose")} value={tr > 0 ? `+${tr}` : `${tr}`} onMinus={() => changeTr(tr - 1)} onPlus={() => changeTr(tr + 1)} />
+    {tr !== 0 && <Button variant="ghost" size="sm" onClick={() => changeTr(0)}>{tx("Reset")}</Button>}
+  </div>;
+  const mobileTools: MenuItem[] = [
+    { key: "notes", label: tx("Notes"), icon: StickyNote, onSelect: () => requireAuth("Sign in to keep private notes.", () => setNotesOpen(true)) },
+    { key: "annotate", label: tx("Annotate"), icon: PenLine, onSelect: () => requireAuth("Sign in to annotate songs.", () => setAnnotate((v) => !v)) },
+    ...items.filter(it => it.key === "tuner"),
+    { key: "save", label: tx(isSaved ? "Remove from My Songs" : "Save to My Songs"), icon: Heart, onSelect: () => requireAuth("Sign in to save songs to your songbook.", () => toggleSaved(song.id)) },
+    { key: "playlist", label: tx("Add to Playlist"), icon: ListPlus, onSelect: () => requireAuth("Sign in to add songs to playlists.", () => setPlOpen(true)) },
+  ];
+  const menuRows = (rows: MenuItem[]) => rows.map(it => <Button key={it.key} variant="ghost" onClick={() => { close(); it.onSelect(); }} className="h-auto min-h-11 justify-start rounded-xl px-3 text-left text-sm font-medium"><it.icon className="h-4 w-4 text-primary" />{it.label}</Button>);
   const moreBody = (
     <div className="grid gap-3">
       <div>
-        <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Song settings")}</p>
+        <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx(isMobile ? "Reading & Display" : "Song settings")}</p>
         <div className="grid gap-2">
-          <Stepper label={tx("Size")} value={`${size}`} onMinus={() => setSize((s) => Math.max(SIZE_MIN, s - 2))} onPlus={() => setSize((s) => Math.min(SIZE_MAX, s + 2))} />
+          {!isMobile && sizeControl}
           <label className="flex min-h-11 items-center justify-between gap-3 rounded-xl bg-secondary px-3 text-sm font-medium">
             <span>{tx('Lyrics Only')}</span><Switch aria-label="Lyrics Only" checked={lyricsOnly} onCheckedChange={setLyricsOnly} />
           </label>
-          <div className="flex items-center gap-2">
-            <Stepper label={tx("Transpose")} value={tr > 0 ? `+${tr}` : `${tr}`} onMinus={() => changeTr(tr - 1)} onPlus={() => changeTr(tr + 1)} />
-            {tr !== 0 && <button onClick={() => changeTr(0)} className="min-h-9 rounded-full px-2 text-xs text-muted-foreground underline">{tx("Reset")}</button>}
-          </div>
+          {!isMobile && keyControl}
           <button aria-pressed={nash} onClick={() => setNash((v) => !v)} className={cn("flex min-h-11 items-center justify-between rounded-xl px-3 text-sm font-medium", nash ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground")}>
             <span className="flex items-center gap-2"><Hash className="h-4 w-4" /> {tx("Nashville Numbers")}</span>
             <span className="text-xs">{tx(nash ? "On" : "Off")}</span>
           </button>
         </div>
       </div>
+      {isMobile && <div className="grid gap-0.5 border-t border-border pt-2">
+        <p className="mb-1 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Song Tools")}</p>
+        {menuRows(mobileTools)}
+      </div>}
       <div className="grid gap-0.5 border-t border-border pt-2">
-        {items.map((it) => (
-          <button key={it.key} onClick={() => { close(); it.onSelect(); }} className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-left text-sm font-medium hover:bg-secondary">
-            <it.icon className="h-4 w-4 text-primary" />{it.label}
-          </button>
-        ))}
+        {isMobile && <p className="mb-1 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Export & Share")}</p>}
+        {menuRows(isMobile ? items.filter(it => it.key !== "tuner") : items)}
       </div>
       {sections.length > 0 && (
         <div className="border-t border-border pt-2">
@@ -356,7 +367,12 @@ function SongPage() {
       {/* Toolbar: Edit/Save | Annotate | Playlist | Notes | More */}
       {!perf && (
         <div className="sticky top-[61px] z-20 -mx-4 mb-6 border-y border-border bg-background/90 px-2 py-1.5 backdrop-blur md:top-[73px] md:px-4">
-          <div className="grid grid-cols-5 gap-1 sm:flex sm:items-center sm:gap-2">
+          {isMobile ? <div data-mobile-song-toolbar className="grid grid-cols-4 gap-1">
+            <ToolBtn icon={Pencil} label={tx("Edit")} disabled={!isMine} title={isMine ? tx("Edit") : tx("Only your own songs can be edited")} onClick={() => navigate({ to: "/song/$id/edit", params: { id: song.id } })} />
+            <Popover><PopoverTrigger asChild><ToolBtn icon={Music2} label={tx("Key")} /></PopoverTrigger><PopoverContent align="center" className="w-72 max-w-[calc(100vw-2rem)]"><p className="mb-3 text-sm font-medium">{tx("Key")} {keyNow}</p>{keyControl}</PopoverContent></Popover>
+            <Popover><PopoverTrigger asChild><ToolBtn icon={Type} label={tx("Size")} /></PopoverTrigger><PopoverContent align="center" className="w-64 max-w-[calc(100vw-2rem)]">{sizeControl}</PopoverContent></Popover>
+            <ToolBtn icon={MoreHorizontal} label={tx("More")} onClick={() => setMoreOpen(true)} />
+          </div> : <div className="flex items-center gap-2">
             {isMine ? (
               <ToolBtn icon={Pencil} label={tx("Edit")} onClick={() => navigate({ to: "/song/$id/edit", params: { id: song.id } })} />
             ) : (
@@ -376,7 +392,7 @@ function SongPage() {
                 <PopoverContent align="end" className="w-80 max-h-[70vh] overflow-y-auto p-3">{moreBody}</PopoverContent>
               </Popover>
             )}
-          </div>
+          </div>}
           {nash && !isValidKey(song.key) && (
             <div className="mt-1.5 flex items-center gap-2 px-1 text-xs">
               <span className="text-muted-foreground">{tx("Nashville needs a key:")}</span>
@@ -589,11 +605,11 @@ function Stepper({ label, value, onMinus, onPlus }: { label: string; value: stri
 type ToolBtnProps = { icon: React.ComponentType<{ className?: string }>; label: string; active?: boolean; title?: string; className?: string } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 const ToolBtn = forwardRef<HTMLButtonElement, ToolBtnProps>(function ToolBtn({ icon: Icon, label, active, title, className, ...rest }, ref) {
   return (
-    <button ref={ref} type="button" title={title ?? label} aria-label={title ?? label} aria-pressed={active} {...rest}
-      className={cn("flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[11px] font-medium transition-colors sm:flex-row sm:gap-1.5 sm:rounded-full sm:px-3 sm:text-sm",
+    <Button variant="ghost" ref={ref} type="button" title={title ?? label} aria-label={title ?? label} aria-pressed={active} {...rest}
+      className={cn("flex h-auto min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[11px] font-medium transition-colors sm:flex-row sm:gap-1.5 sm:rounded-full sm:px-3 sm:text-sm",
         active ? "bg-primary/10 text-primary" : "text-foreground hover:bg-secondary", className)}>
       <Icon className={cn("h-5 w-5 shrink-0 sm:h-4 sm:w-4", active && Icon === Heart && "fill-current")} />
       <span className="truncate">{label}</span>
-    </button>
+    </Button>
   );
 });
