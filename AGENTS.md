@@ -24,3 +24,4 @@
 - Shared search is mounted once in AppShell and consumes the existing RLS-scoped store; bounded deferred results keep growing libraries responsive.
 - Playlist order uses playlists.sort_order and the invoker reorder_playlists RPC; validating the complete owned ID list makes reordering atomic without touching song positions.
 - Lyrics Only projects existing lines through song-controls into SongSheet; original sections, tabs, notes and attachments remain untouched.
+- Mobile toolbar popovers reuse the SongPage size and transpose handlers, and More reuses the existing tool/export handlers; desktop controls stay separate in presentation only to avoid duplicate state systems.
