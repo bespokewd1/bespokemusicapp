@@ -20,3 +20,7 @@
 - Theme is a `.dark` class set before paint by THEME_INIT_SCRIPT in src/lib/theme.tsx (saved choice, else device preference) — avoids a flash and a theme library.
 - Feedback goes into public.feedback (anyone may insert, only admins read via has_role) and is read in the admin Feedback tab — no email service needed.
 - Clipboard image extraction lives in the tested src/lib/clipboard.ts helper; SongForm uses one text editor and the existing ordered image attachments, keeping images outside the chord parser and retaining saved-song compatibility.
+- Song tempo uses nullable songs.bpm, mapped to Song.tempo; legacy tempo stays for older clients, so clearing BPM never invents a tempo.
+- Shared search is mounted once in AppShell and consumes the existing RLS-scoped store; bounded deferred results keep growing libraries responsive.
+- Playlist order uses playlists.sort_order and the invoker reorder_playlists RPC; validating the complete owned ID list makes reordering atomic without touching song positions.
+- Lyrics Only projects existing lines through song-controls into SongSheet; original sections, tabs, notes and attachments remain untouched.
