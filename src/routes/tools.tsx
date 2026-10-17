@@ -18,6 +18,8 @@ export const Route = createFileRoute("/tools")({
       { name: "description", content: "Free guitar chord library with diagrams and alternate shapes, plus a real-time digital guitar tuner." },
       { property: "og:title", content: "Guitar Tools — Bespoke Music" },
       { property: "og:description", content: "Chord library with diagrams and a real-time guitar tuner." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Tools,

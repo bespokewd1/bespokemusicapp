@@ -9,6 +9,8 @@ export const Route = createFileRoute("/song_/$id/edit")({
       { name: "description", content: "Edit chords and lyrics for a song in your songbook." },
       { property: "og:title", content: "Edit Song — Bespoke Music" },
       { property: "og:description", content: "Edit chords and lyrics for a song." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: EditSong,
@@ -16,7 +18,9 @@ export const Route = createFileRoute("/song_/$id/edit")({
 
 function EditSong() {
   const { id } = Route.useParams();
-  const song = useStore().getSong(id);
+  const { getSong, songsLoaded } = useStore();
+  const song = getSong(id);
+  if (!songsLoaded) return <p role="status" className="py-20 text-center text-muted-foreground">Loading song…</p>;
   if (!song) return <p className="py-20 text-center">Song not found.</p>;
   return <SongForm song={song} />;
 }

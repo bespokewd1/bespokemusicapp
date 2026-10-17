@@ -19,6 +19,8 @@ export const Route = createFileRoute("/admin")({
       { name: "description", content: "Private administrator dashboard." },
       { property: "og:title", content: "Admin — Bespoke Music" },
       { property: "og:description", content: "Private administrator dashboard." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

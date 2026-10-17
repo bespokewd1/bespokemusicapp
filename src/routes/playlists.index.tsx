@@ -19,6 +19,8 @@ export const Route = createFileRoute("/playlists/")({
       { name: "description", content: "Organise songs into practice lists, acoustic sets and performance setlists." },
       { property: "og:title", content: "Playlists — Bespoke Music" },
       { property: "og:description", content: "Organise songs into setlists and playlists." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Playlists,

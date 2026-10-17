@@ -16,6 +16,8 @@ export const Route = createFileRoute("/my-songs")({
       { name: "description", content: "Your saved songs, your own additions and recently played." },
       { property: "og:title", content: "My Songs — Bespoke Music" },
       { property: "og:description", content: "Your saved songs, additions and recently played." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: MySongs,

@@ -10,6 +10,8 @@ export const Route = createFileRoute("/admin_/songs/new")({
       { name: "description", content: "Add a public demo song." },
       { property: "og:title", content: "New Demo Song — Bespoke Music" },
       { property: "og:description", content: "Add a public demo song." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
