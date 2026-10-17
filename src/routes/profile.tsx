@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { CloudCheck, Download, Library, ListMusic, LogOut, MessageSquare, Share2, Upload } from "lucide-react";
+import { CloudCheck, Download, LogOut, MessageSquare, Share2, Upload } from "lucide-react";
 import { useStore } from "@/lib/store";
-import { useT, LanguageToggle, SHOW_LANGUAGE } from "@/lib/i18n";
+import { useT, LanguageToggle } from "@/lib/i18n";
 import { ThemeToggle } from "@/lib/theme";
 import { Button } from "@/components/ui/button";
 import { BackupDialog } from "@/components/BackupDialog";
@@ -34,7 +34,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function ProfilePage() {
-  const { ready, signedIn, user, added, playlists, signOut } = useStore();
+  const { ready, signedIn, user, signOut } = useStore();
   const { t } = useT();
   const [backupOpen, setBackupOpen] = useState(false);
   const [fbOpen, setFbOpen] = useState(false);
@@ -65,32 +65,16 @@ function ProfilePage() {
         </div>
       </section>
 
-      {/* 2. Collection stats */}
-      <div className="grid grid-cols-2 gap-3">
-        <Link to="/my-songs" className="rounded-2xl border border-border bg-card p-4 text-center transition hover:border-foreground/30">
-          <Library className="mx-auto mb-1 h-4 w-4 text-muted-foreground" />
-          <p className="font-display text-3xl font-semibold">{added.length}</p>
-          <p className="text-sm text-muted-foreground">{t("Songs")}</p>
-        </Link>
-        <Link to="/playlists" className="rounded-2xl border border-border bg-card p-4 text-center transition hover:border-foreground/30">
-          <ListMusic className="mx-auto mb-1 h-4 w-4 text-muted-foreground" />
-          <p className="font-display text-3xl font-semibold">{playlists.length}</p>
-          <p className="text-sm text-muted-foreground">{t("Playlists")}</p>
-        </Link>
-      </div>
-
-      {/* 3. Preferences */}
+      {/* 2. Preferences */}
       <Section title="Preferences">
         <div className="flex items-center justify-between py-1">
           <span className="text-sm font-medium">{t("Appearance")}</span>
           <ThemeToggle />
         </div>
-        {SHOW_LANGUAGE && (
-          <div className="mt-2 flex items-center justify-between border-t border-border/60 pt-3">
-            <span className="text-sm font-medium">{t("Language")}</span>
-            <LanguageToggle />
-          </div>
-        )}
+        <div className="mt-2 flex items-center justify-between border-t border-border/60 pt-3">
+          <span className="text-sm font-medium">{t("Language")}</span>
+          <LanguageToggle />
+        </div>
       </Section>
 
       {/* 4. Library cloud + backup */}
