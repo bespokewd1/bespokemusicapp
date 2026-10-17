@@ -1,19 +1,14 @@
 import { useT } from "@/lib/i18n";
 import { Link } from "@tanstack/react-router";
 import { SiteFooter } from "@/components/SiteFooter";
-import { Compass, Library, ListMusic, Wrench, LayoutDashboard, LogOut, Download } from "lucide-react";
+import { Compass, Library, ListMusic, Wrench, LayoutDashboard, LogOut, UserRound } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import logoH from "@/assets/bespoke-logo-horizontal.png.asset.json";
 import type { ReactNode } from "react";
 import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { LoginDialog } from "./LoginDialog";
-import { BackupDialog } from "./BackupDialog";
-import { useState } from "react";
-import { LanguageToggle, SHOW_LANGUAGE } from "@/lib/i18n";
 import { ThemeToggle } from "@/lib/theme";
-import { FeedbackDialog, shareLink, APP_URL, APP_TITLE } from "./AccountExtras";
-import { MessageSquare, Share2 } from "lucide-react";
 import { GlobalSearchProvider, SearchAction } from './GlobalSearch';
 import { useRouterState } from '@tanstack/react-router';
 
