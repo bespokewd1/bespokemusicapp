@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { CloudCheck, Download, Library, ListMusic, LogOut, MessageSquare, Share2, Upload } from "lucide-react";
+import { CloudCheck, Download, LogOut, MessageSquare, Share2, Upload } from "lucide-react";
 import { useStore } from "@/lib/store";
-import { useT, LanguageToggle, SHOW_LANGUAGE } from "@/lib/i18n";
+import { useT, LanguageToggle } from "@/lib/i18n";
 import { ThemeToggle } from "@/lib/theme";
 import { Button } from "@/components/ui/button";
 import { BackupDialog } from "@/components/BackupDialog";
@@ -34,7 +34,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function ProfilePage() {
-  const { ready, signedIn, user, added, playlists, signOut } = useStore();
+  const { ready, signedIn, user, signOut } = useStore();
   const { t } = useT();
   const [backupOpen, setBackupOpen] = useState(false);
   const [fbOpen, setFbOpen] = useState(false);
