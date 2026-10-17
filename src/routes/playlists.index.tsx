@@ -86,10 +86,10 @@ function Playlists() {
         </DndContext> : query.trim() ? <p role="status" className="py-8 text-center text-muted-foreground">No playlists match your search.</p> : <Button variant="outline" className="h-auto w-full whitespace-normal rounded-2xl border-dashed p-8" onClick={() => setOpen(true)}><ListMusic className="h-5 w-5" />{tr('Create a custom playlist')}</Button>}
       </section>}
 
-      {!query.trim() && <>
+      {!query.trim() && PLAYLIST_TEMPLATES.some(t => !playlists.some(p => p.template === t.id)) && <>
       <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">{tr("Starter playlists")}</h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-5">
-        {PLAYLIST_TEMPLATES.map((t) => {
+        {PLAYLIST_TEMPLATES.filter((t) => !playlists.some((p) => p.template === t.id)).map((t) => {
           const Icon = ICONS[t.icon];
           const mine = playlists.find((p) => p.template === t.id);
           return (
