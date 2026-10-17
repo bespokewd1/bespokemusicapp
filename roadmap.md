@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Sign-in branding: safe Bespoke Music UI update, investigate managed authorization wording, verify existing flows without changing providers
 - [x] Unify Add Song composition; verify text/image paste, formatting, save/reopen/edit on desktop and mobile
 - [x] Real Google sign-in (Lovable Cloud), saved songs/playlists persist across devices
 - [x] Playlist templates (Practice, Acoustic Set, Songs to Learn, Performance Set); rename/delete/reorder

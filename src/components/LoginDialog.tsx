@@ -47,13 +47,13 @@ export function LoginDialog() {
     }
   };
 
-  const title = t(mode === "signup" ? "Create your account" : mode === "signin" ? "Sign in with email" : mode === "forgot" ? "Reset your password" : mode === "sent" ? "Check your email" : "Create Your Personal Songbook");
+  const title = t(mode === "signup" ? "Create your Bespoke Music account" : mode === "forgot" ? "Reset your password" : mode === "sent" ? "Check your email" : "Sign in to Bespoke Music");
 
   return (
     <Dialog open={loginOpen} onOpenChange={close}>
       <DialogContent className="max-w-sm rounded-2xl">
         <DialogHeader className="items-center text-center">
-          <img src={pick.url} alt="" width={300} height={349} className="mb-2 h-14 w-auto dark:invert" />
+          <img src={pick.url} alt="Bespoke Music" width={300} height={349} className="mb-2 h-14 w-auto dark:invert" />
           <DialogTitle className="font-display text-2xl">{title}</DialogTitle>
           <DialogDescription>
             {mode === "sent" ? sentMsg : t(loginReason || "Sign in to create playlists, save your favourite songs, and keep your music organized.")}
