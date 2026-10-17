@@ -228,7 +228,7 @@ function Content() {
             <li key={s.id} className="flex flex-wrap items-center gap-2 p-3">
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">{s.title} {!s.published && <span className="ml-1 rounded-full bg-secondary px-2 py-0.5 text-xs text-muted-foreground">Draft</span>}</p>
-                <p className="truncate text-xs text-muted-foreground">{s.artist} · {s.key} · {s.difficulty}</p>
+                <p className="truncate text-xs text-muted-foreground">{s.artist} · {s.key}</p>
               </div>
               <Button variant="ghost" size="icon" aria-label={s.pickUp ? "Unfeature" : "Feature"} onClick={() => update(s.id, { featured: !s.pickUp, featured_order: s.pickUp ? null : featured.length })}>
                 <Star className={cn("h-4 w-4", s.pickUp && "fill-primary text-primary")} />

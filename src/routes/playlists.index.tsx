@@ -63,10 +63,12 @@ function Playlists() {
   return (
     <div>
       <PageHeader eyebrow={tr("Setlists")} title={tr("Playlists")}>
+        <div className="flex items-center gap-2">
         <Button className="h-11 rounded-full" onClick={() => requireAuth(PLAYLIST_REASON, () => setOpen(true))}>
           <Plus className="mr-1 h-4 w-4" /> {tr("New Playlist")}
         </Button>
         {signedIn && <Button variant="outline" className="h-11 rounded-full px-3" aria-label="Search playlists" onClick={() => setSearchOpen(v => !v)}><Search className="h-4 w-4" /><span className="hidden sm:inline">Search</span></Button>}
+        </div>
       </PageHeader>
       {signedIn && searchOpen && <div className="mb-5 flex items-center gap-2">
         <Input autoFocus aria-label="Search playlists by name" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search playlists…" className="h-11" />
