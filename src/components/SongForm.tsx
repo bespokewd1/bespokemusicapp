@@ -176,7 +176,8 @@ export function SongForm({ song, demo, playlistId }: { song?: Song; demo?: boole
               </select>
             </Field>
           </div>
-          <Field label="Chords & lyrics">
+          <Field label="Song Composition">
+            <p className="text-xs text-muted-foreground">Copy and paste your lyrics, chords, guitar tabs, images, or a combination of them.</p>
             <div className="flex justify-end">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -187,10 +188,11 @@ export function SongForm({ song, demo, playlistId }: { song?: Song; demo?: boole
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <Textarea ref={editor} wrap="off" spellCheck={false} value={text} onPaste={onPaste} onChange={(e) => setText(e.target.value)} rows={14} className="overflow-x-auto whitespace-pre font-mono text-sm" />
+            <Textarea ref={editor} wrap="off" spellCheck={false} value={text} onPaste={onPaste} onChange={(e) => setText(e.target.value)} rows={14} placeholder="Paste or type your song content here..." className="overflow-x-auto whitespace-pre font-mono text-sm" />
             <p className="mt-1 text-xs text-muted-foreground">Use {"{Verse}"} or [Chorus] for sections, [C] before a word for chords, tab lines like e|--3--| for tabs, and "&gt; " for notes.</p>
           </Field>
-          <Field label="Images (tabs, chord charts, screenshots)">
+          <Field label="Add Images (Optional)">
+            <p className="text-xs text-muted-foreground">Upload screenshots of guitar riffs, solos, or tabs to include in your song.</p>
             <label onPaste={onPaste} tabIndex={0} className="flex min-h-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-border bg-card p-4 text-center text-sm text-muted-foreground hover:border-primary">
               <ImagePlus className="h-5 w-5 text-primary" />
               {uploading ? "Uploading…" : "Tap to upload, or paste an image here (JPG, PNG, WebP · max 5 MB)"}
