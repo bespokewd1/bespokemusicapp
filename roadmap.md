@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Simplify mobile Song Viewer: Edit | Key | Size | More, grouped menu, browser-check actions and reading/playback
 - [x] Targeted song controls: hide difficulty, editable optional BPM, reversible Lyrics Only
 - [x] Shared song search and playlist name filtering
 - [x] Accessible desktop/mobile playlist reordering; move controls persist after refresh (physical-phone drag testing remains unavailable)
