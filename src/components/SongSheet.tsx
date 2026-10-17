@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { isNoteLine, isTabLine, parseLine, transposeChord, type Section } from "@/lib/songs";
 import { toNashville } from "@/lib/nashville";
 import { findChord } from "@/lib/chords";
