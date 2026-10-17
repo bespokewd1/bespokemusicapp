@@ -37,7 +37,6 @@ function ProfilePage() {
   const { ready, signedIn, user, added, playlists, signOut } = useStore();
   const { t } = useT();
   const [backupOpen, setBackupOpen] = useState(false);
-  const [restoreOpen, setRestoreOpen] = useState(false);
   const [fbOpen, setFbOpen] = useState(false);
 
   if (!ready) return null;
@@ -108,7 +107,7 @@ function ProfilePage() {
             <Download className="mr-2 h-4 w-4" /> {t("Backup My Library")}
           </Button>
           <p className="px-1 text-xs text-muted-foreground">{t("Download a personal copy of your music collection. Images and drawings aren't included in the file.")}</p>
-          <Button variant="outline" className="h-11 w-full justify-start rounded-full" onClick={() => setRestoreOpen(true)}>
+          <Button variant="outline" className="h-11 w-full justify-start rounded-full" onClick={() => setBackupOpen(true)}>
             <Upload className="mr-2 h-4 w-4" /> {t("Restore Library")}
           </Button>
           <p className="px-1 text-xs text-muted-foreground">{t("Import a previous Bespoke Music backup. Existing songs are kept — duplicates are skipped.")}</p>
@@ -135,7 +134,6 @@ function ProfilePage() {
       </div>
 
       <BackupDialog open={backupOpen} onOpenChange={setBackupOpen} />
-      <BackupDialog open={restoreOpen} onOpenChange={setRestoreOpen} />
       <FeedbackDialog open={fbOpen} onOpenChange={setFbOpen} />
     </div>
   );

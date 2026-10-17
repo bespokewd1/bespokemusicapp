@@ -17,6 +17,7 @@ import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as MySongsRouteImport } from './routes/my-songs'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
@@ -67,6 +68,11 @@ const MySongsRoute = MySongsRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/help': typeof HelpRoute
   '/my-songs': typeof MySongsRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/help': typeof HelpRoute
   '/my-songs': typeof MySongsRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/help': typeof HelpRoute
   '/my-songs': typeof MySongsRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -200,6 +209,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/my-songs'
     | '/privacy'
+    | '/profile'
     | '/reset-password'
     | '/support'
     | '/terms'
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/my-songs'
     | '/privacy'
+    | '/profile'
     | '/reset-password'
     | '/support'
     | '/terms'
@@ -242,6 +253,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/my-songs'
     | '/privacy'
+    | '/profile'
     | '/reset-password'
     | '/support'
     | '/terms'
@@ -264,6 +276,7 @@ export interface RootRouteChildren {
   HelpRoute: typeof HelpRoute
   MySongsRoute: typeof MySongsRoute
   PrivacyRoute: typeof PrivacyRoute
+  ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
@@ -333,6 +346,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -424,6 +444,7 @@ const rootRouteChildren: RootRouteChildren = {
   HelpRoute: HelpRoute,
   MySongsRoute: MySongsRoute,
   PrivacyRoute: PrivacyRoute,
+  ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
