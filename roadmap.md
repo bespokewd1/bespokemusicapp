@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Footer platform line (phone + desktop icons, "Play on mobile or desktop. No download required.") and "Designed & built in Canada"; beta badge and attribution kept; phone/desktop light/dark checks passed.
 - [x] Update compact footer and personal About story; desktop/mobile light/dark checks, both feedback dialogs, visitor-only invitation, seven footer links and metadata verified; existing attribution preserved.
 - [x] Restore image-backed signed-in playlist cards; signed-in desktop/mobile light/dark checks, photo loading, search and saved rearrangement verified; original order restored.
 - [ ] Sign-in end-to-end verification — blocked on inconsistent custom-domain DNS resolution; dialog opens, no app/config changes made.

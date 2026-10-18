@@ -18,6 +18,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { LanguageProvider } from "@/lib/i18n";
 import { registerOfflineSupport } from "@/lib/pwa";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
+import { recoverFromChunkLoadError, registerChunkRecovery } from "@/lib/chunk-recovery";
 
 function NotFoundComponent() {
   return (
@@ -45,6 +46,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
+    if (recoverFromChunkLoadError(error)) return;
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
@@ -130,7 +132,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  useEffect(() => { registerOfflineSupport(); }, []);
+  useEffect(() => { registerOfflineSupport(); registerChunkRecovery(); }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

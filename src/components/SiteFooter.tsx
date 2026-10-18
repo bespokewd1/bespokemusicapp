@@ -3,6 +3,7 @@ import { useT } from "@/lib/i18n";
 import { Link } from "@tanstack/react-router";
 import { FeedbackDialog } from "@/components/AccountExtras";
 import { Button } from "@/components/ui/button";
+import { Monitor, Smartphone } from "lucide-react";
 
 const cls = "flex min-h-10 items-center text-muted-foreground transition-colors hover:text-foreground sm:min-h-8";
 
@@ -14,6 +15,11 @@ export function SiteFooter() {
       <div className="mb-6">
           <p className="font-display text-lg font-semibold">Bespoke Music</p>
           <p className="mt-1 text-muted-foreground italic">{t("Your personal guitar songbook.")}</p>
+          <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+            <Smartphone className="h-4 w-4 shrink-0" strokeWidth={1.6} aria-hidden="true" />
+            <Monitor className="-ml-1 h-4 w-4 shrink-0" strokeWidth={1.6} aria-hidden="true" />
+            <span>{t("Play on mobile or desktop. No download required.")}</span>
+          </p>
       </div>
       <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3">
         <nav aria-label={t("Product")} className="flex flex-col">
@@ -35,7 +41,7 @@ export function SiteFooter() {
         </nav>
       </div>
       <div className="mt-6 flex flex-col gap-2 border-t border-border pt-4 text-xs text-muted-foreground lg:flex-row lg:justify-between">
-        <p>{t("Beta · Independently built in Canada 🇨🇦")}</p>
+        <p>{t("Beta · Designed & built in Canada 🇨🇦")}</p>
         <p>© 2026 Bespoke Music · <a href="https://bespokewebdesign.ca" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">{t("Built by Bespoke Web Design")}</a></p>
       </div>
       <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
