@@ -32,3 +32,4 @@
 - Auto-scroll uses one RAF loop and distinguishes its own writes from external position changes; continued native momentum extends the handoff before resuming at the settled position.
 - Public sharing and per-page SEO addresses use src/lib/site.ts; auth redirects remain current-origin and sitemap lists public static pages only — keeps domain changes centralized without exposing personal collection IDs.
 - About and footer reuse FeedbackDialog and the store's existing sign-in dialog; the tested About invitation predicate waits for account readiness so members never see a signup prompt.
+- Chunk recovery also handles null React dispatchers only when a dev stack proves mixed dependency versions; bounded reloads refresh stale graphs without masking normal hook bugs.

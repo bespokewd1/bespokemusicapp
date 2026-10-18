@@ -14,6 +14,20 @@ const STALE = new TypeError(
 beforeEach(() => window.sessionStorage.clear());
 
 describe("stale module recovery", () => {
+  it('recovers the reported mixed-version React dispatcher failure', () => {
+    const error = new TypeError("Cannot read properties of null (reading 'useContext')");
+    error.stack = "TypeError: Cannot read properties of null (reading 'useContext')\nat exports.useContext (/node_modules/.vite/deps/react.js?v=dd21a503:706:22)\nat SongPage (/src/routes/song.$id.tsx?tsr-split=component:38:23)\nat Object.react_stack_bottom_frame (/node_modules/.vite/deps/react-dom_client.js?v=caa036ec:12864:12)";
+    const reload = vi.fn();
+    expect(recoverFromChunkLoadError(error, reload)).toBe(true);
+    expect(recoverFromChunkLoadError(error, reload)).toBe(false);
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not hide ordinary hook bugs with a matching React graph', () => {
+    const error = new TypeError("Cannot read properties of null (reading 'useContext')");
+    error.stack = '/node_modules/.vite/deps/react.js?v=dd21a503:706:22\n/node_modules/.vite/deps/react-dom_client.js?v=dd21a503:12864:12';
+    expect(planChunkRecovery(error)).toBe(false);
+  });
   it("recognizes the failed song-viewer module fetch", () => {
     expect(isChunkLoadError(STALE)).toBe(true);
   });
