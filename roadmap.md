@@ -1,5 +1,5 @@
 # Roadmap
-- [ ] Owner-only demo permissions, publishing destination/categories, independent saves, complete demo ordering and visitor preview.
+- [x] Owner-only demo permissions, publishing destination/categories, independent saves, complete demo ordering and visitor preview; 24 checks passed and real signed-in publishing/save/image copies, private-note exclusion, duplicate protection, ownership rejection and unpublish preservation verified. Temporary test songs removed; physical-phone testing unavailable.
 - [x] Fix manual-scroll contention and momentum during Auto-Scroll; 34 tests passed, signed-in normal/Focus wheel handoff and pause/restart verified; physical touch/trackpad testing remains unavailable.
 - [x] Align desktop toolbar order with mobile; 390/768/822/1280/1440 layouts, shared toggle states, ownership restrictions, playlist dialog, PDF/print, share, tuner and both themes verified.
 - [x] Expanded Auto-Scroll settings: approximate BPM guide and five synchronized presets; existing 0.3–3 range and main controls preserved; 24 tests and phone/desktop preset, saved-speed, playback and theme checks passed.
