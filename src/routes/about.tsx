@@ -5,6 +5,7 @@ import { meta } from "@/components/InfoPage";
 import { FeedbackDialog } from "@/components/AccountExtras";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store";
+import { showSongbookInvitation } from "@/lib/about";
 
 export const Route = createFileRoute("/about")({
   head: () => meta("About — Built by a Musician, for Musicians", "Discover the story behind Bespoke Music, an independently built guitar songbook from Canada. No ads, no distractions—just your music and your collection.", "/about"),
@@ -50,7 +51,7 @@ function About() {
           <p className="text-sm text-muted-foreground">— Founder, Bespoke Music</p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <Button className="h-11 rounded-full px-5" onClick={() => setFeedbackOpen(true)}><MessageSquare className="h-4 w-4" />Send Feedback</Button>
-            {ready && !signedIn && <Button variant="ghost" className="h-11 rounded-full px-4" onClick={() => requireAuth("Create your free Beta account.", () => navigate({ to: "/my-songs" }))}>Start Your Songbook<ArrowRight className="h-4 w-4" /></Button>}
+            {showSongbookInvitation(ready, signedIn) && <Button variant="ghost" className="h-11 rounded-full px-4" onClick={() => requireAuth("Create your free Beta account.", () => navigate({ to: "/my-songs" }))}>Start Your Songbook<ArrowRight className="h-4 w-4" /></Button>}
           </div>
         </section>
         <p className="border-t border-border pt-5 text-xs text-muted-foreground">
