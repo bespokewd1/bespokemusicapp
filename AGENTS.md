@@ -27,6 +27,7 @@
 - Playlist order uses playlists.sort_order and the invoker reorder_playlists RPC; validating the complete owned ID list makes reordering atomic without touching song positions.
 - Signed-in sortable playlist cards reuse the visitor template artwork, with theme-stable photo contrast tokens; presentation changes preserve the existing ordering and data layer.
 - Lyrics Only projects existing lines through song-controls into SongSheet; original sections, tabs, notes and attachments remain untouched.
-- Mobile toolbar popovers reuse the SongPage size and transpose handlers, and More reuses the existing tool/export handlers; desktop controls stay separate in presentation only to avoid duplicate state systems.
+- Song toolbars share a single ordered action list and size/key handlers; measured desktop width moves secondary controls into More without duplicate buttons or playback state.
+- Auto-scroll uses one RAF loop and distinguishes its own writes from external position changes; continued native momentum extends the handoff before resuming at the settled position.
 - Public sharing and per-page SEO addresses use src/lib/site.ts; auth redirects remain current-origin and sitemap lists public static pages only — keeps domain changes centralized without exposing personal collection IDs.
 - About and footer reuse FeedbackDialog and the store's existing sign-in dialog; the tested About invitation predicate waits for account readiness so members never see a signup prompt.

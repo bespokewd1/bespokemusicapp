@@ -247,10 +247,6 @@ function SongPage() {
   const close = () => setMoreOpen(false);
   const items: MenuItem[] = [
     ...(!isMobile ? [{ key: "fs", label: tx("Full screen"), icon: Maximize, onSelect: () => { setAnnotate(false); setPerf(true); } }] : []),
-    { key: "tuner", label: tx("Guitar Tuner"), icon: Gauge, onSelect: () => { stop(); sessionStorage.setItem(`bm-pos-${song.id}`, String(window.scrollY)); navigate({ to: "/tools", search: { from: song.id } }); } },
-    { key: "pdf", label: tx("Download PDF"), icon: FileDown, onSelect: () => exportSongPdf(song, { transpose: tr }) },
-    { key: "print", label: tx("Print"), icon: Printer, onSelect: () => exportSongPdf(song, { transpose: tr }) },
-    { key: "share", label: tx("Share Song"), icon: Share2, onSelect: () => setShareOpen(true) },
     ...(signedIn && savedNotes.trim() ? [{ key: "pdfn", label: tx("Download PDF with notes"), icon: FileDown, onSelect: () => exportSongPdf(song, { transpose: tr, notes: savedNotes }) }] : []),
   ];
   const jump = (i: number) => { stop(); document.getElementById(`sec-${i}`)?.scrollIntoView({ behavior: "smooth", block: "start" }); };
@@ -287,9 +283,9 @@ function SongPage() {
     { key: "nash", label: tx("Nashville Numbers"), icon: Hash, active: nash, minWidth: 610, onSelect: () => setNash(v => !v) },
     { key: "tuner", label: tx("Guitar Tuner"), icon: Gauge, minWidth: 740, onSelect: () => { stop(); sessionStorage.setItem(`bm-pos-${song.id}`, String(window.scrollY)); navigate({ to: "/tools", search: { from: song.id } }); } },
     { key: "playlist", label: tx("Add to Playlist"), icon: ListPlus, minWidth: 880, onSelect: () => requireAuth("Sign in to add songs to playlists.", () => setPlOpen(true)) },
-    { key: "pdf", label: tx("Download PDF"), icon: FileDown, minWidth: 1090, onSelect: () => exportSongPdf(song, { transpose: tr }) },
-    { key: "print", label: tx("Print"), icon: Printer, minWidth: 1090, onSelect: () => exportSongPdf(song, { transpose: tr }) },
-    { key: "share", label: tx("Share Song"), icon: Share2, minWidth: 1210, onSelect: () => setShareOpen(true) },
+    { key: "pdf", label: tx("Download PDF"), icon: FileDown, minWidth: 1000, onSelect: () => exportSongPdf(song, { transpose: tr }) },
+    { key: "print", label: tx("Print"), icon: Printer, minWidth: 1000, onSelect: () => exportSongPdf(song, { transpose: tr }) },
+    { key: "share", label: tx("Share Song"), icon: Share2, minWidth: 1090, onSelect: () => setShareOpen(true) },
   ];
   const visiblePrimary = isMobile ? [] : primaryTools.filter(it => toolbarWidth >= it.minWidth);
   const hiddenPrimary = primaryTools.filter(it => !visiblePrimary.some(shown => shown.key === it.key));
@@ -303,11 +299,11 @@ function SongPage() {
   const moreBody = (
     <div className="grid gap-3">
       {hiddenPrimary.length > 0 && <div className="grid gap-0.5">
-        <p className="mb-1 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Reading & Display")}</p>
+        {hiddenPrimary.some(it => it.key === "lyrics" || it.key === "nash") && <p className="mb-1 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Reading & Display")}</p>}
         {menuRows(hiddenPrimary.filter(it => it.key === "lyrics" || it.key === "nash"))}
-        <p className="mb-1 mt-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Song Tools")}</p>
+        {hiddenPrimary.some(it => it.key === "tuner" || it.key === "playlist") && <p className="mb-1 mt-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Song Tools")}</p>}
         {menuRows(hiddenPrimary.filter(it => it.key === "tuner" || it.key === "playlist"))}
-        <p className="mb-1 mt-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Export & Share")}</p>
+        {hiddenPrimary.some(it => ["pdf", "print", "share"].includes(it.key)) && <p className="mb-1 mt-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Export & Share")}</p>}
         {menuRows(hiddenPrimary.filter(it => ["pdf", "print", "share"].includes(it.key)))}
       </div>}
       <div className="grid gap-0.5 border-t border-border pt-2">{menuRows(secondaryTools)}</div>
@@ -373,7 +369,7 @@ function SongPage() {
             <ToolBtn icon={Pencil} label={tx("Edit")} disabled={!isMine} title={isMine ? tx("Edit") : tx("Only your own songs can be edited")} onClick={() => navigate({ to: "/song/$id/edit", params: { id: song.id } })} />
             <Popover><PopoverTrigger asChild><ToolBtn icon={Music2} label={tx("Key")} /></PopoverTrigger><PopoverContent align="center" className="w-72 max-w-[calc(100vw-2rem)]"><p className="mb-3 text-sm font-medium">{tx("Key")} {keyNow}</p>{keyControl}</PopoverContent></Popover>
             <Popover><PopoverTrigger asChild><ToolBtn icon={Type} label={tx("Size")} /></PopoverTrigger><PopoverContent align="center" className="w-64 max-w-[calc(100vw-2rem)]">{sizeControl}</PopoverContent></Popover>
-            {visiblePrimary.map(it => <ToolBtn key={it.key} icon={it.icon} label={it.label} active={it.active} onClick={it.onSelect} />)}
+            {visiblePrimary.map(it => <ToolBtn key={it.key} icon={it.icon} label={it.label} active={it.active ?? false} onClick={it.onSelect} />)}
             {isMobile ? <ToolBtn icon={MoreHorizontal} label={tx("More")} onClick={() => setMoreOpen(true)} /> : <Popover open={moreOpen} onOpenChange={setMoreOpen}>
               <PopoverTrigger asChild><ToolBtn icon={MoreHorizontal} label={tx("More")} className="ml-auto shrink-0" /></PopoverTrigger>
               <PopoverContent align="end" className="w-80 max-h-[70vh] overflow-y-auto p-3">{moreBody}</PopoverContent>
