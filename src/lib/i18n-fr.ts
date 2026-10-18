@@ -1,6 +1,18 @@
 /* French (Canada-friendly) translations keyed by the English source text.
  * Missing keys fall back to English, so new UI text never breaks. */
 export const FR: Record<string, string> = {
+  "Restart Song": "Recommencer la chanson",
+  "Standard": "Standard",
+  "E♭ Standard": "Standard en mi♭",
+  "Drop D": "Drop D",
+  "Drop C": "Drop C",
+  "Build your personal songbook. Save your favorite chords and lyrics, organize playlists, and play your music—all in one place.": "Créez votre carnet de chansons personnel. Enregistrez vos accords et paroles préférés, organisez vos listes de lecture et jouez votre musique — tout au même endroit.",
+  "Start Your Songbook": "Commencez votre carnet de chansons",
+  "No Ads · No Distractions · No Subscription": "Sans publicité · Sans distraction · Sans abonnement",
+  "Free During Beta": "Gratuit pendant la bêta",
+  "No recurring subscription during Beta. Future pricing may change.": "Aucun abonnement récurrent pendant la bêta. Les tarifs pourraient changer à l'avenir.",
+  "Your Music, Your Collection": "Votre musique, votre collection",
+  "Build Your Songbook": "Créez votre carnet de chansons",
   "Guitar tab": "Tablature de guitare",
   "Tabs show fret positions and are not transposed.": "Les tablatures indiquent les cases et ne sont pas transposées.",
   // Navigation & account
