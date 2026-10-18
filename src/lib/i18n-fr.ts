@@ -1,6 +1,15 @@
 /* French (Canada-friendly) translations keyed by the English source text.
  * Missing keys fall back to English, so new UI text never breaks. */
 export const FR: Record<string, string> = {
+  "Auto-Scroll Speed": "Vitesse de défilement automatique",
+  "Approximate BPM guide": "Repère approximatif en BPM",
+  "Pace presets": "Vitesses prédéfinies",
+  "Ballad": "Ballade",
+  "Pop": "Pop",
+  "Rock": "Rock",
+  "Upbeat": "Entraînant",
+  "Use BPM as a guide to match a comfortable scrolling pace while playing.": "Utilisez les BPM comme repère pour choisir une vitesse de défilement confortable pendant que vous jouez.",
+  "Auto-scroll BPM is approximate and may vary depending on song length and formatting.": "Les BPM du défilement automatique sont approximatifs et peuvent varier selon la longueur et la mise en forme de la chanson.",
   "Restart Song": "Recommencer la chanson",
   "E♭ Standard": "Standard en mi♭",
   "Build your personal songbook. Save your favorite chords and lyrics, organize playlists, and play your music—all in one place.": "Créez votre carnet de chansons personnel. Enregistrez vos accords et paroles préférés, organisez vos listes de lecture et jouez votre musique — tout au même endroit.",
