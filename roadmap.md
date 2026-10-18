@@ -1,6 +1,6 @@
 # Roadmap
-- [ ] Fix manual-scroll contention and momentum during Auto-Scroll; verify playback, restart and speed in normal/Focus views.
-- [ ] Align desktop toolbar order with mobile; responsive overflow into More, shared handlers and existing permissions.
+- [x] Fix manual-scroll contention and momentum during Auto-Scroll; 34 tests passed, signed-in normal/Focus wheel handoff and pause/restart verified; physical touch/trackpad testing remains unavailable.
+- [x] Align desktop toolbar order with mobile; 390/768/822/1280/1440 layouts, shared toggle states, ownership restrictions, playlist dialog, PDF/print, share, tuner and both themes verified.
 - [x] Expanded Auto-Scroll settings: approximate BPM guide and five synchronized presets; existing 0.3–3 range and main controls preserved; 24 tests and phone/desktop preset, saved-speed, playback and theme checks passed.
 - [x] Footer platform line (phone + desktop icons, "Play on mobile or desktop. No download required.") and "Designed & built in Canada"; beta badge and attribution kept; phone/desktop light/dark checks passed.
 - [x] Update compact footer and personal About story; desktop/mobile light/dark checks, both feedback dialogs, visitor-only invitation, seven footer links and metadata verified; existing attribution preserved.
