@@ -41,7 +41,7 @@ export function SiteFooter() {
         </nav>
       </div>
       <div className="mt-6 flex flex-col gap-2 border-t border-border pt-4 text-xs text-muted-foreground lg:flex-row lg:justify-between">
-        <p>{t("Beta · Independently built in Canada 🇨🇦")}</p>
+        <p>{t("Beta · Designed & built in Canada 🇨🇦")}</p>
         <p>© 2026 Bespoke Music · <a href="https://bespokewebdesign.ca" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">{t("Built by Bespoke Web Design")}</a></p>
       </div>
       <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />

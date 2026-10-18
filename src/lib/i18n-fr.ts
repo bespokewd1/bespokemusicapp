@@ -40,6 +40,8 @@ export const FR: Record<string, string> = {
   "Terms of Service": "Conditions d'utilisation",
   "Account & Data Deletion": "Suppression du compte et des données",
   "Independently built in Canada 🇨🇦 · Currently in Beta": "Conçu de façon indépendante au Canada 🇨🇦 · Actuellement en bêta",
+  "Beta · Designed & built in Canada 🇨🇦": "Bêta · Conçu et construit au Canada 🇨🇦",
+  "Play on mobile or desktop. No download required.": "Jouez sur mobile ou ordinateur. Aucun téléchargement requis.",
 
   // Sign-in
   "Create Your Personal Songbook": "Créez votre carnet de chansons personnel",
