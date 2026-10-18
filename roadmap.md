@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Expanded Auto-Scroll settings: approximate BPM guide, five synchronized presets, unchanged multiplier range and main controls; verify saved pace and phone/desktop themes.
 - [x] Footer platform line (phone + desktop icons, "Play on mobile or desktop. No download required.") and "Designed & built in Canada"; beta badge and attribution kept; phone/desktop light/dark checks passed.
 - [x] Update compact footer and personal About story; desktop/mobile light/dark checks, both feedback dialogs, visitor-only invitation, seven footer links and metadata verified; existing attribution preserved.
 - [x] Restore image-backed signed-in playlist cards; signed-in desktop/mobile light/dark checks, photo loading, search and saved rearrangement verified; original order restored.

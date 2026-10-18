@@ -29,6 +29,7 @@ import { INTRO_DELAYS, loadPlaybackPrefs, savePlaybackPrefs, loadTranspose, load
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/track";
 import { Switch } from '@/components/ui/switch';
+import { ScrollPaceSettings } from "@/components/ScrollPaceSettings";
 
 export const Route = createFileRoute("/song/$id")({
   validateSearch: (s: Record<string, unknown>): { pl?: string } => (typeof s["pl"] === "string" && s["pl"] ? { pl: s["pl"] as string } : {}),
@@ -252,8 +253,8 @@ function SongPage() {
       <PopoverTrigger asChild>
         <Button variant="secondary" size="icon" className="h-11 w-11 shrink-0 rounded-full" aria-label={tx("Playback settings")}><SlidersHorizontal className="h-5 w-5" /></Button>
       </PopoverTrigger>
-      <PopoverContent side="top" align="center" className="w-72 p-4" onOpenAutoFocus={(e) => e.preventDefault()}>
-        <SpeedSlider speed={speed} onChange={setSpeed} status={`${speed.toFixed(1)}×`} active={playing} />
+      <PopoverContent side="top" align="center" className="w-[min(28rem,calc(100vw-2rem))] max-h-[var(--radix-popover-content-available-height)] overflow-y-auto p-4" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <ScrollPaceSettings speed={speed} onChange={setSpeed} />
         {!perf && <Button variant="ghost" className="mt-3 w-full justify-start" onClick={restart}><RotateCcw className="h-4 w-4" />{tx("Restart Song")}</Button>}
         <p className="mt-4 text-xs text-muted-foreground">{tx("Intro delay")}</p>
         <div className="mt-1.5 grid grid-cols-4 gap-1.5">
