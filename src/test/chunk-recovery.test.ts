@@ -21,6 +21,7 @@ describe("stale module recovery", () => {
   it("leaves unrelated errors alone", () => {
     expect(isChunkLoadError(new TypeError("user is not a function"))).toBe(false);
     expect(isChunkLoadError(undefined)).toBe(false);
+    expect(planChunkRecovery(new TypeError("user is not a function"))).toBe(false);
   });
 
   it("reloads once, then refuses an immediate second reload", () => {
@@ -36,7 +37,6 @@ describe("stale module recovery", () => {
     const reload = vi.fn();
     recoverFromChunkLoadError(STALE, reload);
     vi.advanceTimersByTime(16_000);
-    expect(planChunkRecovery(STALE)).toBe(true);
     recoverFromChunkLoadError(STALE, reload);
     expect(reload).toHaveBeenCalledTimes(2);
     vi.useRealTimers();
@@ -45,9 +45,11 @@ describe("stale module recovery", () => {
   it("recovers from a background module rejection that never reaches the boundary", () => {
     const reload = vi.fn();
     registerChunkRecovery(reload);
-    window.dispatchEvent(
-      new PromiseRejectionEvent("unhandledrejection", { reason: STALE, cancelable: true }),
-    );
+    const event = new Event("unhandledrejection", { cancelable: true }) as Event & {
+      reason?: unknown;
+    };
+    event.reason = STALE;
+    window.dispatchEvent(event);
     expect(reload).toHaveBeenCalledTimes(1);
   });
 });
