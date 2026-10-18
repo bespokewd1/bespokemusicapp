@@ -28,7 +28,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { INTRO_DELAYS, loadPlaybackPrefs, savePlaybackPrefs, loadTranspose, loadViewPrefs, playlistNeighbours, saveTranspose, saveViewPrefs, SIZE_MAX, SIZE_MIN } from "@/lib/view-prefs";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/track";
-import { Switch } from '@/components/ui/switch';
 import { ScrollPaceSettings } from "@/components/ScrollPaceSettings";
 
 export const Route = createFileRoute("/song/$id")({
@@ -100,6 +99,8 @@ function SongPage() {
   const [notes, setNotes] = useState("");
   const [savedNotes, setSavedNotes] = useState("");
   const [moreOpen, setMoreOpen] = useState(false);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const [toolbarWidth, setToolbarWidth] = useState(0);
   const [notesOpen, setNotesOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   useEffect(() => {
@@ -110,6 +111,14 @@ function SongPage() {
   const [delOpen, setDelOpen] = useState(false);
   const [chord, setChord] = useState<string | null>(null);
   const [perf, setPerf] = useState(false);
+  useEffect(() => {
+    const el = toolbarRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => setToolbarWidth(entry?.contentRect.width ?? 0));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [song?.id, perf]);
+
 
   // Device-remembered display preferences
   useEffect(() => {
@@ -238,10 +247,10 @@ function SongPage() {
   const close = () => setMoreOpen(false);
   const items: MenuItem[] = [
     ...(!isMobile ? [{ key: "fs", label: tx("Full screen"), icon: Maximize, onSelect: () => { setAnnotate(false); setPerf(true); } }] : []),
-    { key: "tuner", label: tx(isMobile ? "Guitar Tuner" : "Tuner"), icon: Gauge, onSelect: () => { stop(); sessionStorage.setItem(`bm-pos-${song.id}`, String(window.scrollY)); navigate({ to: "/tools", search: { from: song.id } }); } },
+    { key: "tuner", label: tx("Guitar Tuner"), icon: Gauge, onSelect: () => { stop(); sessionStorage.setItem(`bm-pos-${song.id}`, String(window.scrollY)); navigate({ to: "/tools", search: { from: song.id } }); } },
     { key: "pdf", label: tx("Download PDF"), icon: FileDown, onSelect: () => exportSongPdf(song, { transpose: tr }) },
     { key: "print", label: tx("Print"), icon: Printer, onSelect: () => exportSongPdf(song, { transpose: tr }) },
-    { key: "share", label: tx(isMobile ? "Share Song" : "Share"), icon: Share2, onSelect: () => setShareOpen(true) },
+    { key: "share", label: tx("Share Song"), icon: Share2, onSelect: () => setShareOpen(true) },
     ...(signedIn && savedNotes.trim() ? [{ key: "pdfn", label: tx("Download PDF with notes"), icon: FileDown, onSelect: () => exportSongPdf(song, { transpose: tr, notes: savedNotes }) }] : []),
   ];
   const jump = (i: number) => { stop(); document.getElementById(`sec-${i}`)?.scrollIntoView({ behavior: "smooth", block: "start" }); };
@@ -273,58 +282,45 @@ function SongPage() {
     <Stepper label={tx("Transpose")} value={tr > 0 ? `+${tr}` : `${tr}`} onMinus={() => changeTr(tr - 1)} onPlus={() => changeTr(tr + 1)} />
     {tr !== 0 && <Button variant="ghost" size="sm" onClick={() => changeTr(0)}>{tx("Reset")}</Button>}
   </div>;
-  const mobileTools: MenuItem[] = [
-    { key: "notes", label: tx("Notes"), icon: StickyNote, onSelect: () => requireAuth("Sign in to keep private notes.", () => setNotesOpen(true)) },
-    { key: "annotate", label: tx("Annotate"), icon: PenLine, onSelect: () => requireAuth("Sign in to annotate songs.", () => setAnnotate((v) => !v)) },
-    ...items.filter(it => it.key === "tuner"),
-    { key: "save", label: tx(isSaved ? "Remove from My Songs" : "Save to My Songs"), icon: Heart, onSelect: () => requireAuth("Sign in to save songs to your songbook.", () => toggleSaved(song.id)) },
-    { key: "playlist", label: tx("Add to Playlist"), icon: ListPlus, onSelect: () => requireAuth("Sign in to add songs to playlists.", () => setPlOpen(true)) },
+  const primaryTools: (MenuItem & { minWidth: number; active?: boolean })[] = [
+    { key: "lyrics", label: tx("Lyrics Only"), icon: Type, active: lyricsOnly, minWidth: 460, onSelect: () => setLyricsOnly(v => !v) },
+    { key: "nash", label: tx("Nashville Numbers"), icon: Hash, active: nash, minWidth: 610, onSelect: () => setNash(v => !v) },
+    { key: "tuner", label: tx("Guitar Tuner"), icon: Gauge, minWidth: 740, onSelect: () => { stop(); sessionStorage.setItem(`bm-pos-${song.id}`, String(window.scrollY)); navigate({ to: "/tools", search: { from: song.id } }); } },
+    { key: "playlist", label: tx("Add to Playlist"), icon: ListPlus, minWidth: 880, onSelect: () => requireAuth("Sign in to add songs to playlists.", () => setPlOpen(true)) },
+    { key: "pdf", label: tx("Download PDF"), icon: FileDown, minWidth: 1090, onSelect: () => exportSongPdf(song, { transpose: tr }) },
+    { key: "print", label: tx("Print"), icon: Printer, minWidth: 1090, onSelect: () => exportSongPdf(song, { transpose: tr }) },
+    { key: "share", label: tx("Share Song"), icon: Share2, minWidth: 1210, onSelect: () => setShareOpen(true) },
   ];
-  const menuRows = (rows: MenuItem[]) => rows.map(it => <Button key={it.key} variant="ghost" onClick={() => { close(); it.onSelect(); }} className="h-auto min-h-11 justify-start rounded-xl px-3 text-left text-sm font-medium"><it.icon className="h-4 w-4 text-primary" />{it.label}</Button>);
+  const visiblePrimary = isMobile ? [] : primaryTools.filter(it => toolbarWidth >= it.minWidth);
+  const hiddenPrimary = primaryTools.filter(it => !visiblePrimary.some(shown => shown.key === it.key));
+  const secondaryTools: MenuItem[] = [
+    { key: "notes", label: tx("Notes"), icon: StickyNote, onSelect: () => requireAuth("Sign in to keep private notes.", () => setNotesOpen(true)) },
+    { key: "annotate", label: tx("Annotate"), icon: PenLine, onSelect: () => requireAuth("Sign in to annotate songs.", () => setAnnotate(v => !v)) },
+    { key: "save", label: tx(isSaved ? "Remove from My Songs" : "Save to My Songs"), icon: Heart, onSelect: () => requireAuth("Sign in to save songs to your songbook.", () => toggleSaved(song.id)) },
+    ...items.filter(it => it.key === "fs" || it.key === "pdfn"),
+  ];
+  const menuRows = (rows: (MenuItem & { active?: boolean })[]) => rows.map(it => <Button key={it.key} variant="ghost" disabled={it.disabled} aria-pressed={it.active} onClick={() => { close(); it.onSelect(); }} className={cn("h-auto min-h-11 justify-start rounded-lg px-3 text-left text-sm font-medium", it.active && "bg-primary/10 text-primary")}><it.icon className="h-4 w-4 text-primary" />{it.label}</Button>);
   const moreBody = (
     <div className="grid gap-3">
-      <div>
-        <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx(isMobile ? "Reading & Display" : "Song settings")}</p>
-        <div className="grid gap-2">
-          {!isMobile && sizeControl}
-          <label className="flex min-h-11 items-center justify-between gap-3 rounded-xl bg-secondary px-3 text-sm font-medium">
-            <span>{tx('Lyrics Only')}</span><Switch aria-label="Lyrics Only" checked={lyricsOnly} onCheckedChange={setLyricsOnly} />
-          </label>
-          {!isMobile && keyControl}
-          <button aria-pressed={nash} onClick={() => setNash((v) => !v)} className={cn("flex min-h-11 items-center justify-between rounded-xl px-3 text-sm font-medium", nash ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground")}>
-            <span className="flex items-center gap-2"><Hash className="h-4 w-4" /> {tx("Nashville Numbers")}</span>
-            <span className="text-xs">{tx(nash ? "On" : "Off")}</span>
-          </button>
-        </div>
-      </div>
-      {isMobile && <div className="grid gap-0.5 border-t border-border pt-2">
-        <p className="mb-1 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Song Tools")}</p>
-        {menuRows(mobileTools)}
+      {hiddenPrimary.length > 0 && <div className="grid gap-0.5">
+        <p className="mb-1 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Reading & Display")}</p>
+        {menuRows(hiddenPrimary.filter(it => it.key === "lyrics" || it.key === "nash"))}
+        <p className="mb-1 mt-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Song Tools")}</p>
+        {menuRows(hiddenPrimary.filter(it => it.key === "tuner" || it.key === "playlist"))}
+        <p className="mb-1 mt-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Export & Share")}</p>
+        {menuRows(hiddenPrimary.filter(it => ["pdf", "print", "share"].includes(it.key)))}
       </div>}
-      <div className="grid gap-0.5 border-t border-border pt-2">
-        {isMobile && <p className="mb-1 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Export & Share")}</p>}
-        {menuRows(isMobile ? items.filter(it => it.key !== "tuner") : items)}
-      </div>
-      {sections.length > 0 && (
-        <div className="border-t border-border pt-2">
-          <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Jump to section")}</p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {sections.map((s) => <button key={s.i} onClick={() => { close(); setTimeout(() => jump(s.i), 250); }} className="min-h-9 rounded-full bg-secondary px-3 text-sm">{s.name}</button>)}
-          </div>
-        </div>
-      )}
-      {isMine && (
-        <div className="border-t border-border pt-2">
-          <button onClick={() => { close(); setDelOpen(true); }} className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-destructive hover:bg-destructive/10">
-            <Trash2 className="h-4 w-4" />{tx("Delete Song")}
-          </button>
-        </div>
-      )}
+      <div className="grid gap-0.5 border-t border-border pt-2">{menuRows(secondaryTools)}</div>
+      {sections.length > 0 && <div className="border-t border-border pt-2">
+        <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tx("Jump to section")}</p>
+        <div className="mt-2 flex flex-wrap gap-1.5">{sections.map(s => <Button variant="secondary" size="sm" key={s.i} onClick={() => { close(); setTimeout(() => jump(s.i), 250); }}>{s.name}</Button>)}</div>
+      </div>}
+      {isMine && <Button variant="ghost" className="justify-start text-destructive" onClick={() => { close(); setDelOpen(true); }}><Trash2 className="h-4 w-4" />{tx("Delete Song")}</Button>}
     </div>
   );
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-7xl">
       {!perf && (
         <button onClick={() => history.back()} className="mb-2 flex min-h-11 items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> {tx("Back")}
@@ -345,7 +341,7 @@ function SongPage() {
         </div>
       )}
 
-      <header className={cn("mb-4", perf && "pt-2")}>
+      <header className={cn("mx-auto mb-4 max-w-3xl", perf && "pt-2")}>
         <div className="min-w-0">
           <h1 className="break-words font-display text-3xl font-semibold leading-tight md:text-5xl">{song.title}</h1>
           <p className="mt-0.5 text-base text-muted-foreground md:text-lg">{song.artist}</p>
@@ -359,7 +355,7 @@ function SongPage() {
 
       {/* Playback */}
       {!perf && (
-        <div ref={controlsRef} className="mb-3 hidden md:grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 rounded-3xl border border-border bg-card p-3 shadow-soft md:p-4">
+        <div ref={controlsRef} className="mx-auto mb-3 max-w-3xl hidden md:grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 rounded-3xl border border-border bg-card p-3 shadow-soft md:p-4">
           <Button size="lg" onClick={toggle} aria-pressed={playing} className="h-12 rounded-full px-5 text-base shadow-lift md:h-14 md:px-6">
             {countdown ? <span className="font-mono">{countdown}</span> : playing ? <><Pause className="mr-2 h-5 w-5 fill-current" /> {tx("Pause")}</> : <><Play className="mr-2 h-5 w-5 fill-current" /> {tx("Play")}</>}
           </Button>
@@ -370,35 +366,19 @@ function SongPage() {
         </div>
       )}
 
-      {/* Toolbar: Edit/Save | Annotate | Playlist | Notes | More */}
+      {/* Both toolbar layouts share actions and state; hidden actions move into More. */}
       {!perf && (
-        <div className="sticky top-[61px] z-20 -mx-4 mb-6 border-y border-border bg-background/90 px-2 py-1.5 backdrop-blur md:top-[73px] md:px-4">
-          {isMobile ? <div data-mobile-song-toolbar className="grid grid-cols-4 gap-1">
+        <div ref={toolbarRef} className="sticky top-[61px] z-20 -mx-4 mb-6 border-y border-border bg-background/90 px-2 py-1.5 backdrop-blur md:top-[73px] md:px-4">
+          <div data-mobile-song-toolbar={isMobile ? "" : undefined} data-desktop-song-toolbar={!isMobile ? "" : undefined} className={cn(isMobile ? "grid grid-cols-4 gap-1" : "flex items-center gap-1")}>
             <ToolBtn icon={Pencil} label={tx("Edit")} disabled={!isMine} title={isMine ? tx("Edit") : tx("Only your own songs can be edited")} onClick={() => navigate({ to: "/song/$id/edit", params: { id: song.id } })} />
             <Popover><PopoverTrigger asChild><ToolBtn icon={Music2} label={tx("Key")} /></PopoverTrigger><PopoverContent align="center" className="w-72 max-w-[calc(100vw-2rem)]"><p className="mb-3 text-sm font-medium">{tx("Key")} {keyNow}</p>{keyControl}</PopoverContent></Popover>
             <Popover><PopoverTrigger asChild><ToolBtn icon={Type} label={tx("Size")} /></PopoverTrigger><PopoverContent align="center" className="w-64 max-w-[calc(100vw-2rem)]">{sizeControl}</PopoverContent></Popover>
-            <ToolBtn icon={MoreHorizontal} label={tx("More")} onClick={() => setMoreOpen(true)} />
-          </div> : <div className="flex items-center gap-2">
-            {isMine ? (
-              <ToolBtn icon={Pencil} label={tx("Edit")} onClick={() => navigate({ to: "/song/$id/edit", params: { id: song.id } })} />
-            ) : (
-              <ToolBtn icon={Heart} label={tx(isSaved ? "Saved" : "Save")} active={isSaved} title={tx(isSaved ? "Remove from My Songs" : "Save to My Songs")}
-                onClick={() => requireAuth("Sign in to save songs to your songbook.", async () => { await toggleSaved(song.id); toast(tx(isSaved ? "Removed from My Songs" : "Saved to My Songs")); })} />
-            )}
-            <ToolBtn icon={PenLine} label={tx("Annotate")} active={annotate} onClick={() => requireAuth("Sign in to annotate songs.", () => setAnnotate((v) => !v))} />
-            <ToolBtn icon={ListPlus} label={tx("Playlist")} title={tx("Add to Playlist")} onClick={() => requireAuth("Sign in to add songs to playlists.", () => setPlOpen(true))} />
-            <ToolBtn icon={StickyNote} label={tx("Notes")} active={!!savedNotes.trim()} title={tx(savedNotes ? "Song notes (saved)" : "Add notes")} onClick={() => requireAuth("Sign in to keep private notes.", () => setNotesOpen(true))} />
-            {isMobile ? (
-              <ToolBtn icon={MoreHorizontal} label={tx("More")} onClick={() => setMoreOpen(true)} className="sm:ml-auto" />
-            ) : (
-              <Popover open={moreOpen} onOpenChange={setMoreOpen}>
-                <PopoverTrigger asChild>
-                  <ToolBtn icon={MoreHorizontal} label={tx("More")} className="sm:ml-auto" />
-                </PopoverTrigger>
-                <PopoverContent align="end" className="w-80 max-h-[70vh] overflow-y-auto p-3">{moreBody}</PopoverContent>
-              </Popover>
-            )}
-          </div>}
+            {visiblePrimary.map(it => <ToolBtn key={it.key} icon={it.icon} label={it.label} active={it.active} onClick={it.onSelect} />)}
+            {isMobile ? <ToolBtn icon={MoreHorizontal} label={tx("More")} onClick={() => setMoreOpen(true)} /> : <Popover open={moreOpen} onOpenChange={setMoreOpen}>
+              <PopoverTrigger asChild><ToolBtn icon={MoreHorizontal} label={tx("More")} className="ml-auto shrink-0" /></PopoverTrigger>
+              <PopoverContent align="end" className="w-80 max-h-[70vh] overflow-y-auto p-3">{moreBody}</PopoverContent>
+            </Popover>}
+          </div>
           {nash && !isValidKey(song.key) && (
             <div className="mt-1.5 flex items-center gap-2 px-1 text-xs">
               <span className="text-muted-foreground">{tx("Nashville needs a key:")}</span>
@@ -511,6 +491,7 @@ function SongPage() {
 
       <div
         ref={sheetRef}
+        className="mx-auto max-w-3xl"
         onClick={(e) => {
           // Tap anywhere in the song to resume a paused auto-scroll
           if (!playing && everPlayed.current && !annotate && !(e.target as HTMLElement).closest("button,a,input,select,textarea")) play();
@@ -613,7 +594,7 @@ type ToolBtnProps = { icon: React.ComponentType<{ className?: string }>; label: 
 const ToolBtn = forwardRef<HTMLButtonElement, ToolBtnProps>(function ToolBtn({ icon: Icon, label, active, title, className, ...rest }, ref) {
   return (
     <Button variant="ghost" ref={ref} type="button" title={title ?? label} aria-label={title ?? label} aria-pressed={active} {...rest}
-      className={cn("flex h-auto min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[11px] font-medium transition-colors sm:flex-row sm:gap-1.5 sm:rounded-full sm:px-3 sm:text-sm",
+      className={cn("flex h-auto min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[11px] font-medium transition-colors sm:flex-row sm:gap-1.5 sm:rounded-full sm:px-2 sm:text-xs",
         active ? "bg-primary/10 text-primary" : "text-foreground hover:bg-secondary", className)}>
       <Icon className={cn("h-5 w-5 shrink-0 sm:h-4 sm:w-4", active && Icon === Heart && "fill-current")} />
       <span className="truncate">{label}</span>
