@@ -1,5 +1,6 @@
 # Roadmap
-- [ ] Custom domain: update sharing/SEO/sitemap addresses; connect Namecheap DNS, set primary, and verify Google sign-in after activation.
+- [x] Custom domain code: sharing addresses, per-page canonical/OG URLs, public sitemap and robots updated; tests and signed-in collection reads verified.
+- [ ] Custom domain activation — blocked on owner completing the domain connect card and Namecheap DNS; then set primary, publish updated pages, and verify Google sign-in on the active domain.
 - [x] Simplify mobile Song Viewer: Edit | Key | Size | More, grouped menu; signed-in browser checks passed for actions, exports, playback and both themes (no physical-phone test)
 - [x] Targeted song controls: hide difficulty, editable optional BPM, reversible Lyrics Only
 - [x] Shared song search and playlist name filtering
