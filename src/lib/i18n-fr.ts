@@ -4,7 +4,6 @@ export const FR: Record<string, string> = {
   "Auto-Scroll Speed": "Vitesse de défilement automatique",
   "Approximate BPM guide": "Repère approximatif en BPM",
   "Pace presets": "Vitesses prédéfinies",
-  "Normal": "Normal",
   "Ballad": "Ballade",
   "Pop": "Pop",
   "Rock": "Rock",
