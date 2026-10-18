@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { CloudCheck, Download, LogOut, MessageSquare, Share2, Upload } from "lucide-react";
@@ -12,6 +13,7 @@ import { SignedOutState } from "@/components/SignedOutState";
 export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
+      { property: "og:url", content: siteUrl("/profile") },
       { title: "My Profile — Bespoke Music" },
       { name: "description", content: "Your Bespoke Music profile, collection stats, preferences, backup and account settings." },
       { property: "og:title", content: "My Profile — Bespoke Music" },
@@ -19,6 +21,7 @@ export const Route = createFileRoute("/profile")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: siteUrl("/profile") }],
   }),
   component: ProfilePage,
 });

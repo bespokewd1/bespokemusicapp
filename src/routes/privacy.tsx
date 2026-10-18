@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { InfoPage, meta, SUPPORT_EMAIL, EFFECTIVE_DATE } from "@/components/InfoPage";
 
 export const Route = createFileRoute("/privacy")({
-  head: () => meta("Privacy Policy", "How Bespoke Music collects, uses and protects your information, in plain language."),
+  head: () => meta("Privacy Policy", "How Bespoke Music collects, uses and protects your information, in plain language.", "/privacy"),
   component: () => (
     <InfoPage eyebrow={`Effective ${EFFECTIVE_DATE}`} title="Privacy Policy">
       <p>Bespoke Music is a small, independently developed Beta app. This page explains, in plain language, what we collect and why.</p>

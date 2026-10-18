@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { useT } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -12,6 +13,7 @@ import { SignedOutState } from "@/components/SignedOutState";
 export const Route = createFileRoute("/my-songs")({
   head: () => ({
     meta: [
+      { property: "og:url", content: siteUrl("/my-songs") },
       { title: "My Songs — Bespoke Music" },
       { name: "description", content: "Your saved songs, your own additions and recently played." },
       { property: "og:title", content: "My Songs — Bespoke Music" },
@@ -19,6 +21,7 @@ export const Route = createFileRoute("/my-songs")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: siteUrl("/my-songs") }],
   }),
   component: MySongs,
 });

@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { useT } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Loader2, Play, Volume2 } from "lucide-react";
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/tools")({
   validateSearch: (s: Record<string, unknown>): { from?: string } => (typeof s["from"] === "string" && s["from"] ? { from: s["from"] as string } : {}),
   head: () => ({
     meta: [
+      { property: "og:url", content: siteUrl("/tools") },
       { title: "Guitar Tools — Chord Library & Tuner | Bespoke Music" },
       { name: "description", content: "Free guitar chord library with diagrams and alternate shapes, plus a real-time digital guitar tuner." },
       { property: "og:title", content: "Guitar Tools — Bespoke Music" },
@@ -21,6 +23,7 @@ export const Route = createFileRoute("/tools")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: siteUrl("/tools") }],
   }),
   component: Tools,
 });

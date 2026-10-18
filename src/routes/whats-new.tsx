@@ -9,7 +9,7 @@ const RELEASES = [
 ];
 
 export const Route = createFileRoute("/whats-new")({
-  head: () => meta("What's New", "New features, fixes and improvements in the Bespoke Music Beta."),
+  head: () => meta("What's New", "New features, fixes and improvements in the Bespoke Music Beta.", "/whats-new"),
   component: () => (
     <InfoPage eyebrow="Beta updates" title="What's New">
       <p>Small notes on what's changed. Thanks for testing along the way!</p>

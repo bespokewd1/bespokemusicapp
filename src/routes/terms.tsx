@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { InfoPage, meta, SUPPORT_EMAIL, EFFECTIVE_DATE, mailto } from "@/components/InfoPage";
 
 export const Route = createFileRoute("/terms")({
-  head: () => meta("Terms of Service", "Terms for using the Bespoke Music Beta, including copyright and Beta disclaimers."),
+  head: () => meta("Terms of Service", "Terms for using the Bespoke Music Beta, including copyright and Beta disclaimers.", "/terms"),
   component: () => (
     <InfoPage eyebrow={`Effective ${EFFECTIVE_DATE}`} title="Terms of Service">
       <section><h2>Beta Status</h2><p>Bespoke Music is currently in Beta and provided for testing, personal use, and feedback. Features may change, become temporarily unavailable, or contain errors.</p></section>
