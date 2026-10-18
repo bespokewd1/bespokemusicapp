@@ -15,6 +15,11 @@ export function SiteFooter() {
       <div className="mb-6">
           <p className="font-display text-lg font-semibold">Bespoke Music</p>
           <p className="mt-1 text-muted-foreground italic">{t("Your personal guitar songbook.")}</p>
+          <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+            <Smartphone className="h-4 w-4 shrink-0" strokeWidth={1.6} aria-hidden="true" />
+            <Monitor className="-ml-1 h-4 w-4 shrink-0" strokeWidth={1.6} aria-hidden="true" />
+            <span>{t("Play on mobile or desktop. No download required.")}</span>
+          </p>
       </div>
       <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3">
         <nav aria-label={t("Product")} className="flex flex-col">
