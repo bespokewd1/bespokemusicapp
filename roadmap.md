@@ -1,5 +1,5 @@
 # Roadmap
-- [ ] Restore image-backed signed-in playlist cards while preserving rearrangement and preventing duplicate starter templates.
+- [x] Restore image-backed signed-in playlist cards; signed-in desktop/mobile light/dark checks, photo loading, search and saved rearrangement verified; original order restored.
 - [ ] Sign-in end-to-end verification — blocked on inconsistent custom-domain DNS resolution; dialog opens, no app/config changes made.
 - [x] Add Restart Song in playback settings and Focus controls; current-speed/manual-scroll tests and signed-in playback checks passed.
 - [x] Refine signed-out benefits and two registration CTAs with clear beta pricing; both open the existing sign-in/registration dialog.
