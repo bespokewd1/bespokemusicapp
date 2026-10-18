@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Custom domain: update sharing/SEO/sitemap addresses; connect Namecheap DNS, set primary, and verify Google sign-in after activation.
 - [x] Simplify mobile Song Viewer: Edit | Key | Size | More, grouped menu; signed-in browser checks passed for actions, exports, playback and both themes (no physical-phone test)
 - [x] Targeted song controls: hide difficulty, editable optional BPM, reversible Lyrics Only
 - [x] Shared song search and playlist name filtering
