@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { siteUrl } from "@/lib/site";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store";
@@ -8,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-export const APP_URL = "https://bespokemusicapp.lovable.app/";
+export const APP_URL = siteUrl();
 export const APP_TITLE = "Bespoke Music — Your Personal Guitar Songbook";
 
 /** Native share sheet when available, otherwise copy the link. */
