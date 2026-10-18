@@ -29,6 +29,8 @@ import { INTRO_DELAYS, loadPlaybackPrefs, savePlaybackPrefs, loadTranspose, load
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/track";
 import { ScrollPaceSettings } from "@/components/ScrollPaceSettings";
+import { DEMO_CATEGORIES, type DemoCategory } from '@/lib/demos';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export const Route = createFileRoute("/song/$id")({
   validateSearch: (s: Record<string, unknown>): { pl?: string } => (typeof s["pl"] === "string" && s["pl"] ? { pl: s["pl"] as string } : {}),
@@ -52,7 +54,7 @@ type MenuItem = { key: string; label: string; icon: React.ComponentType<{ classN
 function SongPage() {
   const { id } = Route.useParams();
   const { pl } = Route.useSearch();
-  const { user, signedIn, songsLoaded, getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, deleteSong, scrollSpeed, loadSongData, saveSongData } = useStore();
+  const { user, signedIn, isAdmin, copyDemo, allSongs, songsLoaded, getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, deleteSong, scrollSpeed, loadSongData, saveSongData } = useStore();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { t: tx } = useT();
@@ -103,6 +105,9 @@ function SongPage() {
   const [toolbarWidth, setToolbarWidth] = useState(0);
   const [notesOpen, setNotesOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [featureOpen, setFeatureOpen] = useState(false);
+  const [demoCategory, setDemoCategory] = useState<DemoCategory>('both');
+  const [copying, setCopying] = useState(false);
   useEffect(() => {
     const k = `bm-pos-${id}`; const y = sessionStorage.getItem(k);
     if (y && songsLoaded) { sessionStorage.removeItem(k); setTimeout(() => window.scrollTo(0, Number(y)), 100); }
@@ -236,6 +241,7 @@ function SongPage() {
   }
   const isSaved = signedIn && saved.includes(song.id);
   const isMine = !!user && song.ownerId === user.id;
+  const personalCopy = allSongs.find(s => s.ownerId === user?.id && s.sourceSongId === song.id);
   const keyNow = isValidKey(song.key) ? transposeChord(song.key, tr) : song.key;
   const baseKey = isValidKey(song.key) ? keyNow : nashKey;
   const nashvilleKey = nash && baseKey ? baseKey : null;
@@ -292,7 +298,12 @@ function SongPage() {
   const secondaryTools: MenuItem[] = [
     { key: "notes", label: tx("Notes"), icon: StickyNote, onSelect: () => requireAuth("Sign in to keep private notes.", () => setNotesOpen(true)) },
     { key: "annotate", label: tx("Annotate"), icon: PenLine, onSelect: () => requireAuth("Sign in to annotate songs.", () => setAnnotate(v => !v)) },
-    { key: "save", label: tx(isSaved ? "Remove from My Songs" : "Save to My Songs"), icon: Heart, onSelect: () => requireAuth("Sign in to save songs to your songbook.", () => toggleSaved(song.id)) },
+    { key: "save", label: tx(song.ownerId === null ? personalCopy ? 'Open My Copy' : 'Save to My Songs' : isSaved ? "Remove from My Songs" : "Save to My Songs"), icon: Heart, onSelect: () => requireAuth("Sign in to save songs to your songbook.", async () => {
+      if (song.ownerId !== null) { await toggleSaved(song.id); return; }
+      const copied = personalCopy?.id ?? await copyDemo(song.id);
+      if (copied) navigate({ to: '/song/$id', params: { id: copied } });
+    }) },
+    ...(isAdmin && isMine ? [{ key: 'feature', label: 'Feature as Demo', icon: Music2, onSelect: () => setFeatureOpen(true) }] : []),
     ...items.filter(it => it.key === "fs" || it.key === "pdfn"),
   ];
   const menuRows = (rows: (MenuItem & { active?: boolean })[]) => rows.map(it => <Button key={it.key} variant="ghost" disabled={it.disabled} aria-pressed={it.active} onClick={() => { close(); it.onSelect(); }} className={cn("h-auto min-h-11 justify-start rounded-lg px-3 text-left text-sm font-medium", it.active && "bg-primary/10 text-primary")}><it.icon className="h-4 w-4 text-primary" />{it.label}</Button>);
@@ -414,6 +425,13 @@ function SongPage() {
       </Dialog>
 
       {/* Share */}
+      <Dialog open={featureOpen} onOpenChange={setFeatureOpen}>
+        <DialogContent className="max-w-sm"><DialogHeader><DialogTitle>Feature as Demo</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">Creates a separate public copy. Your personal notes and annotations stay private.</p>
+          <Select value={demoCategory} onValueChange={v => setDemoCategory(v as DemoCategory)}><SelectTrigger aria-label="Demo category"><SelectValue /></SelectTrigger><SelectContent>{DEMO_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select>
+          <Button disabled={copying} onClick={async () => { setCopying(true); const result = await copyDemo(song.id, true, demoCategory); setCopying(false); if (result) { setFeatureOpen(false); toast.success('Public demo copy created'); } }}>Publish demo copy</Button>
+        </DialogContent>
+      </Dialog>
       <Dialog open={shareOpen} onOpenChange={setShareOpen}>
         <DialogContent className="rounded-3xl">
           <DialogHeader><DialogTitle>{tx("Share song")}</DialogTitle></DialogHeader>

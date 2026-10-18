@@ -13,7 +13,6 @@ import { sectionsToText, textToSections, type Song } from "@/lib/songs";
 import { parseBpm } from '@/lib/song-controls';
 import { isUltimateGuitarUrl, toNativeFormat, ultimateGuitarSearchUrl } from "@/lib/import";
 import { ClipboardPaste, ClipboardPen, ExternalLink, Globe, ImagePlus, Plus, Undo2 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
 import { SongImages } from "./SongImages";
 import type { SongImage } from "@/lib/songs";
 import { clipboardImages, insertPastedText } from "@/lib/clipboard";
@@ -45,7 +44,7 @@ export function SongForm({ song, demo, playlistId }: { song?: Song; demo?: boole
     setUploading(true);
     try {
       for (const f of files.slice(0, 10 - images.length)) {
-        const path = await uploadSongImage(f, isDemo);
+        const path = await uploadSongImage(f, !!demo || song?.ownerId === null);
         if (path) setImages((p) => [...p, { path }]);
       }
     } finally {
@@ -114,7 +113,7 @@ export function SongForm({ song, demo, playlistId }: { song?: Song; demo?: boole
       }
       setBusy(true);
       const id = await upsertSong(
-        { id: song?.id, ownerId: song?.ownerId, title: title.trim().slice(0, 120), artist: artist.trim().slice(0, 120) || "Unknown artist", key, capo: Math.max(0, Math.min(12, capo || 0)), difficulty: song?.difficulty ?? 'Easy', tempo, sections, images, demoCategory: category },
+        { id: song?.id, ...(song?.ownerId === null ? { ownerId: null } : {}), title: title.trim().slice(0, 120), artist: artist.trim().slice(0, 120) || "Unknown artist", key, capo: Math.max(0, Math.min(12, capo || 0)), difficulty: song?.difficulty ?? 'Easy', tempo, sections, images, demoCategory: category },
         { demo: !!demo || song?.ownerId === null },
       );
       if (!id) { setBusy(false); return; }

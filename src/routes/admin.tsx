@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { rowToSong, useStore } from "@/lib/store";
 import type { Song } from "@/lib/songs";
 import { cn } from "@/lib/utils";
+import { DEMO_CATEGORIES, type DemoCategory } from '@/lib/demos';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -189,30 +191,34 @@ function Content() {
   }, []);
   useEffect(() => { load(); }, [load]);
 
-  const update = async (id: string, patch: { featured?: boolean; featured_order?: number | null; published?: boolean }) => {
+  const update = async (id: string, patch: { featured?: boolean; featured_order?: number | null; published?: boolean; demo_category?: DemoCategory }) => {
     const { error } = await supabase.from("songs").update(patch).eq("id", id);
     if (error) toast.error("Update failed");
     await Promise.all([load(), reloadSongs()]);
   };
-  const featured = (songs ?? []).filter((s) => s.pickUp).sort((a, b) => (a.featuredOrder ?? 0) - (b.featuredOrder ?? 0));
+  const featured = songs ?? [];
   const moveFeatured = async (id: string, dir: -1 | 1) => {
     const i = featured.findIndex((s) => s.id === id);
     const j = i + dir;
     if (j < 0 || j >= featured.length) return;
     const ids = featured.map((s) => s.id);
-    [ids[i], ids[j]] = [ids[j]!, ids[i]!];
-    await Promise.all(ids.map((sid, pos) => supabase.from("songs").update({ featured_order: pos }).eq("id", sid)));
+    const first = ids[i], second = ids[j];
+    if (!first || !second) return;
+    ids[i] = second; ids[j] = first;
+    const result = await supabase.rpc('reorder_demos', { song_ids: ids });
+    if (result.error) toast.error("Couldn't save demo order");
     await Promise.all([load(), reloadSongs()]);
   };
 
   if (!songs) return <div className="h-40 animate-pulse rounded-2xl bg-secondary" />;
   return (
     <div className="space-y-8">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap justify-end gap-2">
+        <Button asChild variant="outline"><Link to="/" search={{ preview: 'visitor' }}><Eye className="h-4 w-4" />Preview visitor Home</Link></Button>
         <Button asChild className="h-11 rounded-full"><Link to="/admin/songs/new"><Plus className="mr-1 h-4 w-4" /> New demo song</Link></Button>
       </div>
       <section>
-        <h3 className="mb-3 font-display text-lg font-semibold">Pick Up &amp; Play order</h3>
+        <h3 className="mb-3 font-display text-lg font-semibold">Demo song order</h3>
         <ol className="space-y-2">
           {featured.map((s, i) => (
             <li key={s.id} className="flex items-center gap-2 rounded-xl border border-border bg-card p-2 pl-4">
@@ -233,9 +239,7 @@ function Content() {
                 <p className="truncate font-medium">{s.title} {!s.published && <span className="ml-1 rounded-full bg-secondary px-2 py-0.5 text-xs text-muted-foreground">Draft</span>}</p>
                 <p className="truncate text-xs text-muted-foreground">{s.artist} · {s.key}</p>
               </div>
-              <Button variant="ghost" size="icon" aria-label={s.pickUp ? "Unfeature" : "Feature"} onClick={() => update(s.id, { featured: !s.pickUp, featured_order: s.pickUp ? null : featured.length })}>
-                <Star className={cn("h-4 w-4", s.pickUp && "fill-primary text-primary")} />
-              </Button>
+              <Select value={s.demoCategory ?? 'both'} onValueChange={v => update(s.id, { demo_category: v as DemoCategory, featured: v !== 'easy' })}><SelectTrigger aria-label={`Category for ${s.title}`} className="w-40"><SelectValue /></SelectTrigger><SelectContent>{DEMO_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select>
               <Button variant="ghost" size="icon" aria-label={s.published ? "Unpublish" : "Publish"} onClick={() => update(s.id, { published: !s.published })}>
                 {s.published ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
               </Button>
