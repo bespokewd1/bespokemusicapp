@@ -25,6 +25,8 @@ export interface Song {
   featuredOrder?: number | null;
   sortOrder?: number;
   images?: SongImage[];
+  demoCategory?: 'pickup' | 'easy' | 'both';
+  sourceSongId?: string | null;
 }
 
 const s = (

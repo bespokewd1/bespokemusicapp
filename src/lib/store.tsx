@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import type { Section, Song, Difficulty, SongImage } from "./songs";
 import { moveItem } from './song-controls';
+import { copySong } from './demos.functions';
+import type { DemoCategory } from './demos';
 
 export type Stroke = { color: string; w: number; pts: [number, number][]; fs?: number };
 export interface SongUserData { notes: string; annotations: Stroke[] }
@@ -31,6 +33,7 @@ type SongRow = {
   id: string; owner_id: string | null; title: string; artist: string; key: string; capo: number;
   difficulty: string; tempo: number; bpm: number | null; sections: unknown; published: boolean; featured: boolean;
   featured_order: number | null; sort_order: number; images?: unknown;
+  demo_category?: DemoCategory; source_song_id?: string | null;
 };
 
 export function rowToSong(r: SongRow): Song {
@@ -38,6 +41,7 @@ export function rowToSong(r: SongRow): Song {
     id: r.id, title: r.title, artist: r.artist, key: r.key, capo: r.capo,
     difficulty: r.difficulty as Difficulty, tempo: r.bpm, sections: (r.sections as Section[]) ?? [],
     pickUp: r.featured, ownerId: r.owner_id, published: r.published, featuredOrder: r.featured_order, sortOrder: r.sort_order, images: (r.images as SongImage[]) ?? [],
+    demoCategory: r.demo_category ?? 'both', sourceSongId: r.source_song_id ?? null,
   };
 }
 
@@ -61,6 +65,7 @@ interface Store {
   reloadSongs: () => Promise<void>;
   saved: string[];
   toggleSaved: (id: string) => Promise<void>;
+  copyDemo: (id: string, toDemo?: boolean, category?: DemoCategory) => Promise<string | null>;
   added: Song[];
   upsertSong: (song: Omit<Song, "id"> & { id?: string | undefined }, opts?: { demo?: boolean | undefined; featured?: boolean | undefined }) => Promise<string | null>;
   uploadSongImage: (file: File, demo?: boolean) => Promise<string | null>;
@@ -126,7 +131,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       })),
     );
     if (pr.data) setSpeedState(Number(pr.data.scroll_speed));
-    setIsAdmin((roles.data ?? []).some((r) => r.role === "admin"));
+    const role = await supabase.rpc('has_role', { _user_id: id, _role: 'admin' });
+    setIsAdmin(!role.error && role.data === true);
     supabase.from("profiles").update({ last_active_at: new Date().toISOString() }).eq("id", id).then(() => {});
   }, []);
 
@@ -196,8 +202,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     getSong: (id) => songs.find((s) => s.id === id),
     reloadSongs,
     saved,
+    copyDemo: async (id, toDemo = false, category = 'both') => {
+      if (!uid) return null;
+      try {
+        const result = await copySong({ data: { sourceId: id, toDemo, category } });
+        await Promise.all([reloadSongs(), loadUserData(uid)]);
+        return result;
+      } catch { toast.error("Couldn't create the song copy"); return null; }
+    },
     toggleSaved: async (id) => {
       if (!uid) return;
+      if (songs.find(s => s.id === id)?.ownerId === null) {
+        try {
+          await copySong({ data: { sourceId: id } });
+          await Promise.all([reloadSongs(), loadUserData(uid)]);
+          toast.success('Your editable copy is in My Songs');
+        } catch { toast.error("Couldn't save the demo"); }
+        return;
+      }
       const has = saved.includes(id);
       setSaved((p) => (has ? p.filter((x) => x !== id) : [id, ...p]));
       const { error } = has
@@ -213,6 +235,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         title: song.title, artist: song.artist, key: song.key, capo: song.capo, difficulty: song.difficulty,
         bpm: song.tempo, sections: song.sections as unknown as never, images: (song.images ?? []) as unknown as never,
         updated_at: new Date().toISOString(),
+        ...(opts?.demo || song.ownerId === null ? { demo_category: song.demoCategory ?? 'both', featured: ['pickup','both'].includes(song.demoCategory ?? 'both') } : {}),
         ...(opts?.featured !== undefined ? { featured: opts.featured } : {}),
       };
       const q = song.id
