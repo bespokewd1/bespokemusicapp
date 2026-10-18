@@ -3,6 +3,7 @@ import { useT } from "@/lib/i18n";
 import { Link } from "@tanstack/react-router";
 import { FeedbackDialog } from "@/components/AccountExtras";
 import { Button } from "@/components/ui/button";
+import { Monitor, Smartphone } from "lucide-react";
 
 const cls = "flex min-h-10 items-center text-muted-foreground transition-colors hover:text-foreground sm:min-h-8";
 
