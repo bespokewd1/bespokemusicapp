@@ -52,12 +52,28 @@ describe("pitch detection", () => {
 });
 
 describe("tuning presets", () => {
-  it("has Normal, Drop D and Drop C", () => {
+  it("keeps Standard, E♭ Standard, Drop D and Drop C in order", () => {
+    expect(PRESETS.map((p) => p.name)).toEqual(["Standard", "E♭ Standard", "Drop D", "Drop C"]);
     expect(PRESETS.map((p) => p.strings.map((s) => s.label).join(" "))).toEqual([
       "E2 A2 D3 G3 B3 E4",
+      "E♭2 A♭2 D♭3 G♭3 B♭3 E♭4",
       "D2 A2 D3 G3 B3 E4",
       "C2 G2 C3 F3 A3 D4",
     ]);
+  });
+  it("uses accurate half-step-down target frequencies and flat labels", () => {
+    const eb = PRESETS.find((p) => p.id === "eb-standard");
+    expect(eb?.strings.map((s) => s.note)).toEqual(["E♭", "A♭", "D♭", "G♭", "B♭", "E♭"]);
+    [77.78, 103.83, 138.59, 185, 233.08, 311.13].forEach((freq, i) => {
+      expect(eb?.strings[i]?.freq).toBeCloseTo(freq, 1);
+    });
+  });
+  it.each(PRESETS.flatMap((p) => p.strings.map((s, i) => ({ id: p.id, strings: p.strings, freq: s.freq, i }))))("detects and selects $id string $i", ({ strings, freq, i }) => {
+    const detected = detectPitch(tone(freq, 48000, 8192), 48000);
+    expect(detected).not.toBeNull();
+    if (detected === null) return;
+    expect(nearestString(detected, strings)).toBe(i);
+    expect(tuningState(centsToTarget(detected, freq))).toBe("in-tune");
   });
   it.each([73.42, 65.41])("detects low %f Hz", (f) => {
     const got = detectPitch(tone(f, 48000, 8192), 48000)!;
