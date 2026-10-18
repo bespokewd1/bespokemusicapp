@@ -8,11 +8,11 @@ import { useStore } from "@/lib/store";
 import { uniqueChords } from "@/lib/songs";
 import { useState } from "react";
 import { SearchAction } from '@/components/GlobalSearch';
-import ogImage from "@/assets/og-image.jpg.asset.json";
+import ogImage from "@/assets/og-image.jpg";
 
 const OG_TITLE = "Bespoke Music — Your Personal Guitar Songbook";
 const OG_DESC = "Save chords, lyrics and tabs. Organize songs, build playlists and grow your music library. No ads or subscriptions. Try our free Beta!";
-const OG_IMAGE = siteUrl(ogImage.url);
+const OG_IMAGE = siteUrl(ogImage);
 
 export const Route = createFileRoute("/")({
   head: () => ({
