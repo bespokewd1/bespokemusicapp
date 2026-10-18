@@ -24,6 +24,7 @@
 - Song tempo uses nullable songs.bpm, mapped to Song.tempo; legacy tempo stays for older clients, so clearing BPM never invents a tempo.
 - Shared search is mounted once in AppShell and consumes the existing RLS-scoped store; bounded deferred results keep growing libraries responsive.
 - Playlist order uses playlists.sort_order and the invoker reorder_playlists RPC; validating the complete owned ID list makes reordering atomic without touching song positions.
+- Signed-in sortable playlist cards reuse the visitor template artwork, with theme-stable photo contrast tokens; presentation changes preserve the existing ordering and data layer.
 - Lyrics Only projects existing lines through song-controls into SongSheet; original sections, tabs, notes and attachments remain untouched.
 - Mobile toolbar popovers reuse the SongPage size and transpose handlers, and More reuses the existing tool/export handlers; desktop controls stay separate in presentation only to avoid duplicate state systems.
 - Public sharing and per-page SEO addresses use src/lib/site.ts; auth redirects remain current-origin and sitemap lists public static pages only — keeps domain changes centralized without exposing personal collection IDs.
