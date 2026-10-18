@@ -11,7 +11,7 @@ import { SearchAction } from '@/components/GlobalSearch';
 import ogImage from "@/assets/og-image.jpg.asset.json";
 
 const OG_TITLE = "Bespoke Music — Your Personal Guitar Songbook";
-const OG_DESC = "Save chords, lyrics, and tabs. Organize your songs, create playlists, and grow your music library—all in one place. No ads. No subscription. Try it free during Beta!";
+const OG_DESC = "Save chords, lyrics and tabs. Organize songs, build playlists and grow your music library. No ads or subscriptions. Try our free Beta!";
 const OG_IMAGE = siteUrl(ogImage.url);
 
 export const Route = createFileRoute("/")({
