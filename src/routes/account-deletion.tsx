@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { InfoPage, Card, meta, mailto, SUPPORT_EMAIL } from "@/components/InfoPage";
 
 export const Route = createFileRoute("/account-deletion")({
-  head: () => meta("Account & Data Deletion", "How to delete your Bespoke Music account and all your saved songs, playlists and notes."),
+  head: () => meta("Account & Data Deletion", "How to delete your Bespoke Music account and all your saved songs, playlists and notes.", "/account-deletion"),
   component: () => (
     <InfoPage eyebrow="Your data, your choice" title="Account & Data Deletion">
       <Card>

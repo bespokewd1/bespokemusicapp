@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowDown, ArrowLeft, ArrowUp, Pencil, Play, Plus, Trash2, X } from "lucide-react";
@@ -9,8 +10,9 @@ import { SongCard } from "@/components/SongCard";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/playlists/$id")({
-  head: () => ({
+  head: ({ params }) => ({
     meta: [
+      { property: "og:url", content: siteUrl(`/playlists/${encodeURIComponent(params.id)}`) },
       { title: "Playlist — Bespoke Music" },
       { name: "description", content: "A playlist of guitar songs ready to play." },
       { property: "og:title", content: "Playlist — Bespoke Music" },
@@ -19,6 +21,7 @@ export const Route = createFileRoute("/playlists/$id")({
       { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex" },
     ],
+    links: [{ rel: "canonical", href: siteUrl(`/playlists/${encodeURIComponent(params.id)}`) }],
   }),
   component: PlaylistDetail,
 });

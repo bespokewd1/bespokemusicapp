@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, Eye, EyeOff, Pencil, Plus, Star, Trash2 } from "lucide-react";
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/admin")({
   ssr: false,
   head: () => ({
     meta: [
+      { property: "og:url", content: siteUrl("/admin") },
       { title: "Admin Dashboard — Bespoke Music" },
       { name: "description", content: "Private administrator dashboard." },
       { property: "og:title", content: "Admin — Bespoke Music" },
@@ -23,6 +25,7 @@ export const Route = createFileRoute("/admin")({
       { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex, nofollow" },
     ],
+    links: [{ rel: "canonical", href: siteUrl("/admin") }],
   }),
   component: AdminPage,
 });

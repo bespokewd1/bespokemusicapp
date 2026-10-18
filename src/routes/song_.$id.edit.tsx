@@ -1,10 +1,12 @@
+import { siteUrl } from "@/lib/site";
 import { createFileRoute } from "@tanstack/react-router";
 import { SongForm } from "@/components/SongForm";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/song_/$id/edit")({
-  head: () => ({
+  head: ({ params }) => ({
     meta: [
+      { property: "og:url", content: siteUrl(`/song/${encodeURIComponent(params.id)}/edit`) },
       { title: "Edit Song — Bespoke Music" },
       { name: "description", content: "Edit chords and lyrics for a song in your songbook." },
       { property: "og:title", content: "Edit Song — Bespoke Music" },
@@ -12,6 +14,7 @@ export const Route = createFileRoute("/song_/$id/edit")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: siteUrl(`/song/${encodeURIComponent(params.id)}/edit`) }],
   }),
   component: EditSong,
 });

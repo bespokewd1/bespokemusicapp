@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { useT } from "@/lib/i18n";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useDeferredValue, useRef } from "react";
@@ -18,6 +19,7 @@ import { PLAYLIST_TEMPLATES, useStore } from "@/lib/store";
 export const Route = createFileRoute("/playlists/")({
   head: () => ({
     meta: [
+      { property: "og:url", content: siteUrl("/playlists") },
       { title: "Playlists — Bespoke Music" },
       { name: "description", content: "Organise songs into practice lists, acoustic sets and performance setlists." },
       { property: "og:title", content: "Playlists — Bespoke Music" },
@@ -25,6 +27,7 @@ export const Route = createFileRoute("/playlists/")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: siteUrl("/playlists") }],
   }),
   component: Playlists,
 });

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { InfoPage, Card, meta, SUPPORT_EMAIL } from "@/components/InfoPage";
 
 export const Route = createFileRoute("/about")({
-  head: () => meta("About", "Bespoke Music is an independently built personal guitar songbook, made in Canada and currently in Beta."),
+  head: () => meta("About", "Bespoke Music is an independently built personal guitar songbook, made in Canada and currently in Beta.", "/about"),
   component: () => (
     <InfoPage eyebrow="About Bespoke Music" title="Built for musicians who love to play.">
       <section>

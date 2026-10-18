@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { InfoPage, meta } from "@/components/InfoPage";
 
 export const Route = createFileRoute("/reset-password")({
-  head: () => meta("Reset Password", "Choose a new password for your Bespoke Music account."),
+  head: () => meta("Reset Password", "Choose a new password for your Bespoke Music account.", "/reset-password"),
   component: Reset,
 });
 

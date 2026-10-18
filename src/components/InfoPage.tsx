@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { siteUrl } from "@/lib/site";
 import { PageHeader } from "@/components/PageHeader";
 
 export const SUPPORT_EMAIL = "bespokewd1@gmail.com";
@@ -20,7 +21,7 @@ export function Card({ children }: { children: ReactNode }) {
   return <section className="rounded-2xl border border-border bg-card p-5 shadow-soft sm:p-6">{children}</section>;
 }
 
-export function meta(title: string, description: string) {
+export function meta(title: string, description: string, path: string) {
   return {
     meta: [
       { title: `${title} — Bespoke Music` },
@@ -28,7 +29,9 @@ export function meta(title: string, description: string) {
       { property: "og:title", content: `${title} — Bespoke Music` },
       { property: "og:description", content: description },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: siteUrl(path) },
       { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: siteUrl(path) }],
   };
 }

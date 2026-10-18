@@ -4,7 +4,7 @@ import { InfoPage, Card, meta, mailto } from "@/components/InfoPage";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/help")({
-  head: () => meta("Getting Started", "A quick guide to saving, organizing and playing your songs with Bespoke Music."),
+  head: () => meta("Getting Started", "A quick guide to saving, organizing and playing your songs with Bespoke Music.", "/help"),
   component: Help,
 });
 

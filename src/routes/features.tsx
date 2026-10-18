@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PenLine, ClipboardPaste, Library, ListMusic, ScrollText, ArrowUpDown, Hash, Highlighter, StickyNote, FileDown, Mic, Grid3x3, DatabaseBackup, Type } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
@@ -5,6 +6,7 @@ import { PageHeader } from "@/components/PageHeader";
 export const Route = createFileRoute("/features")({
   head: () => ({
     meta: [
+      { property: "og:url", content: siteUrl("/features") },
       { title: "Features — Bespoke Music" },
       { name: "description", content: "Everything in Bespoke Music: add songs, playlists, auto-scroll, transpose, tuner, chord library and more." },
       { property: "og:title", content: "Features — Bespoke Music" },
@@ -12,6 +14,7 @@ export const Route = createFileRoute("/features")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: siteUrl("/features") }],
   }),
   component: Features,
 });

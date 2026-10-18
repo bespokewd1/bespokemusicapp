@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { useT } from "@/lib/i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
@@ -31,8 +32,9 @@ import { Switch } from '@/components/ui/switch';
 
 export const Route = createFileRoute("/song/$id")({
   validateSearch: (s: Record<string, unknown>): { pl?: string } => (typeof s["pl"] === "string" && s["pl"] ? { pl: s["pl"] as string } : {}),
-  head: () => ({
+  head: ({ params }) => ({
     meta: [
+      { property: "og:url", content: siteUrl(`/song/${encodeURIComponent(params.id)}`) },
       { title: "Song — Bespoke Music" },
       { name: "description", content: "Chords and lyrics, cleanly laid out for playing." },
       { property: "og:title", content: "Song — Bespoke Music" },
@@ -40,6 +42,7 @@ export const Route = createFileRoute("/song/$id")({
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: siteUrl(`/song/${encodeURIComponent(params.id)}`) }],
   }),
   component: SongPage,
 });

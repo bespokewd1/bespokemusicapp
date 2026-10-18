@@ -12,7 +12,7 @@ const FAQ = [
 ] as const;
 
 export const Route = createFileRoute("/support")({
-  head: () => meta("Support", "Help, common questions and how to contact Bespoke Music support."),
+  head: () => meta("Support", "Help, common questions and how to contact Bespoke Music support.", "/support"),
   component: () => (
     <InfoPage eyebrow="We're here to help" title="Support">
       <Card><h2>Getting Started</h2><p>New here? The <Link to="/help">Getting Started guide</Link> walks through the basics in a few minutes.</p></Card>
