@@ -1,10 +1,10 @@
 # Roadmap
-- [ ] Diagnose preview sign-in and old/new website loading without changing app or authentication settings.
+- [ ] Sign-in end-to-end verification — blocked on inconsistent custom-domain DNS resolution; dialog opens, no app/config changes made.
 - [x] Add Restart Song in playback settings and Focus controls; current-speed/manual-scroll tests and signed-in playback checks passed.
 - [x] Refine signed-out benefits and two registration CTAs with clear beta pricing; both open the existing sign-in/registration dialog.
 - [x] Add E♭ Standard and ordered tuning presets; frequency/detection tests and phone/desktop light/dark checks passed (physical guitar testing unavailable).
 - [x] Custom domain code: sharing addresses, per-page canonical/OG URLs, public sitemap and robots updated; tests and signed-in collection reads verified.
-- [ ] Custom domain activation — blocked on owner completing the domain connect card and Namecheap DNS; then set primary, publish updated pages, and verify Google sign-in on the active domain.
+- [ ] Custom domain reachability — domain is Active and Primary, but one public resolver still returns Namecheap's previous IP; wait for DNS caches, then verify Google sign-in on the live domain.
 - [x] Simplify mobile Song Viewer: Edit | Key | Size | More, grouped menu; signed-in browser checks passed for actions, exports, playback and both themes (no physical-phone test)
 - [x] Targeted song controls: hide difficulty, editable optional BPM, reversible Lyrics Only
 - [x] Shared song search and playlist name filtering
