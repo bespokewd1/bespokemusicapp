@@ -82,8 +82,12 @@ function Playlists() {
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">{tr('Your playlists')}</h2>
         {filtered.length ? <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={({ active, over }) => { if (over) void reorder(String(active.id), String(over.id)); }}>
           <SortableContext items={filtered.map(p => p.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((p, i) => <SortablePlaylist key={p.id} playlist={p} index={i} total={filtered.length} disabled={!!query.trim() || savingOrder} titles={p.songIds.map(id => getSong(id)?.title).filter(Boolean).join(' · ')} onMove={direction => { const target = filtered[i + direction]; if (target) void reorder(p.id, target.id); }} />)}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-5">
+              {filtered.map((p, i) => {
+                const template = PLAYLIST_TEMPLATES.find(t => t.id === p.template);
+                const icon = template?.icon ?? 'guitar';
+                return <SortablePlaylist key={p.id} playlist={p} index={i} total={filtered.length} image={IMAGES[icon]} icon={ICONS[icon]} disabled={!!query.trim() || savingOrder} titles={p.songIds.map(id => getSong(id)?.title).filter(Boolean).join(' · ')} onMove={direction => { const target = filtered[i + direction]; if (target) void reorder(p.id, target.id); }} />;
+              })}
             </div>
           </SortableContext>
         </DndContext> : query.trim() ? <p role="status" className="py-8 text-center text-muted-foreground">No playlists match your search.</p> : <Button variant="outline" className="h-auto w-full whitespace-normal rounded-2xl border-dashed p-8" onClick={() => setOpen(true)}><ListMusic className="h-5 w-5" />{tr('Create a custom playlist')}</Button>}
@@ -98,8 +102,8 @@ function Playlists() {
           return (
             <button key={t.id} onClick={() => openTemplate(t)} className="group relative isolate flex min-h-36 items-end overflow-hidden rounded-2xl border border-border text-left shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift sm:min-h-44 lg:min-h-56">
               <img src={IMAGES[t.icon]} alt="" width={1088} height={608} loading="lazy" className="absolute inset-0 -z-20 h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105" />
-              <span className="absolute inset-0 -z-10 bg-gradient-to-t from-foreground/90 via-foreground/55 to-foreground/10" />
-              <span className="flex w-full min-w-0 items-end gap-3 p-4 text-background md:p-6">
+              <span className="absolute inset-0 -z-10 bg-gradient-to-t from-playlist-scrim/90 via-playlist-scrim/55 to-playlist-scrim/10" />
+              <span className="flex w-full min-w-0 items-end gap-3 p-4 text-playlist-foreground md:p-6">
                 <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-background/90 text-primary"><Icon className="h-5 w-5" /></span>
                 <span className="min-w-0">
                   <span className="block truncate font-display text-xl font-semibold md:text-2xl">{mine?.name ?? tr(t.name)}</span>
