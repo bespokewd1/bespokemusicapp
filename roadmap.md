@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Update compact footer and personal About story; verify feedback, visitor-only invitation and links on desktop/mobile.
 - [x] Restore image-backed signed-in playlist cards; signed-in desktop/mobile light/dark checks, photo loading, search and saved rearrangement verified; original order restored.
 - [ ] Sign-in end-to-end verification — blocked on inconsistent custom-domain DNS resolution; dialog opens, no app/config changes made.
 - [x] Add Restart Song in playback settings and Focus controls; current-speed/manual-scroll tests and signed-in playback checks passed.
