@@ -10,7 +10,7 @@ const WHEEL_YIELD_MS = 250;
  */
 export function useAutoScroll(speed: number) {
   const [playing, setPlaying] = useState(false);
-  const st = useRef({ raf: 0, last: 0, carry: 0, pos: 0, touching: false, yieldUntil: 0 });
+  const st = useRef({ raf: 0, last: 0, pos: 0, expected: 0, touching: false, yieldUntil: 0 });
   const speedRef = useRef(speed);
   speedRef.current = speed;
 
@@ -23,23 +23,35 @@ export function useAutoScroll(speed: number) {
     if (!playing) return;
     const s = st.current;
     s.last = performance.now();
-    s.carry = 0;
     s.pos = window.scrollY;
+    s.expected = window.scrollY;
     const tick = (now: number) => {
-      s.raf = requestAnimationFrame(tick);
       const dt = Math.min(100, now - s.last);
       s.last = now;
+      const actual = window.scrollY;
+      // Compare against the last position actually written, not a rounded target.
+      // Native touch momentum/trackpad motion keeps extending the handoff until
+      // the page settles; our own scroll writes never extend it.
+      if (Math.abs(actual - s.expected) > 0.5) {
+        s.yieldUntil = now + WHEEL_YIELD_MS;
+        s.pos = actual;
+      }
+      s.expected = actual;
+      if (s.touching || now < s.yieldUntil) {
+        s.pos = actual;
+        s.raf = requestAnimationFrame(tick);
+        return;
+      }
       const max = document.documentElement.scrollHeight - window.innerHeight;
-      if (window.scrollY >= max - 2) { stop(); return; }
-      if (s.touching || now < s.yieldUntil) { s.pos = window.scrollY; s.carry = 0; return; }
-      // Adopt any position the user moved to (e.g. scrollbar drag) and continue from there
-      if (Math.abs(window.scrollY - Math.round(s.pos)) > 3) s.pos = window.scrollY;
+      if (actual >= max - 2) { stop(); return; }
       s.pos += (BASE_PX_PER_SEC * speedRef.current * dt) / 1000; // sub-pixel accumulation = smooth
-      window.scrollTo(0, s.pos);
+      window.scrollTo({ top: s.pos, left: window.scrollX, behavior: "instant" });
+      s.expected = window.scrollY;
+      s.raf = requestAnimationFrame(tick);
     };
     const yieldBriefly = () => { s.yieldUntil = performance.now() + WHEEL_YIELD_MS; };
     const onTouchStart = () => { s.touching = true; };
-    const onTouchEnd = () => { s.touching = false; yieldBriefly(); };
+    const onTouchEnd = (e: TouchEvent) => { s.touching = e.touches.length > 0; yieldBriefly(); };
     const onKey = (e: KeyboardEvent) => {
       if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"].includes(e.key)) yieldBriefly();
     };
@@ -72,7 +84,7 @@ export function useAutoScroll(speed: number) {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     const s = st.current;
     s.pos = 0;
-    s.carry = 0;
+    s.expected = window.scrollY;
     s.last = performance.now();
     s.touching = false;
     s.yieldUntil = 0;

@@ -44,10 +44,65 @@ describe("auto-scroll restart", () => {
     const { result } = renderHook(() => useAutoScroll(1));
     act(() => result.current.restart());
     y = 600;
-    act(() => frame?.(performance.now() + 100));
+    const now = performance.now();
+    act(() => frame?.(now + 100));
+    expect(y).toBe(600);
+    act(() => frame?.(now + 400));
     expect(y).toBeCloseTo(602.2, 1);
     expect(result.current.playing).toBe(true);
     act(() => result.current.toggle());
     expect(result.current.playing).toBe(false);
+  });
+
+  it("yields throughout touch momentum, then resumes from the settled position at the selected speed", () => {
+    const { result } = renderHook(() => useAutoScroll(2));
+    act(() => result.current.play());
+    const now = performance.now();
+    act(() => window.dispatchEvent(new Event("touchstart")));
+    y = 800;
+    act(() => frame?.(now + 100));
+    const end = new Event("touchend");
+    Object.defineProperty(end, "touches", { value: [] });
+    act(() => window.dispatchEvent(end));
+    y = 1000;
+    act(() => frame?.(now + 500));
+    y = 1100;
+    act(() => frame?.(now + 800));
+    expect(scroll).not.toHaveBeenCalled();
+    act(() => frame?.(now + 1000));
+    expect(y).toBe(1100);
+    act(() => frame?.(now + 1100));
+    expect(y).toBeCloseTo(1104.4, 1);
+    expect(result.current.playing).toBe(true);
+  });
+
+  it("lets wheel and trackpad input take priority in both directions without rebuilding the loop", () => {
+    const { result, rerender } = renderHook(({ speed }) => useAutoScroll(speed), { initialProps: { speed: 1 } });
+    act(() => result.current.play());
+    const now = performance.now();
+    act(() => window.dispatchEvent(new WheelEvent("wheel", { deltaY: -300 })));
+    y = 100;
+    act(() => frame?.(now + 100));
+    y = 600;
+    act(() => frame?.(now + 200));
+    rerender({ speed: 1.5 });
+    act(() => frame?.(now + 400));
+    expect(scroll).not.toHaveBeenCalled();
+    act(() => frame?.(now + 500));
+    expect(y).toBeCloseTo(603.3, 1);
+    expect(result.current.playing).toBe(true);
+  });
+
+  it("does not stop at the bottom while a manual gesture is still moving", () => {
+    const { result } = renderHook(() => useAutoScroll(1));
+    act(() => result.current.play());
+    const now = performance.now();
+    y = 3200;
+    act(() => frame?.(now + 100));
+    expect(result.current.playing).toBe(true);
+    y = 2800;
+    act(() => frame?.(now + 200));
+    act(() => frame?.(now + 500));
+    expect(y).toBeCloseTo(2802.2, 1);
   });
 });
