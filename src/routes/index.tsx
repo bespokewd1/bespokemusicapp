@@ -8,21 +8,26 @@ import { useStore } from "@/lib/store";
 import { uniqueChords } from "@/lib/songs";
 import { useState } from "react";
 import { SearchAction } from '@/components/GlobalSearch';
+import ogImage from "@/assets/og-image.jpg.asset.json";
+
+const OG_TITLE = "Bespoke Music — Your Personal Guitar Songbook";
+const OG_DESC = "Save chords, lyrics, and tabs. Organize your songs, create playlists, and grow your music library—all in one place. No ads. No subscription. Try it free during Beta!";
+const OG_IMAGE = siteUrl(ogImage.url);
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Personal Guitar Songbook & Chord Library | Bespoke Music" },
-      { name: "description", content: "Build your personal guitar songbook. Add chords, lyrics and tabs, create playlists, and play with auto-scroll. No ads. No distractions. Try it free." },
-      { property: "og:title", content: "Bespoke Music — Your Personal Guitar Songbook" },
-      { property: "og:description", content: "Add your songs, save chords and lyrics, create playlists, and build your own music library. Enjoy auto-scroll and distraction-free playing. Free to try, with no ads." },
+      { title: OG_TITLE },
+      { name: "description", content: OG_DESC },
+      { property: "og:title", content: OG_TITLE },
+      { property: "og:description", content: OG_DESC },
       { property: "og:type", content: "website" },
       { property: "og:url", content: siteUrl() },
-      { property: "og:image", content: siteUrl("/og-image.png") },
+      { property: "og:image", content: OG_IMAGE },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Bespoke Music — Your Personal Guitar Songbook" },
-      { name: "twitter:description", content: "Add your songs, save chords and lyrics, create playlists, and build your own music library. Enjoy auto-scroll and distraction-free playing. Free to try, with no ads." },
-      { name: "twitter:image", content: siteUrl("/og-image.png") },
+      { name: "twitter:title", content: OG_TITLE },
+      { name: "twitter:description", content: OG_DESC },
+      { name: "twitter:image", content: OG_IMAGE },
     ],
     links: [{ rel: "canonical", href: siteUrl() }],
   }),
