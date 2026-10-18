@@ -2,10 +2,7 @@
  * Missing keys fall back to English, so new UI text never breaks. */
 export const FR: Record<string, string> = {
   "Restart Song": "Recommencer la chanson",
-  "Standard": "Standard",
   "E♭ Standard": "Standard en mi♭",
-  "Drop D": "Drop D",
-  "Drop C": "Drop C",
   "Build your personal songbook. Save your favorite chords and lyrics, organize playlists, and play your music—all in one place.": "Créez votre carnet de chansons personnel. Enregistrez vos accords et paroles préférés, organisez vos listes de lecture et jouez votre musique — tout au même endroit.",
   "Start Your Songbook": "Commencez votre carnet de chansons",
   "No Ads · No Distractions · No Subscription": "Sans publicité · Sans distraction · Sans abonnement",
