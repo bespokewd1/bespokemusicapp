@@ -32,19 +32,20 @@ export function frequencyToNote(freq: number) {
   return { name, octave, label: `${name}${octave}`, cents: centsBetween(freq, midiToFreq(midi)) };
 }
 
-function str(midi: number, num: number, extra = ""): GuitarString {
+function str(midi: number, num: number, extra = "", flatNote?: string): GuitarString {
   const n = frequencyToNote(midiToFreq(midi));
-  return { label: n.label, note: n.name, freq: midiToFreq(midi), name: `${num}${extra ? " · " + extra : ""}` };
+  return { label: flatNote ? `${flatNote}${n.octave}` : n.label, note: flatNote ?? n.name, freq: midiToFreq(midi), name: `${num}${extra ? " · " + extra : ""}` };
 }
 
 export const PRESETS: TuningPreset[] = [
   {
     id: "standard",
-    name: "Normal Tuning",
+    name: "Standard",
     strings: [str(40, 6, "Low E"), str(45, 5), str(50, 4), str(55, 3), str(59, 2), str(64, 1, "High E")],
   },
-  { id: "drop-d", name: "Drop D Tuning", strings: [str(38, 6, "Low D"), str(45, 5), str(50, 4), str(55, 3), str(59, 2), str(64, 1)] },
-  { id: "drop-c", name: "Drop C Tuning", strings: [str(36, 6, "Low C"), str(43, 5), str(48, 4), str(53, 3), str(57, 2), str(62, 1)] },
+  { id: "eb-standard", name: "E♭ Standard", strings: [str(39, 6, "Low E♭", "E♭"), str(44, 5, "", "A♭"), str(49, 4, "", "D♭"), str(54, 3, "", "G♭"), str(58, 2, "", "B♭"), str(63, 1, "High E♭", "E♭")] },
+  { id: "drop-d", name: "Drop D", strings: [str(38, 6, "Low D"), str(45, 5), str(50, 4), str(55, 3), str(59, 2), str(64, 1)] },
+  { id: "drop-c", name: "Drop C", strings: [str(36, 6, "Low C"), str(43, 5), str(48, 4), str(53, 3), str(57, 2), str(62, 1)] },
 ];
 
 /** Closest string to a detected frequency (by cents distance). */

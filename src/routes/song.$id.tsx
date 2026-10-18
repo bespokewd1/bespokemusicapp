@@ -3,7 +3,7 @@ import { useT } from "@/lib/i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { forwardRef } from "react";
-import { ArrowLeft, Heart, Minus, Pencil, Play, Plus, ListPlus, Pause, Trash2, Hash, PenLine, Eraser, StickyNote, FileDown, MoreHorizontal, Maximize, Minimize, SkipBack, SkipForward, ChevronLeft, ChevronRight, Printer, Share2, Mail, Copy, Gauge, SlidersHorizontal, Type, Music2, X } from "lucide-react";
+import { ArrowLeft, Heart, Minus, Pencil, Play, Plus, ListPlus, Pause, Trash2, Hash, PenLine, Eraser, StickyNote, FileDown, MoreHorizontal, Maximize, Minimize, SkipBack, SkipForward, ChevronLeft, ChevronRight, Printer, Share2, Mail, Copy, Gauge, SlidersHorizontal, Type, Music2, X, RotateCcw } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -67,10 +67,11 @@ function SongPage() {
   const speed = pb.speed ?? scrollSpeed;
   const setSpeed = (v: number) => { const n = { ...pb, speed: v }; setPb(n); savePlaybackPrefs(id, n); };
   const setDelay = (d: number) => { const n = { ...pb, delay: d }; setPb(n); savePlaybackPrefs(id, n); };
-  const { playing, toggle: rawToggle, play: rawPlay, stop: rawStop } = useAutoScroll(speed);
+  const { playing, toggle: rawToggle, play: rawPlay, stop: rawStop, restart: rawRestart } = useAutoScroll(speed);
   const [countdown, setCountdown] = useState(0);
   const cdTimer = useRef<number | undefined>(undefined);
   const cancelCd = () => { window.clearInterval(cdTimer.current); setCountdown(0); };
+  const restart = () => { cancelCd(); rawRestart(); };
   const stop = rawStop;
   const play = rawPlay;
   // Intro delay applies only when starting from a stopped state (never on resume after pause).
@@ -253,6 +254,7 @@ function SongPage() {
       </PopoverTrigger>
       <PopoverContent side="top" align="center" className="w-72 p-4" onOpenAutoFocus={(e) => e.preventDefault()}>
         <SpeedSlider speed={speed} onChange={setSpeed} status={`${speed.toFixed(1)}×`} active={playing} />
+        {!perf && <Button variant="ghost" className="mt-3 w-full justify-start" onClick={restart}><RotateCcw className="h-4 w-4" />{tx("Restart Song")}</Button>}
         <p className="mt-4 text-xs text-muted-foreground">{tx("Intro delay")}</p>
         <div className="mt-1.5 grid grid-cols-4 gap-1.5">
           {INTRO_DELAYS.map((d) => (
@@ -526,7 +528,8 @@ function SongPage() {
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
           <div className="mx-auto grid max-w-3xl grid-cols-[auto_minmax(0,1fr)_auto] justify-items-start items-center gap-3">
             <Button size="icon" onClick={toggle} aria-label={tx(playing ? "Pause" : "Play")} className="h-12 w-12 rounded-full shadow-lift">{playIcon}</Button>
-            <div className="flex min-w-0 items-center gap-2">
+            <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+              <Button variant="secondary" size="icon" className="h-11 w-11 shrink-0 rounded-full" onClick={restart} aria-label={tx("Restart Song")} title={tx("Restart Song")}><RotateCcw className="h-5 w-5" /></Button>
               <span className={cn("truncate font-mono text-sm font-semibold", playing && "text-primary")} aria-live="polite">{speedLabel}</span>
               {settingsPop}
             </div>

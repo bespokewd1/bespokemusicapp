@@ -74,16 +74,14 @@ function Landing() {
       <section className="pt-2 text-left md:pt-8 md:text-center">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent-foreground">{t("Your music. Your songbook.")}</p>
         <h1 className="mt-2 font-display text-[2.1rem] font-semibold leading-[1.08] sm:text-5xl md:text-6xl">{t("Your personal guitar songbook.")}</h1>
-        <p className="mt-3 text-muted-foreground md:mx-auto md:max-w-xl md:text-lg">{t("Save your chords and lyrics, create playlists, and play your favourite songs in one place.")}</p>
+        <p className="mt-3 text-muted-foreground md:mx-auto md:max-w-xl md:text-lg">{t("Build your personal songbook. Save your favorite chords and lyrics, organize playlists, and play your music—all in one place.")}</p>
         <div className="mt-5 grid gap-2.5 sm:flex sm:justify-center">
-          <Button size="lg" className="h-12 rounded-full px-7 text-base" onClick={signUp}>{t("Start Your Songbook — Free")}</Button>
+          <Button size="lg" className="h-12 rounded-full px-7 text-base" onClick={signUp}>{t("Start Your Songbook")}</Button>
           <Button size="lg" variant="outline" className="h-12 rounded-full px-7 text-base" onClick={() => scrollTo("demo-songs")}>{t("Try Demo Songs")}</Button>
         </div>
-        <p className="mt-4 text-center text-sm text-muted-foreground">{t("Free during Beta · No credit card required")}</p>
-        <p className="mt-1 flex justify-center gap-4 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1"><Check className="h-3.5 w-3.5 text-primary" />{t("No ads")}</span>
-          <span className="inline-flex items-center gap-1"><Check className="h-3.5 w-3.5 text-primary" />{t("No distractions")}</span>
-        </p>
+        <p className="mt-3 text-center text-xs text-muted-foreground">{t("No Ads · No Distractions · No Subscription")}</p>
+        <p className="mt-2 text-center text-sm font-semibold text-foreground">{t("Free During Beta")}</p>
+        <p className="mt-1 text-center text-xs text-muted-foreground">{t("No recurring subscription during Beta. Future pricing may change.")}</p>
       </section>
 
       <section id="demo-songs" className="mt-10 scroll-mt-24">
@@ -129,7 +127,7 @@ function Landing() {
       </section>
 
       <section className="mt-8 rounded-2xl border border-border bg-card p-4 sm:p-5">
-        <h2 className="flex items-center gap-2 font-display text-lg font-semibold"><Music className="h-4 w-4 text-primary" />{t("Made for musicians")}</h2>
+        <h2 className="flex items-center gap-2 font-display text-lg font-semibold"><Music className="h-4 w-4 text-primary" />{t("Your Music, Your Collection")}</h2>
         <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
           {feats.map(([Icon, label]) => (
             <li key={label} className="flex min-w-0 items-center gap-2 text-sm"><Icon className="h-4 w-4 shrink-0 text-primary" /><span className="truncate">{t(label)}</span></li>
@@ -141,7 +139,7 @@ function Landing() {
       <section className="mt-10 text-center">
         <h2 className="font-display text-2xl font-semibold">{t("Build a songbook that's yours.")}</h2>
         <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">{t("Keep your songs, chords, and playlists organized and ready to play.")}</p>
-        <Button size="lg" className="mt-4 h-12 w-full rounded-full px-7 text-base sm:w-auto" onClick={signUp}>{t("Create Your Free Account")}</Button>
+        <Button size="lg" className="mt-4 h-12 w-full rounded-full px-7 text-base sm:w-auto" onClick={signUp}>{t("Build Your Songbook")}</Button>
         <p className="mt-2 text-xs text-muted-foreground">{t("No credit card required during Beta.")}</p>
       </section>
     </div>

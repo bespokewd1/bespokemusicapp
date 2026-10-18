@@ -7,16 +7,17 @@ import { centsToTarget, createInTuneGate, IN_TUNE_CENTS, nearestString, PRESETS,
 import { cn } from "@/lib/utils";
 
 export function GuitarTuner() {
-  const [presetId, setPresetId] = useState(PRESETS[0]!.id);
-  const preset = PRESETS.find((p) => p.id === presetId) ?? PRESETS[0]!;
+  const [presetId, setPresetId] = useState("standard");
+  const preset = PRESETS.find((p) => p.id === presetId) ?? PRESETS[0];
   const { status, freq, error, start, stop } = useTuner();
   const [mode, setMode] = useState<"auto" | "manual">("auto");
   const [manual, setManual] = useState(0);
   const { t } = useT();
   const listening = status === "listening";
 
-  const idx = freq ? (mode === "auto" ? nearestString(freq, preset.strings) : manual) : mode === "manual" ? manual : -1;
-  const target = idx >= 0 ? preset.strings[idx]! : null;
+  const strings = preset?.strings ?? [];
+  const idx = freq ? (mode === "auto" ? nearestString(freq, strings) : manual) : mode === "manual" ? manual : -1;
+  const target = idx >= 0 ? strings[idx] ?? null : null;
   const cents = freq && target ? centsToTarget(freq, target.freq) : 0;
   const state = freq ? tuningState(cents) : null;
   const clamped = Math.max(-50, Math.min(50, cents));
@@ -28,9 +29,9 @@ export function GuitarTuner() {
   const gate = useRef(createInTuneGate());
   useEffect(() => {
     if (!listening) return;
-    const fire = gate.current(freq && target ? cents : null, target ? `${preset.id}-${idx}` : null, performance.now());
+    const fire = gate.current(freq && target ? cents : null, target ? `${preset?.id}-${idx}` : null, performance.now());
     if (fire && chimeOn) playChime();
-  }, [freq, cents, target, idx, preset.id, listening, chimeOn]);
+  }, [freq, cents, target, idx, preset?.id, listening, chimeOn]);
   const toggleChime = () => { const v = !chimeOn; setChimeOn(v); localStorage.setItem(CHIME_KEY, v ? "on" : "off"); if (v) { unlockAudio(); setTimeout(playChime, 30); } };
 
   const pick = (i: number) => { playClick(); setMode("manual"); setManual(i); };
@@ -46,14 +47,15 @@ export function GuitarTuner() {
       </div>
 
       <div className="tuner-panel mt-5 rounded-3xl p-4 shadow-lift sm:p-6">
-        <div className="grid grid-cols-3 gap-1.5" role="radiogroup" aria-label={t("Tuning")}>
+        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4" role="radiogroup" aria-label={t("Tuning")}>
           {PRESETS.map((p) => (
-            <button key={p.id} role="radio" aria-checked={p.id === preset.id} onClick={() => { playClick(); setPresetId(p.id); }}
-              className={cn("min-h-10 rounded-full border px-2 text-xs font-semibold", p.id === preset.id ? "border-tuner-fg bg-tuner-fg text-tuner-bg" : "border-tuner-off text-tuner-dim hover:text-tuner-fg")}>
-              {t(p.name.replace(" Tuning", ""))}
-            </button>
+            <Button variant="ghost" key={p.id} role="radio" aria-checked={p.id === preset?.id} onClick={() => { playClick(); setPresetId(p.id); }}
+              className={cn("h-auto min-h-11 rounded-full border px-2 text-xs font-semibold", p.id === preset?.id ? "border-tuner-fg bg-tuner-fg text-tuner-bg hover:bg-tuner-fg hover:text-tuner-bg" : "border-tuner-off text-tuner-dim hover:bg-tuner-fg/10 hover:text-tuner-fg")}>
+              {t(p.name)}
+            </Button>
           ))}
         </div>
+        <p className="mt-2 text-center font-mono text-xs text-tuner-dim" aria-live="polite">{strings.map((s) => s.note).join(" · ")}</p>
 
         {/* Gauge */}
         <div className="relative mx-auto mt-5 h-28 w-full max-w-xs overflow-hidden" aria-hidden>
@@ -129,7 +131,8 @@ export function GuitarTuner() {
     return (
       <div className={cn("flex flex-col gap-5 sm:gap-7", side === "left" ? "items-end" : "items-start")}>
         {order.map((i) => {
-          const s = preset.strings[i]!;
+          const s = strings[i];
+          if (!s) return null;
           const on = idx === i;
           return (
             <button key={i} onClick={() => pick(i)} aria-pressed={on} aria-label={t("String {name}", { name: s.name })}

@@ -68,5 +68,16 @@ export function useAutoScroll(speed: number) {
 
   const toggle = useCallback(() => (playing ? stop() : play()), [playing, stop, play]);
 
-  return { playing, toggle, play, stop };
+  const restart = useCallback(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    const s = st.current;
+    s.pos = 0;
+    s.carry = 0;
+    s.last = performance.now();
+    s.touching = false;
+    s.yieldUntil = 0;
+    setPlaying(true);
+  }, []);
+
+  return { playing, toggle, play, stop, restart };
 }
