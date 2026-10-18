@@ -15,7 +15,15 @@ const CHUNK_ERROR =
 export function isChunkLoadError(error: unknown): boolean {
   const message =
     error instanceof Error ? error.message : typeof error === "string" ? error : "";
-  return CHUNK_ERROR.test(message);
+  if (CHUNK_ERROR.test(message)) return true;
+  // Vite can replace its optimized dependency graph while an already-open tab
+  // retains the previous renderer. Hooks from the new graph then have no active
+  // dispatcher. Recover only when the stack proves two different dev versions;
+  // ordinary invalid-hook errors must still reach the error boundary.
+  if (!/Cannot read properties of null \(reading 'use(?:Context|State|Effect|Ref|Memo|Callback)'\)/.test(message)) return false;
+  const stack = error instanceof Error ? error.stack ?? '' : '';
+  const versions = [...stack.matchAll(/\/node_modules\/\.vite\/deps\/react(?:-dom_client)?\.js\?v=([a-z0-9]+)/g)].map(match => match[1]);
+  return new Set(versions).size > 1;
 }
 
 /** True when this failure should trigger a reload; refuses repeat reloads inside GUARD_MS. */

@@ -6,9 +6,10 @@ import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export function SongCard({ song, action, playlistId, compact }: { song: Song; action?: React.ReactNode; playlistId?: string; compact?: boolean }) {
-  const { saved, toggleSaved, requireAuth, signedIn } = useStore();
+  const { saved, toggleSaved, requireAuth, signedIn, allSongs, user } = useStore();
   const { t } = useT();
-  const isSaved = signedIn && saved.includes(song.id);
+  const copied = song.ownerId === null && allSongs.some(s => s.ownerId === user?.id && s.sourceSongId === song.id);
+  const isSaved = signedIn && (saved.includes(song.id) || copied);
   const chords = uniqueChords(song);
   return (
     <div className="group relative flex items-start gap-3 rounded-2xl border border-border bg-card p-4 shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift">
@@ -32,7 +33,8 @@ export function SongCard({ song, action, playlistId, compact }: { song: Song; ac
       </Link>
       <div className="relative z-10 flex shrink-0 flex-col items-center gap-1">
         <button
-          aria-label={isSaved ? t("Unsave song") : t("Save song")}
+          aria-label={copied ? 'Already in My Songs' : isSaved ? t("Unsave song") : t("Save song")}
+          disabled={copied}
           onClick={() => requireAuth("Sign in to save songs to your collection.", () => toggleSaved(song.id))}
           className="rounded-full p-2 text-muted-foreground transition hover:bg-secondary hover:text-primary"
         >

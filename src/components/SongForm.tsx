@@ -13,10 +13,11 @@ import { sectionsToText, textToSections, type Song } from "@/lib/songs";
 import { parseBpm } from '@/lib/song-controls';
 import { isUltimateGuitarUrl, toNativeFormat, ultimateGuitarSearchUrl } from "@/lib/import";
 import { ClipboardPaste, ClipboardPen, ExternalLink, Globe, ImagePlus, Plus, Undo2 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
 import { SongImages } from "./SongImages";
 import type { SongImage } from "@/lib/songs";
 import { clipboardImages, insertPastedText } from "@/lib/clipboard";
+import { DEMO_CATEGORIES, type DemoCategory } from '@/lib/demos';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const EXAMPLE = "{Verse}\n[G]Write your words and [C]put chords\n[G]in square brackets [D]like this\n\n{Chorus}\n[C]Sing it [G]loud";
 
@@ -28,10 +29,11 @@ const BLOCKS: [string, string][] = [
 ];
 
 export function SongForm({ song, demo, playlistId }: { song?: Song; demo?: boolean; playlistId?: string | undefined }) {
-  const { addToPlaylist, playlists, upsertSong, requireAuth, uploadSongImage, removeSongImage, signedIn, allSongs, user } = useStore();
-  const isDemo = !!demo || (!!song && !song.ownerId);
+  const { addToPlaylist, playlists, upsertSong, copyDemo, isAdmin, requireAuth, uploadSongImage, removeSongImage, signedIn, allSongs, user } = useStore();
+  const [destination, setDestination] = useState(demo || song?.ownerId === null ? 'demo' : 'personal');
+  const isDemo = isAdmin && destination === 'demo';
+  const [category, setCategory] = useState<DemoCategory>(song?.demoCategory ?? 'both');
   const [images, setImages] = useState<SongImage[]>(song?.images ?? []);
-  const [featured, setFeatured] = useState(song?.pickUp ?? false);
   const [uploading, setUploading] = useState(false);
   const uploadInput = useRef<HTMLInputElement>(null);
   const uploadingRef = useRef(false);
@@ -42,7 +44,7 @@ export function SongForm({ song, demo, playlistId }: { song?: Song; demo?: boole
     setUploading(true);
     try {
       for (const f of files.slice(0, 10 - images.length)) {
-        const path = await uploadSongImage(f, isDemo);
+        const path = await uploadSongImage(f, !!demo || song?.ownerId === null);
         if (path) setImages((p) => [...p, { path }]);
       }
     } finally {
@@ -111,14 +113,22 @@ export function SongForm({ song, demo, playlistId }: { song?: Song; demo?: boole
       }
       setBusy(true);
       const id = await upsertSong(
-        { id: song?.id, title: title.trim().slice(0, 120), artist: artist.trim().slice(0, 120) || "Unknown artist", key, capo: Math.max(0, Math.min(12, capo || 0)), difficulty: song?.difficulty ?? 'Easy', tempo, sections, images },
-        { demo, featured: isDemo ? featured : undefined },
+        { id: song?.id, ...(song?.ownerId === null ? { ownerId: null } : {}), title: title.trim().slice(0, 120), artist: artist.trim().slice(0, 120) || "Unknown artist", key, capo: Math.max(0, Math.min(12, capo || 0)), difficulty: song?.difficulty ?? 'Easy', tempo, sections, images, demoCategory: category },
+        { demo: !!demo || song?.ownerId === null },
       );
+      if (!id) { setBusy(false); return; }
+      if (isDemo && !demo && song?.ownerId !== null) {
+        const demoId = await copyDemo(id, true, category);
+        setBusy(false);
+        if (!demoId) return;
+        toast.success('Public demo copy created; your personal song stays private');
+        navigate({ to: '/admin' });
+        return;
+      }
       setBusy(false);
-      if (!id) return;
-      if (!song && playlist) await addToPlaylist(playlist.id, id);
+      if (!song && playlist && !isDemo) await addToPlaylist(playlist.id, id);
       toast.success(song ? "Song updated" : demo ? "Demo song added (unpublished)" : playlist ? `Song added to ${playlist.name}` : "Song added to My Songs");
-      if (demo) navigate({ to: "/admin" });
+      if (isDemo) navigate({ to: "/admin" });
       else navigate({ to: "/song/$id", params: { id }, search: playlist ? { pl: playlist.id } : {} });
     });
   };
@@ -212,12 +222,10 @@ export function SongForm({ song, demo, playlistId }: { song?: Song; demo?: boole
             {uploading && <p role="status" className="text-sm text-muted-foreground">Uploading…</p>}
             <SongImages images={images} onRemove={(path) => { setImages((p) => p.filter((i) => i.path !== path)); if (signedIn && !song?.images?.some((i) => i.path === path)) removeSongImage(path); }} />
           </div>
-          {isDemo && (
-            <label className="flex min-h-12 items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4">
-              <span className="text-sm font-medium">Show in Pick Up &amp; Play</span>
-              <Switch checked={featured} onCheckedChange={setFeatured} />
-            </label>
-          )}
+          {isAdmin && !demo && !song && <Field label="Save Destination">
+            <Select value={destination} onValueChange={setDestination}><SelectTrigger aria-label="Save Destination"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="personal">My Personal Songs</SelectItem><SelectItem value="demo">Public Demo Songs</SelectItem></SelectContent></Select>
+          </Field>}
+          {isDemo && <Field label="Demo category"><Select value={category} onValueChange={v => setCategory(v as DemoCategory)}><SelectTrigger aria-label="Demo category"><SelectValue /></SelectTrigger><SelectContent>{DEMO_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></Field>}
           <div className="flex gap-2">
             <Button type="submit" disabled={busy || uploading} className="h-11 flex-1 rounded-full">{song ? "Save changes" : "Add song"}</Button>
             <Button type="button" variant="outline" className="h-11 rounded-full" onClick={() => history.back()}>Cancel</Button>

@@ -11,6 +11,7 @@
 - App data lives in Lovable Cloud tables guarded by RLS; src/lib/store.tsx is the single client data layer — keeps ownership checks in the database, not the UI.
 - Admin rights come only from public.user_roles (owner granted by the signup trigger); admin stats use the security-definer admin_stats() — never trust client-side role checks.
 - Demo songs are songs rows with owner_id NULL; personal songs carry owner_id — one table keeps playlists/saves uniform.
+- Demo copies use authenticated copySong plus invoker copy_song and source_song_id uniqueness; cloned image paths keep copies independent, and private notes/annotations never publish. Demo categories are separate from difficulty; reorder_demos atomically validates the complete demo list.
 - Chord voicings live as structured data in src/lib/chords.ts (unit-tested), rendered by ChordDiagram.
 - Tuner pitch math/detection lives in pure src/lib/tuner.ts (unit-tested); mic/Web Audio wiring in src/hooks/use-tuner.ts, never routed to speakers.
 - Playback restart lives in useAutoScroll and is shared by settings and Focus controls; resetting its position and timing preserves the current speed without duplicating playback state.
@@ -31,3 +32,4 @@
 - Auto-scroll uses one RAF loop and distinguishes its own writes from external position changes; continued native momentum extends the handoff before resuming at the settled position.
 - Public sharing and per-page SEO addresses use src/lib/site.ts; auth redirects remain current-origin and sitemap lists public static pages only — keeps domain changes centralized without exposing personal collection IDs.
 - About and footer reuse FeedbackDialog and the store's existing sign-in dialog; the tested About invitation predicate waits for account readiness so members never see a signup prompt.
+- Chunk recovery also handles null React dispatchers only when a dev stack proves mixed dependency versions; bounded reloads refresh stale graphs without masking normal hook bugs.

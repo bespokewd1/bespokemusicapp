@@ -9,12 +9,14 @@ import { uniqueChords } from "@/lib/songs";
 import { useState } from "react";
 import { SearchAction } from '@/components/GlobalSearch';
 import ogImage from "@/assets/og-image.jpg";
+import { demoSongs } from '@/lib/demos';
 
 const OG_TITLE = "Bespoke Music — Your Personal Guitar Songbook";
 const OG_DESC = "Save chords, lyrics and tabs. Organize songs, build playlists and grow your music library. No ads or subscriptions. Try our free Beta!";
 const OG_IMAGE = siteUrl(ogImage);
 
 export const Route = createFileRoute("/")({
+  validateSearch: (s: Record<string, unknown>): { preview?: string } => s['preview'] === 'visitor' ? { preview: 'visitor' } : {},
   head: () => ({
     meta: [
       { title: OG_TITLE },
@@ -43,9 +45,10 @@ const FEATURES = [
 ];
 
 function Explore() {
-  const { signedIn, ready, user, allSongs } = useStore();
+  const { signedIn, ready, user, allSongs, isAdmin } = useStore();
+  const { preview } = Route.useSearch();
   const signed = ready && signedIn;
-  if (!signed) return <Landing />;
+  if (!signed || (isAdmin && preview === 'visitor')) return <Landing />;
   const experienced = allSongs.some((s) => s.ownerId === user?.id);
   return (
     <div>
@@ -63,8 +66,8 @@ function Landing() {
   const navigate = useNavigate();
   const [all, setAll] = useState(false);
   const signUp = () => requireAuth("Create your free Beta account.", () => navigate({ to: "/my-songs" }));
-  const demos = allSongs.filter((s) => !s.ownerId && s.published !== false && s.pickUp).sort((a, b) => (a.featuredOrder ?? 99) - (b.featuredOrder ?? 99));
-  const shown = all ? demos : demos.slice(0, 1);
+  const demos = demoSongs(allSongs, 'pickup');
+  const shown = all ? demoSongs(allSongs) : demos.slice(0, 5);
   const steps = [
     ["Add Your Songs", "Copy and paste your chords and lyrics, or write your own."],
     ["Organize Your Music", "Save favourites and build playlists for practice or performances."],
@@ -95,7 +98,7 @@ function Landing() {
             <h2 className="font-display text-xl font-semibold sm:text-2xl">{t("Try It Yourself")}</h2>
             <p className="text-sm text-muted-foreground">{t("No account needed")}</p>
           </div>
-          {demos.length > 1 && <button onClick={() => setAll((v) => !v)} className="shrink-0 text-sm text-muted-foreground hover:text-foreground">{t(all ? "Show less" : "View all →")}</button>}
+          <Button asChild variant="ghost" size="sm" className="shrink-0"><Link to="/demos">View All Demo Songs</Link></Button>
         </div>
         {!songsLoaded ? <div className="h-24 animate-pulse rounded-2xl bg-secondary" /> : shown.length ? (
           <div className="grid gap-2.5">
@@ -291,9 +294,7 @@ function QuickFeatures() {
 function DemoSongs({ compact, quiet }: { compact: boolean; quiet?: boolean }) {
   const { allSongs, songsLoaded } = useStore();
   const { t } = useT();
-  const list = allSongs
-    .filter((s) => !s.ownerId && s.published !== false && s.pickUp)
-    .sort((a, b) => (a.featuredOrder ?? 99) - (b.featuredOrder ?? 99));
+  const list = demoSongs(allSongs, 'pickup').slice(0, 5);
   if (quiet) {
     return (
       <section id="demo-songs" className="mt-4 scroll-mt-24 rounded-2xl border border-border p-4">
@@ -301,6 +302,7 @@ function DemoSongs({ compact, quiet }: { compact: boolean; quiet?: boolean }) {
           {list.map((s, i) => <span key={s.id}>{i > 0 && " · "}<Link to="/song/$id" params={{ id: s.id }} className="font-medium text-foreground hover:text-primary">{s.title}</Link></span>)}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">{t("New here?")} <Link to="/help" className="text-primary hover:underline">{t("See how Bespoke Music works")}</Link></p>
+        <Link to="/demos" className="text-sm text-primary">View All Demo Songs</Link>
       </section>
     );
   }
@@ -308,6 +310,7 @@ function DemoSongs({ compact, quiet }: { compact: boolean; quiet?: boolean }) {
     <section id="demo-songs" className="scroll-mt-24">
       {compact && <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-foreground">{t("Pick Up & Play")}</p>}
       <h2 className="mt-1 font-display text-2xl font-semibold sm:text-3xl">{t(compact ? "Try Demo Songs" : "Pick Up & Play")}</h2>
+      <Link to="/demos" className="text-sm text-primary">View All Demo Songs</Link>
       <p className="mb-4 mt-1 text-sm text-muted-foreground">
         {t(compact ? "Explore a few sample songs and test the player." : "Try real song sheets with no sign-in required.")}
       </p>

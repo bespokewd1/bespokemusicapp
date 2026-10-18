@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AccountDeletionRouteImport } from './routes/account-deletion'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as DemosRouteImport } from './routes/demos'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as MySongsRouteImport } from './routes/my-songs'
@@ -48,6 +49,11 @@ const AccountDeletionRoute = AccountDeletionRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemosRoute = DemosRouteImport.update({
+  id: '/demos',
+  path: '/demos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesRoute = FeaturesRouteImport.update({
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRoute
+  '/demos': typeof DemosRoute
   '/features': typeof FeaturesRoute
   '/help': typeof HelpRoute
   '/my-songs': typeof MySongsRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRoute
+  '/demos': typeof DemosRoute
   '/features': typeof FeaturesRoute
   '/help': typeof HelpRoute
   '/my-songs': typeof MySongsRoute
@@ -181,6 +189,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRoute
+  '/demos': typeof DemosRoute
   '/features': typeof FeaturesRoute
   '/help': typeof HelpRoute
   '/my-songs': typeof MySongsRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/account-deletion'
     | '/admin'
+    | '/demos'
     | '/features'
     | '/help'
     | '/my-songs'
@@ -227,6 +237,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/account-deletion'
     | '/admin'
+    | '/demos'
     | '/features'
     | '/help'
     | '/my-songs'
@@ -249,6 +260,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/account-deletion'
     | '/admin'
+    | '/demos'
     | '/features'
     | '/help'
     | '/my-songs'
@@ -272,6 +284,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AccountDeletionRoute: typeof AccountDeletionRoute
   AdminRoute: typeof AdminRoute
+  DemosRoute: typeof DemosRoute
   FeaturesRoute: typeof FeaturesRoute
   HelpRoute: typeof HelpRoute
   MySongsRoute: typeof MySongsRoute
@@ -318,6 +331,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demos': {
+      id: '/demos'
+      path: '/demos'
+      fullPath: '/demos'
+      preLoaderRoute: typeof DemosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features': {
@@ -440,6 +460,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AccountDeletionRoute: AccountDeletionRoute,
   AdminRoute: AdminRoute,
+  DemosRoute: DemosRoute,
   FeaturesRoute: FeaturesRoute,
   HelpRoute: HelpRoute,
   MySongsRoute: MySongsRoute,
