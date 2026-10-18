@@ -242,6 +242,7 @@ export type Database = {
           bpm: number | null
           capo: number
           created_at: string
+          demo_category: string
           difficulty: string
           featured: boolean
           featured_order: number | null
@@ -252,6 +253,7 @@ export type Database = {
           published: boolean
           sections: Json
           sort_order: number
+          source_song_id: string | null
           tempo: number
           title: string
           updated_at: string
@@ -261,6 +263,7 @@ export type Database = {
           bpm?: number | null
           capo?: number
           created_at?: string
+          demo_category?: string
           difficulty?: string
           featured?: boolean
           featured_order?: number | null
@@ -271,6 +274,7 @@ export type Database = {
           published?: boolean
           sections?: Json
           sort_order?: number
+          source_song_id?: string | null
           tempo?: number
           title: string
           updated_at?: string
@@ -280,6 +284,7 @@ export type Database = {
           bpm?: number | null
           capo?: number
           created_at?: string
+          demo_category?: string
           difficulty?: string
           featured?: boolean
           featured_order?: number | null
@@ -290,6 +295,7 @@ export type Database = {
           published?: boolean
           sections?: Json
           sort_order?: number
+          source_song_id?: string | null
           tempo?: number
           title?: string
           updated_at?: string
@@ -338,6 +344,15 @@ export type Database = {
     }
     Functions: {
       admin_stats: { Args: never; Returns: Json }
+      copy_song: {
+        Args: {
+          category?: string
+          copied_images?: Json
+          source_id: string
+          to_demo?: boolean
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -345,6 +360,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      reorder_demos: { Args: { song_ids: string[] }; Returns: undefined }
       reorder_playlists: {
         Args: { playlist_ids: string[] }
         Returns: undefined

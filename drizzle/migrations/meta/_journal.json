@@ -50,6 +50,13 @@
       "when": 1792223585493,
       "tag": "0006_optional_song_bpm_and_playlist_order",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792365450773,
+      "tag": "0007_owner_demo_management",
+      "breakpoints": true
     }
   ]
 }
