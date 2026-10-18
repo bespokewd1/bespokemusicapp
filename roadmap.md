@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Diagnose preview sign-in and old/new website loading without changing app or authentication settings.
 - [x] Add Restart Song in playback settings and Focus controls; current-speed/manual-scroll tests and signed-in playback checks passed.
 - [x] Refine signed-out benefits and two registration CTAs with clear beta pricing; both open the existing sign-in/registration dialog.
 - [x] Add E♭ Standard and ordered tuning presets; frequency/detection tests and phone/desktop light/dark checks passed (physical guitar testing unavailable).
