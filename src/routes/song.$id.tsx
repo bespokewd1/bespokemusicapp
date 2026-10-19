@@ -31,18 +31,34 @@ import { track } from "@/lib/track";
 import { ScrollPaceSettings } from "@/components/ScrollPaceSettings";
 import { DEMO_CATEGORIES, type DemoCategory } from '@/lib/demos';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { getPublicDemo } from '@/lib/public-demo.functions';
+import { queryOptions } from '@tanstack/react-query';
+import type { Song, Section } from '@/lib/songs';
+
+const publicDemoOptions = (id: string) => queryOptions({ queryKey: ['public-demo', id], queryFn: () => getPublicDemo({ data: { id } }), staleTime: 0 });
 
 export const Route = createFileRoute("/song/$id")({
   validateSearch: (s: Record<string, unknown>): { pl?: string } => (typeof s["pl"] === "string" && s["pl"] ? { pl: s["pl"] as string } : {}),
-  head: ({ params }) => ({
+  loader: ({ params, context }) => context.queryClient.ensureQueryData(publicDemoOptions(params.id)),
+  head: ({ params, loaderData }) => ({
     meta: [
       { property: "og:url", content: siteUrl(`/song/${encodeURIComponent(params.id)}`) },
-      { title: "Song — Bespoke Music" },
-      { name: "description", content: "Chords and lyrics, cleanly laid out for playing." },
-      { property: "og:title", content: "Song — Bespoke Music" },
-      { property: "og:description", content: "Chords and lyrics, cleanly laid out for playing." },
+      { title: loaderData ? `${loaderData.artist} – ${loaderData.title} | Chords & Lyrics — Bespoke Music` : "Song — Bespoke Music" },
+      { name: "description", content: loaderData ? `Play ${loaderData.title} by ${loaderData.artist}. Chords & Lyrics. Save a personal copy to your songbook. Free during Beta.` : "Chords and lyrics, cleanly laid out for playing." },
+      { property: "og:title", content: loaderData ? `${loaderData.artist} – ${loaderData.title} | Chords & Lyrics` : "Song — Bespoke Music" },
+      { property: "og:description", content: loaderData ? `Try ${loaderData.title} free, then save it to your personal guitar songbook. Free during Beta.` : "Chords and lyrics, cleanly laid out for playing." },
       { property: "og:type", content: "article" },
-      { name: "twitter:card", content: "summary" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: 'twitter:title', content: loaderData ? `${loaderData.artist} – ${loaderData.title} | Chords & Lyrics` : 'Song — Bespoke Music' },
+      { name: 'twitter:description', content: loaderData ? `Try ${loaderData.title} free, then save it to your personal guitar songbook. Free during Beta.` : 'Your personal guitar songbook.' },
+      ...(loaderData ? [
+        { property: 'og:image', content: siteUrl(`/api/public/demo-og/${encodeURIComponent(params.id)}?v=${encodeURIComponent(loaderData.updated_at)}`) },
+        { name: 'twitter:image', content: siteUrl(`/api/public/demo-og/${encodeURIComponent(params.id)}?v=${encodeURIComponent(loaderData.updated_at)}`) },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '630' },
+        { property: 'og:image:type', content: 'image/png' },
+        { property: 'og:image:alt', content: `${loaderData.artist} – ${loaderData.title}. Chords & Lyrics — Bespoke Music` },
+      ] : [{ name: 'robots', content: 'noindex' }]),
     ],
     links: [{ rel: "canonical", href: siteUrl(`/song/${encodeURIComponent(params.id)}`) }],
   }),
@@ -54,11 +70,13 @@ type MenuItem = { key: string; label: string; icon: React.ComponentType<{ classN
 function SongPage() {
   const { id } = Route.useParams();
   const { pl } = Route.useSearch();
-  const { user, signedIn, isAdmin, copyDemo, allSongs, songsLoaded, getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, deleteSong, scrollSpeed, loadSongData, saveSongData } = useStore();
+  const { user, signedIn, isAdmin, copyDemo, saveDemo, allSongs, songsLoaded, getSong, saved, toggleSaved, requireAuth, markPlayed, playlists, addToPlaylist, deleteSong, scrollSpeed, loadSongData, saveSongData } = useStore();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { t: tx } = useT();
-  const song = getSong(id);
+  const publicDemo = Route.useLoaderData();
+  const publicSong: Song | undefined = publicDemo ? { id: publicDemo.id, title: publicDemo.title, artist: publicDemo.artist, key: publicDemo.key, capo: publicDemo.capo, difficulty: publicDemo.difficulty as Song['difficulty'], tempo: publicDemo.bpm, sections: publicDemo.sections as unknown as Section[], ownerId: null, published: true } : undefined;
+  const song = getSong(id) ?? publicSong;
   const [size, setSize] = useState(18);
   const [tr, setTr] = useState(0);
   const [nash, setNash] = useState(false);
@@ -230,7 +248,7 @@ function SongPage() {
     };
   }, [perf]);
 
-  if (!songsLoaded) return <div className="mx-auto h-96 max-w-3xl animate-pulse rounded-3xl bg-secondary" />;
+  if (!songsLoaded && !song) return <div className="mx-auto h-96 max-w-3xl animate-pulse rounded-3xl bg-secondary" />;
   if (!song) {
     return (
       <div className="py-20 text-center">
@@ -298,11 +316,9 @@ function SongPage() {
   const secondaryTools: MenuItem[] = [
     { key: "notes", label: tx("Notes"), icon: StickyNote, onSelect: () => requireAuth("Sign in to keep private notes.", () => setNotesOpen(true)) },
     { key: "annotate", label: tx("Annotate"), icon: PenLine, onSelect: () => requireAuth("Sign in to annotate songs.", () => setAnnotate(v => !v)) },
-    { key: "save", label: tx(song.ownerId === null ? personalCopy ? 'Open My Copy' : 'Save to My Songs' : isSaved ? "Remove from My Songs" : "Save to My Songs"), icon: Heart, onSelect: () => requireAuth("Sign in to save songs to your songbook.", async () => {
+    ...(song.ownerId !== null ? [{ key: "save", label: tx(isSaved ? "Remove from My Songs" : "Save to My Songs"), icon: Heart, onSelect: () => requireAuth("Sign in to save songs to your songbook.", async () => {
       if (song.ownerId !== null) { await toggleSaved(song.id); return; }
-      const copied = personalCopy?.id ?? await copyDemo(song.id);
-      if (copied) navigate({ to: '/song/$id', params: { id: copied } });
-    }) },
+    }) }] : []),
     ...(isAdmin && isMine ? [{ key: 'feature', label: 'Feature as Demo', icon: Music2, onSelect: () => setFeatureOpen(true) }] : []),
     ...items.filter(it => it.key === "fs" || it.key === "pdfn"),
   ];
@@ -359,6 +375,14 @@ function SongPage() {
           {song.tempo != null && song.tempo > 0 && <Chip>{song.tempo} BPM</Chip>}
         </div>
       </header>
+
+      {song.ownerId === null && !perf && <div className="mx-auto mb-4 flex max-w-3xl flex-wrap items-center gap-3">
+        <Button disabled={copying || !!personalCopy} className="min-h-11 rounded-full" onClick={async () => { setCopying(true); try { await saveDemo(song.id); } finally { setCopying(false); } }}>
+          <Heart className="h-4 w-4" />{personalCopy ? 'Saved to My Songs' : copying ? 'Saving…' : 'Save to My Songs'}
+        </Button>
+        {personalCopy && <Link to="/song/$id" params={{ id: personalCopy.id }} className="text-sm text-primary underline">Open My Copy</Link>}
+        {!signedIn && <span className="text-xs text-muted-foreground">Free during Beta</span>}
+      </div>}
 
       {/* Playback */}
       {!perf && (

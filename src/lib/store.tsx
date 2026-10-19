@@ -1,5 +1,5 @@
 import { track, trackReturnVisit } from "@/lib/track";
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, useRef as ReactUseRef, type ReactNode } from "react";
 import type React from "react";
 import type { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -201,7 +201,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [uid]);
 
   const signInWithGoogle = async () => {
-    sessionStorage.setItem(RETURN_KEY, window.location.pathname);
+    const pending = localStorage.getItem(DEMO_SAVE_KEY);
+    sessionStorage.setItem(RETURN_KEY, pending ? demoSavePath(pending) : window.location.pathname);
     const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
     if (result.error) {
       sessionStorage.removeItem(RETURN_KEY);
