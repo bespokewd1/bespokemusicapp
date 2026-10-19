@@ -30,6 +30,7 @@ import { Route as SongIdRouteImport } from './routes/song.$id'
 import { Route as SongsNewRouteImport } from './routes/songs.new'
 import { Route as AdminSongsNewRouteImport } from './routes/admin_.songs.new'
 import { Route as SongIdEditRouteImport } from './routes/song_.$id.edit'
+import { Route as ApiPublicDemoOgIdRouteImport } from './routes/api/public/demo-og/$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -136,6 +137,11 @@ const SongIdEditRoute = SongIdEditRouteImport.update({
   path: '/song/$id/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDemoOgIdRoute = ApiPublicDemoOgIdRouteImport.update({
+  id: '/api/public/demo-og/$id',
+  path: '/api/public/demo-og/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/playlists/': typeof PlaylistsIndexRoute
   '/admin/songs/new': typeof AdminSongsNewRoute
   '/song/$id/edit': typeof SongIdEditRoute
+  '/api/public/demo-og/$id': typeof ApiPublicDemoOgIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -182,6 +189,7 @@ export interface FileRoutesByTo {
   '/playlists': typeof PlaylistsIndexRoute
   '/admin/songs/new': typeof AdminSongsNewRoute
   '/song/$id/edit': typeof SongIdEditRoute
+  '/api/public/demo-og/$id': typeof ApiPublicDemoOgIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -206,6 +214,7 @@ export interface FileRoutesById {
   '/playlists/': typeof PlaylistsIndexRoute
   '/admin_/songs/new': typeof AdminSongsNewRoute
   '/song_/$id/edit': typeof SongIdEditRoute
+  '/api/public/demo-og/$id': typeof ApiPublicDemoOgIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -231,6 +240,7 @@ export interface FileRouteTypes {
     | '/playlists/'
     | '/admin/songs/new'
     | '/song/$id/edit'
+    | '/api/public/demo-og/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/playlists'
     | '/admin/songs/new'
     | '/song/$id/edit'
+    | '/api/public/demo-og/$id'
   id:
     | '__root__'
     | '/'
@@ -277,6 +288,7 @@ export interface FileRouteTypes {
     | '/playlists/'
     | '/admin_/songs/new'
     | '/song_/$id/edit'
+    | '/api/public/demo-og/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -301,6 +313,7 @@ export interface RootRouteChildren {
   PlaylistsIndexRoute: typeof PlaylistsIndexRoute
   AdminSongsNewRoute: typeof AdminSongsNewRoute
   SongIdEditRoute: typeof SongIdEditRoute
+  ApiPublicDemoOgIdRoute: typeof ApiPublicDemoOgIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -452,6 +465,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SongIdEditRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/demo-og/$id': {
+      id: '/api/public/demo-og/$id'
+      path: '/api/public/demo-og/$id'
+      fullPath: '/api/public/demo-og/$id'
+      preLoaderRoute: typeof ApiPublicDemoOgIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -477,6 +497,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlaylistsIndexRoute: PlaylistsIndexRoute,
   AdminSongsNewRoute: AdminSongsNewRoute,
   SongIdEditRoute: SongIdEditRoute,
+  ApiPublicDemoOgIdRoute: ApiPublicDemoOgIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
