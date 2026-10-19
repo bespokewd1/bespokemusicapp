@@ -1,6 +1,4 @@
-// @vitest-environment node
 import { describe, expect, it } from 'vitest';
-import { readFile } from 'node:fs/promises';
 import { renderDemoOg } from '@/lib/demo-og.server';
 import { decode } from '@sdxc/png';
 import { isFailure } from '@sdxc/result';
