@@ -70,7 +70,7 @@ export function LoginDialog() {
               <Button className="h-12 w-full rounded-full" onClick={() => setMode('signup')}>Create Free Account</Button>
               <Button variant="outline" className="h-12 w-full rounded-full" onClick={() => setMode('signin')}>Log In</Button>
             </>}
-            <Button className="h-12 w-full rounded-full" disabled={busy} onClick={async () => { setBusy(true); await signInWithGoogle(); setBusy(false); }}>
+            <Button variant={demoSave ? 'ghost' : 'default'} className="h-12 w-full rounded-full" disabled={busy} onClick={async () => { setBusy(true); try { await signInWithGoogle(); } finally { setBusy(false); } }}>
               <GoogleIcon /> {busy ? t("Opening Google…") : t("Continue with Google")}
             </Button>
             {!demoSave && <Button variant="outline" className="h-12 w-full rounded-full" onClick={() => setMode("signin")}>{t("Continue with Email")}</Button>}

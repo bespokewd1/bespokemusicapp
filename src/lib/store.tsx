@@ -173,12 +173,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     try {
       await copySong({ data: { sourceId: id } });
       localStorage.removeItem(DEMO_SAVE_KEY);
+      sessionStorage.removeItem(RETURN_KEY);
       await Promise.all([reloadSongs(), loadUserData(uid)]);
       toast.success('Saved to My Songs.');
       if (new URLSearchParams(window.location.search).has('saveDemo')) {
         window.history.replaceState(window.history.state, '', `/song/${encodeURIComponent(id)}`);
       }
     } catch {
+      localStorage.removeItem(DEMO_SAVE_KEY);
       toast.error("Couldn't save this demo. It may no longer be public. Please try again.");
     } finally { savingDemo.current = false; }
   }, [uid, reloadSongs, loadUserData]);
