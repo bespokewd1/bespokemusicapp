@@ -6,7 +6,7 @@ import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export function SongCard({ song, action, playlistId, compact }: { song: Song; action?: React.ReactNode; playlistId?: string; compact?: boolean }) {
-  const { saved, toggleSaved, requireAuth, signedIn, allSongs, user } = useStore();
+  const { saved, toggleSaved, saveDemo, requireAuth, signedIn, allSongs, user } = useStore();
   const { t } = useT();
   const copied = song.ownerId === null && allSongs.some(s => s.ownerId === user?.id && s.sourceSongId === song.id);
   const isSaved = signedIn && (saved.includes(song.id) || copied);
@@ -35,7 +35,7 @@ export function SongCard({ song, action, playlistId, compact }: { song: Song; ac
         <button
           aria-label={copied ? 'Already in My Songs' : isSaved ? t("Unsave song") : t("Save song")}
           disabled={copied}
-          onClick={() => requireAuth("Sign in to save songs to your collection.", () => toggleSaved(song.id))}
+          onClick={() => song.ownerId === null ? saveDemo(song.id) : requireAuth("Sign in to save songs to your collection.", () => toggleSaved(song.id))}
           className="rounded-full p-2 text-muted-foreground transition hover:bg-secondary hover:text-primary"
         >
           <Heart className={cn("h-5 w-5", isSaved && "fill-primary text-primary")} />
