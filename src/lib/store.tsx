@@ -1,5 +1,5 @@
 import { track, trackReturnVisit } from "@/lib/track";
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, useRef as ReactUseRef, type ReactNode } from "react";
 import type React from "react";
 import type { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ import type { Section, Song, Difficulty, SongImage } from "./songs";
 import { moveItem } from './song-controls';
 import { copySong } from './demos.functions';
 import type { DemoCategory } from './demos';
+import { DEMO_SAVE_KEY, DEMO_SAVE_REASON, demoSavePath, pendingDemoId } from './demo-save';
 
 export type Stroke = { color: string; w: number; pts: [number, number][]; fs?: number };
 export interface SongUserData { notes: string; annotations: Stroke[] }
@@ -66,6 +67,7 @@ interface Store {
   saved: string[];
   toggleSaved: (id: string) => Promise<void>;
   copyDemo: (id: string, toDemo?: boolean, category?: DemoCategory) => Promise<string | null>;
+  saveDemo: (id: string) => Promise<void>;
   added: Song[];
   upsertSong: (song: Omit<Song, "id"> & { id?: string | undefined }, opts?: { demo?: boolean | undefined; featured?: boolean | undefined }) => Promise<string | null>;
   uploadSongImage: (file: File, demo?: boolean) => Promise<string | null>;
@@ -105,6 +107,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [scrollSpeed, setSpeedState] = useState(1);
 
   const uid = user?.id ?? null;
+  const savingDemo = ReactUseRef(false);
   useEffect(() => { if (uid) trackReturnVisit(uid); }, [uid]);
 
   const reloadSongs = useCallback(async () => {
@@ -164,6 +167,33 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [uid, reloadSongs, loadUserData]);
 
+  const saveDemoNow = useCallback(async (id: string) => {
+    if (!uid || savingDemo.current) return;
+    savingDemo.current = true;
+    try {
+      await copySong({ data: { sourceId: id } });
+      localStorage.removeItem(DEMO_SAVE_KEY);
+      sessionStorage.removeItem(RETURN_KEY);
+      await Promise.all([reloadSongs(), loadUserData(uid)]);
+      toast.success('Saved to My Songs.');
+      if (new URLSearchParams(window.location.search).has('saveDemo')) {
+        window.history.replaceState(window.history.state, '', `/song/${encodeURIComponent(id)}`);
+      }
+    } catch {
+      localStorage.removeItem(DEMO_SAVE_KEY);
+      toast.error("Couldn't save this demo. It may no longer be public. Please try again.");
+    } finally { savingDemo.current = false; }
+  }, [uid, reloadSongs, loadUserData]);
+
+  useEffect(() => {
+    if (!ready || !uid) return;
+    const id = pendingDemoId(window.location.search, window.location.pathname, localStorage.getItem(DEMO_SAVE_KEY));
+    if (!id) return;
+    const path = `/song/${encodeURIComponent(id)}`;
+    if (window.location.pathname !== path) { window.location.assign(demoSavePath(id)); return; }
+    void saveDemoNow(id);
+  }, [ready, uid, saveDemoNow]);
+
   const requireAuth = useCallback((reason: string, fn: () => void) => {
     if (uid) fn();
     else {
@@ -173,7 +203,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [uid]);
 
   const signInWithGoogle = async () => {
-    sessionStorage.setItem(RETURN_KEY, window.location.pathname);
+    const pending = localStorage.getItem(DEMO_SAVE_KEY);
+    sessionStorage.setItem(RETURN_KEY, pending ? demoSavePath(pending) : window.location.pathname);
     const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
     if (result.error) {
       sessionStorage.removeItem(RETURN_KEY);
@@ -210,13 +241,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return result;
       } catch { toast.error("Couldn't create the song copy"); return null; }
     },
+    saveDemo: async (id) => {
+      if (uid) { await saveDemoNow(id); return; }
+      localStorage.setItem(DEMO_SAVE_KEY, id);
+      sessionStorage.setItem(RETURN_KEY, demoSavePath(id));
+      setLoginReason(DEMO_SAVE_REASON);
+      setLoginOpen(true);
+    },
     toggleSaved: async (id) => {
       if (!uid) return;
       if (songs.find(s => s.id === id)?.ownerId === null) {
         try {
-          await copySong({ data: { sourceId: id } });
-          await Promise.all([reloadSongs(), loadUserData(uid)]);
-          toast.success('Your editable copy is in My Songs');
+          await saveDemoNow(id);
         } catch { toast.error("Couldn't save the demo"); }
         return;
       }

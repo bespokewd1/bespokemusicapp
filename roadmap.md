@@ -1,4 +1,7 @@
 # Roadmap
+- [x] Public demo SSR metadata and automatic branded PNG previews; two distinct initial-HTML previews, 1200×630 dimensions and unchanged logo pixels verified.
+- [x] Save conversion prompt and remembered intent; restored-session auto-save, immediate signed-in save, duplicate protection, private-copy readback and survival after original deletion verified; 20 tests passed, mobile signup form checked without overflow. Temporary test copies removed.
+- [ ] Live demo-sharing verification — requires publishing, then a real email-confirmation/Google login journey and Facebook Sharing Debugger rescrape; provider sign-in and delivered confirmation email were not exercised in the sandbox.
 - [x] Verify bounded recovery for the reported mixed-version React song-page crash; 8 tests passed, exact error injection reloaded and restored Amazing Grace with working controls, no fresh navigation errors, collection/auth state unchanged.
 - [x] Owner-only demo permissions, publishing destination/categories, independent saves, complete demo ordering and visitor preview; 24 checks passed and real signed-in publishing/save/image copies, private-note exclusion, duplicate protection, ownership rejection and unpublish preservation verified. Temporary test songs removed; physical-phone testing unavailable.
 - [x] Fix manual-scroll contention and momentum during Auto-Scroll; 34 tests passed, signed-in normal/Focus wheel handoff and pause/restart verified; physical touch/trackpad testing remains unavailable.
