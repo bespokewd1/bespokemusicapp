@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store";
 import pick from "@/assets/bespoke-pick.png.asset.json";
+import { DEMO_SAVE_REASON, DEMO_SAVE_KEY, demoSavePath } from '@/lib/demo-save';
 
 type Mode = "choose" | "signin" | "signup" | "forgot" | "sent";
 
@@ -19,6 +20,7 @@ export function LoginDialog() {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [sentMsg, setSentMsg] = useState("");
+  const demoSave = loginReason === DEMO_SAVE_REASON;
 
   const close = (o: boolean) => { setLoginOpen(o); if (!o) { setMode("choose"); setPw(""); } };
 
@@ -31,7 +33,9 @@ export function LoginDialog() {
         if (error) throw error;
         close(false);
       } else if (mode === "signup") {
-        const { data, error } = await supabase.auth.signUp({ email, password: pw, options: { emailRedirectTo: window.location.origin } });
+        const pending = localStorage.getItem(DEMO_SAVE_KEY);
+        const redirectPath = demoSave && pending ? demoSavePath(pending) : '/';
+        const { data, error } = await supabase.auth.signUp({ email, password: pw, options: { emailRedirectTo: `${window.location.origin}${redirectPath}` } });
         if (error) throw error;
         if (data.session) close(false);
         else { setSentMsg(t("We sent a confirmation link to {email}. Open it to finish creating your account.", { email })); setMode("sent"); }
@@ -47,7 +51,7 @@ export function LoginDialog() {
     }
   };
 
-  const title = t(mode === "signup" ? "Create your Bespoke Music account" : mode === "forgot" ? "Reset your password" : mode === "sent" ? "Check your email" : "Sign in to Bespoke Music");
+  const title = t(mode === 'choose' && demoSave ? DEMO_SAVE_REASON : mode === "signup" ? "Create your Bespoke Music account" : mode === "forgot" ? "Reset your password" : mode === "sent" ? "Check your email" : "Sign in to Bespoke Music");
 
   return (
     <Dialog open={loginOpen} onOpenChange={close}>
@@ -56,16 +60,20 @@ export function LoginDialog() {
           <img src={pick.url} alt="Bespoke Music" width={300} height={349} className="mb-2 h-14 w-auto dark:invert" />
           <DialogTitle className="font-display text-2xl">{title}</DialogTitle>
           <DialogDescription>
-            {mode === "sent" ? sentMsg : t(loginReason || "Sign in to create playlists, save your favourite songs, and keep your music organized.")}
+            {mode === "sent" ? sentMsg : t(demoSave ? 'Create your free account to save your favorite songs, organize chords and lyrics, and build playlists.' : loginReason || "Sign in to create playlists, save your favourite songs, and keep your music organized.")}
           </DialogDescription>
         </DialogHeader>
 
         {mode === "choose" && (
           <div className="space-y-2">
+            {demoSave && <>
+              <Button className="h-12 w-full rounded-full" onClick={() => setMode('signup')}>Create Free Account</Button>
+              <Button variant="outline" className="h-12 w-full rounded-full" onClick={() => setMode('signin')}>Log In</Button>
+            </>}
             <Button className="h-12 w-full rounded-full" disabled={busy} onClick={async () => { setBusy(true); await signInWithGoogle(); setBusy(false); }}>
               <GoogleIcon /> {busy ? t("Opening Google…") : t("Continue with Google")}
             </Button>
-            <Button variant="outline" className="h-12 w-full rounded-full" onClick={() => setMode("signin")}>{t("Continue with Email")}</Button>
+            {!demoSave && <Button variant="outline" className="h-12 w-full rounded-full" onClick={() => setMode("signin")}>{t("Continue with Email")}</Button>}
           </div>
         )}
 
